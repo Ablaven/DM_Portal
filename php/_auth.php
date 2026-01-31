@@ -197,7 +197,7 @@ function auth_allowed_pages_for_user(array $user): ?array
         return null; // full access
     }
     if (($user['role'] ?? '') === 'teacher') {
-        return ['doctor.php', 'attendance.php', 'evaluation.php', 'profile.php'];
+        return ['doctor.php', 'availability.php', 'attendance.php', 'evaluation.php', 'profile.php'];
     }
     if (($user['role'] ?? '') === 'student') {
         $studentId = (int)($user['student_id'] ?? 0);

@@ -42,6 +42,7 @@
   cancellations: {}, // cancellations[day] = reason
   slotCancellations: {}, // slotCancellations[day][slot] = reason
   unavailability: [], // list of ranges
+  availabilityMap: {},
   };
 
   function formatHours(n) {
@@ -237,6 +238,73 @@
   return false;
   }
 
+  function hasAvailability(day, slot) {
+  return Boolean(state.availabilityMap?.[day]?.[String(slot)]?.length);
+  }
+
+  function availabilityListForSlot(day, slot) {
+  return state.availabilityMap?.[day]?.[String(slot)] || [];
+  }
+
+  function normalizeAvailabilityDay(day) {
+  const d = String(day || "").trim().toUpperCase();
+  const map = { SUN: "Sun", MON: "Mon", TUE: "Tue", WED: "Wed", THU: "Thu" };
+  return map[d] || "";
+  }
+
+  async function refreshAvailability() {
+  if (!state.activeDoctorId || !state.activeWeekId) return;
+  try {
+    const qs = new URLSearchParams({
+      doctor_id: String(state.activeDoctorId),
+      week_id: String(state.activeWeekId),
+    });
+    const payload = await fetchJson(`php/get_doctor_availability.php?${qs.toString()}`);
+    if (!payload.success) throw new Error(payload.error || "Failed to load availability");
+
+    const items = payload.data?.items || [];
+    const map = {};
+    for (const item of items) {
+      const dayVal = normalizeAvailabilityDay(item.day_of_week);
+      const slotVal = String(item.slot_number || "").trim();
+      if (!dayVal || !slotVal) continue;
+      if (!map[dayVal]) map[dayVal] = {};
+      if (!map[dayVal][slotVal]) map[dayVal][slotVal] = [];
+      map[dayVal][slotVal].push(item);
+    }
+
+    state.availabilityMap = map;
+  } catch {
+    state.availabilityMap = {};
+  }
+  }
+
+  function removeBuilderPopup() {
+  const existing = document.querySelector(".availability-popup.builder-popup");
+  if (existing) existing.remove();
+  }
+
+  function renderAvailabilityPopup(anchor, day, slot) {
+  const items = availabilityListForSlot(day, slot);
+  if (!items.length || !anchor) return;
+
+  removeBuilderPopup();
+
+  const popup = document.createElement("div");
+  popup.className = "availability-popup builder-popup";
+  const names = items.map((i) => i.full_name).filter(Boolean);
+  const list = names.length ? names.join(" • ") : "Doctor available";
+  popup.innerHTML = `<div class="availability-popup-title">Doctor Available</div><div class="availability-popup-body">${escapeHtml(list)}</div>`;
+
+  document.body.appendChild(popup);
+
+  const rect = anchor.getBoundingClientRect();
+  popup.style.left = `${rect.left + window.scrollX}px`;
+  popup.style.top = `${rect.bottom + window.scrollY + 8}px`;
+
+  window.setTimeout(() => popup.classList.add("open"), 10);
+  }
+
   function renderUnavailabilityList() {
   const wrap = document.getElementById("unavailList");
   if (!wrap) return;
@@ -291,6 +359,7 @@
   setStatusById("scheduleStatus", "Loading…");
   await loadSchedule(doctorId);
   await refreshUnavailability();
+  await refreshAvailability();
   renderScheduleMetaHint();
   renderScheduleGrid();
   updateDoctorExportShareLinks();
@@ -379,6 +448,13 @@
         td.appendChild(cell);
         tr.appendChild(td);
         continue;
+      }
+
+      const hasAvail = hasAvailability(day, slot);
+      if (hasAvail) {
+        cell.classList.add("available-slot");
+        cell.addEventListener("mouseenter", () => renderAvailabilityPopup(cell, day, slot));
+        cell.addEventListener("mouseleave", () => removeBuilderPopup());
       }
 
       const assigned = state.scheduleGrid?.[day]?.[String(slot)];
@@ -691,6 +767,7 @@
   }
 
   function openSlotModal(day, slot, assigned) {
+  removeBuilderPopup();
   const doctorId = state.activeDoctorId;
   if (!doctorId) return;
 
@@ -936,6 +1013,7 @@
       if (state.activeDoctorId) {
         await loadSchedule(state.activeDoctorId);
         await refreshUnavailability();
+        await refreshAvailability();
         renderScheduleMetaHint();
         renderScheduleGrid();
         updateDoctorExportShareLinks();
@@ -957,6 +1035,7 @@
       if (state.activeDoctorId) {
         await loadSchedule(state.activeDoctorId);
         await refreshUnavailability();
+        await refreshAvailability();
         renderScheduleMetaHint();
         renderScheduleGrid();
       }
@@ -1079,6 +1158,7 @@
     document.getElementById("refreshSchedule")?.addEventListener("click", async () => {
       if (!state.activeDoctorId) return;
       await loadSchedule(state.activeDoctorId);
+      await refreshAvailability();
       renderScheduleMetaHint();
       renderScheduleGrid();
     });

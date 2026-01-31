@@ -25,6 +25,7 @@ function render_portal_navbar(string $activePage): void
     echo '<div class="nav-row nav-row-primary">';
     auth_render_nav_link('index.php', 'Dashboard', $activePage);
     auth_render_nav_link('schedule_builder.php', 'Doctor Schedule Builder', $activePage);
+    auth_render_nav_link('availability.php', 'Availability', $activePage);
     if (($u['role'] ?? '') === 'student') {
         auth_render_nav_link('students.php', 'My Schedule', $activePage);
     } else {
