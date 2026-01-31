@@ -14,7 +14,7 @@ auth_require_roles(['admin','management']);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Course Dashboard</title>
+  <title>Dr.Sheirf</title>
   <link rel="stylesheet" href="css/style.css?v=20251229" />
 </head>
 <body class="course-dashboard">
