@@ -1,0 +1,2165 @@
+/* Clean, modern, responsive styling (no frameworks) */
+
+:root {
+  --bg: #070b18;
+  --card: rgba(255, 255, 255, 0.12);
+  --card-border: rgba(255, 255, 255, 0.22);
+  --text: #f5f8ff;
+  --muted: rgba(245, 248, 255, 0.78);
+
+  --accent: #5cc6ff;
+  --accent-rgb: 92, 198, 255;
+  --accent-2: #cfe8ff;
+
+  --danger: #ff6b6b;
+  --danger-rgb: 255, 107, 107;
+  --success: #41d97a;
+  --success-rgb: 65, 217, 122;
+
+  --shadow: 0 26px 70px rgba(0,0,0,.45);
+  --radius: 18px;
+
+  --bg-grad-1: rgba(92, 198, 255, .35);
+  --bg-grad-2: rgba(112, 80, 255, .22);
+  --bg-grad-3: rgba(0, 255, 200, .12);
+  --nav-bg: rgba(8, 12, 22, 0.55);
+  --nav-panel-bg: rgba(8, 12, 22, 0.95);
+  --overlay: rgba(6, 10, 18, 0.6);
+  --surface-1: rgba(10, 14, 26, 0.7);
+  --surface-2: rgba(10, 14, 26, 0.6);
+  --surface-3: rgba(12, 16, 28, 0.7);
+  --input-bg: rgba(14, 18, 30, 0.8);
+  --input-border: rgba(255, 255, 255, 0.24);
+  --dropdown-bg: rgba(8, 12, 20, 0.95);
+  --dropdown-border: rgba(255, 255, 255, 0.14);
+  --pill-bg: rgba(255, 255, 255, 0.85);
+  --track-dark: rgba(8, 12, 20, 0.65);
+  --pill-text: #08101e;
+  --text-dark: #f5f8ff;
+  --muted-dark: rgba(245, 248, 255, 0.78);
+  --badge-success-border: rgba(0, 220, 140, 0.30);
+  --badge-success-bg: rgba(0, 220, 140, 0.12);
+  --badge-success-text: rgba(0, 220, 140, 0.92);
+  --scrollbar-thumb: rgba(255,255,255,0.22);
+  --scrollbar-track: rgba(0,0,0,0.18);
+  --slot-empty-title: rgba(232,237,247,0.88);
+  --slot-empty-sub: rgba(232,237,247,0.62);
+  --slot-unavail-bg: rgba(153, 153, 153, 0.16);
+  --slot-unavail-border: rgba(255, 255, 255, 0.22);
+}
+
+html[data-theme="light"] {
+  --bg: #dfe8f4;
+  --card: rgba(243, 247, 255, 0.88);
+  --card-border: rgba(22, 28, 45, 0.22);
+  --text: #141f33;
+  --muted: rgba(20, 31, 51, 0.6);
+
+  --accent: #1c6dff;
+  --accent-rgb: 28, 109, 255;
+  --accent-2: #cfe2ff;
+
+  --danger: #c93636;
+  --danger-rgb: 201, 54, 54;
+  --success: #2bb36b;
+  --success-rgb: 43, 179, 107;
+
+  --shadow: 0 16px 40px rgba(22, 28, 45, 0.16);
+
+  --bg-grad-1: rgba(28, 109, 255, .22);
+  --bg-grad-2: rgba(98, 170, 255, .22);
+  --bg-grad-3: rgba(120, 200, 255, .18);
+  --nav-bg: rgba(225, 234, 248, 0.6);
+  --nav-panel-bg: rgba(225, 234, 248, 0.85);
+  --overlay: rgba(17, 26, 43, 0.2);
+  --surface-1: rgba(231, 239, 252, 0.92);
+  --surface-2: rgba(220, 231, 248, 0.88);
+  --surface-3: rgba(210, 223, 243, 0.86);
+  --input-bg: rgba(240, 246, 255, 0.96);
+  --input-border: rgba(22, 28, 45, 0.22);
+  --dropdown-bg: rgba(225, 234, 248, 0.94);
+  --dropdown-border: rgba(22, 28, 45, 0.2);
+  --dashboard-surface: rgba(198, 214, 242, 0.9);
+  --pill-bg: rgba(28, 109, 255, 0.12);
+  --pill-text: #162033;
+  --badge-success-border: rgba(43, 179, 107, 0.25);
+  --badge-success-bg: rgba(43, 179, 107, 0.12);
+  --badge-success-text: rgba(20, 120, 70, 0.9);
+  --scrollbar-thumb: rgba(22, 28, 45, 0.22);
+  --scrollbar-track: rgba(22, 28, 45, 0.1);
+  --slot-empty-title: rgba(20, 31, 51, 0.85);
+  --slot-empty-sub: rgba(20, 31, 51, 0.6);
+  --slot-unavail-bg: rgba(22, 28, 45, 0.08);
+  --slot-unavail-border: rgba(22, 28, 45, 0.2);
+}
+
+* { box-sizing: border-box; }
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+
+*:hover::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+}
+
+/* Global polish */
+:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.9);
+  outline-offset: 2px;
+}
+
+a, button, input, select {
+  transition: border-color 200ms ease, background 200ms ease, transform 150ms ease, box-shadow 200ms ease, opacity 150ms ease;
+}
+
+body, .card, .navbar, .navlinks, .dropdown, .modal-card, .panel, .sidebar {
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+::selection {
+  background: rgba(var(--accent-rgb), 0.35);
+}
+
+
+body {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--text);
+  background:
+    radial-gradient(1200px 700px at 10% 10%, var(--bg-grad-1), transparent 60%),
+    radial-gradient(900px 600px at 90% 20%, var(--bg-grad-2), transparent 60%),
+    radial-gradient(700px 500px at 50% 90%, var(--bg-grad-3), transparent 60%),
+    var(--bg);
+  min-height: 100vh;
+
+  /* Avoid page-level horizontal scroll on wide schedule tables; scroll inside .schedule-wrap instead */
+  overflow-x: hidden;
+}
+
+/* Navbar */
+
+/* Mobile nav toggle button (injected by JS) */
+.nav-toggle {
+  display: none;
+  margin-left: auto;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--input-border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.nav-toggle:hover {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  background: var(--surface-2);
+}
+
+.nav-toggle:active { transform: translateY(1px); }
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--nav-bg);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  font-size: 1.2rem;
+}
+
+.navlinks {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Mobile navbar: slide-in overlay */
+@media (max-width: 760px) {
+  .nav-toggle { display: inline-flex; }
+
+  .navbar {
+    align-items: center;
+  }
+
+  .navbar .navlinks {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(320px, 86vw);
+    margin: 0;
+    padding: 22px 18px;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 18px 0 0 18px;
+    background: var(--nav-panel-bg);
+    box-shadow: -20px 0 50px rgba(0,0,0,0.45);
+
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 200ms ease, transform 220ms ease;
+
+    max-height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 1001;
+  }
+
+  .navbar.nav-open .navlinks {
+    display: flex;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .navbar.nav-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .navbar .navlinks {
+      transition: none;
+    }
+  }
+
+  .navbar .navlinks .navlink,
+  .navbar .navlinks .btn {
+    width: 100%;
+    text-align: left;
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+
+  .navbar .navlinks #logoutBtn {
+    margin-left: 0 !important;
+  }
+
+  .nav-dropdown .dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+    max-height: 45vh;
+  }
+}
+
+.navlink {
+  color: var(--text);
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+.navlinks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1;
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.nav-row-secondary {
+  margin-top: 6px;
+}
+
+.nav-row-secondary .navlink,
+.nav-row-secondary .navlink-button {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+/* Ensure <select class="navlink"> uses correct text color */
+select.navlink { color: var(--text); }
+
+.navlink:hover {
+  border-color: rgba(var(--accent-rgb), 0.65);
+  background: var(--surface-1);
+}
+
+.easter-mini {
+  position: fixed;
+  right: 6px;
+  bottom: 6px;
+  width: 46px;
+  height: 28px;
+  opacity: 0.5;
+  z-index: 1200;
+}
+
+.easter-mini input {
+  width: 100%;
+  height: 100%;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+.navlink:active { transform: translateY(1px); }
+
+/* Helps users understand which page they are on */
+.navlink[aria-current="page"],
+.navlink.active {
+  border-color: rgba(var(--accent-rgb), 0.9);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.14);
+}
+
+.navlink-button {
+  cursor: pointer;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  /* Remove the gap so hover doesn't break between button and menu */
+  top: 100%;
+  margin-top: 6px;
+  width: min(280px, 86vw);
+  background: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
+  border-radius: 14px;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+  padding: 8px;
+}
+
+/* Hover buffer: keeps menu open while moving from button to dropdown */
+.nav-dropdown::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 10px;
+}
+
+.nav-dropdown:hover .dropdown { display: block; }
+.nav-dropdown.open .dropdown { display: block; }
+
+.dropdown-item {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background: var(--surface-1);
+}
+
+/* Doctors dropdown rows with quick actions */
+.dropdown-item-doctor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dropdown-doctor-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 0;
+}
+
+.dropdown-doctor-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.icon-btn-small {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+}
+
+.container {
+  width: min(960px, 92vw);
+  margin: 40px auto;
+}
+
+.container-top {
+  margin-top: 22px;
+}
+
+.container-narrow {
+  max-width: 780px;
+}
+
+.container-auth {
+  max-width: 640px;
+}
+
+.container-egg {
+  margin-top: 40px;
+}
+
+/* Schedule-heavy pages need more horizontal room */
+body.students-view .container {
+  width: min(1600px, 98vw);
+}
+
+.page-header h1 {
+  margin: 0 0 8px 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  letter-spacing: .3px;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px;
+  backdrop-filter: blur(22px);
+
+  /* Create a predictable stacking context for cards */
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid var(--card-border);
+  pointer-events: none;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(320px 180px at 10% 0%, rgba(var(--accent-rgb), 0.14), transparent 60%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* When a dropdown inside a card is open, keep that card above subsequent cards */
+.card.multi-select-host-open {
+  z-index: 200;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.2px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 12px 14px;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Fix weird/"thin line" rendering of native color inputs in dark themes */
+.field input[type="color"] {
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.field input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 12px;
+}
+
+.field input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 10px;
+}
+
+.field input[type="color"]::-moz-color-swatch {
+  border: 0;
+  border-radius: 10px;
+}
+
+/* Fix native select rendering (avoid white-on-white on some browsers) */
+.field select,
+select.navlink,
+.weekbar select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(var(--accent-rgb), 0.85) 50%),
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.85) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+select option {
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+select:disabled { opacity: 0.6; }
+
+.field input:focus,
+.field select:focus {
+  border-color: rgba(var(--accent-rgb), 0.75);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);
+}
+
+.hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn {
+  border: 1px solid var(--card-border);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.95), rgba(112, 80, 255, 0.65));
+  color: #07101e;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.35);
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.nav-logout {
+  margin-left: auto;
+}
+
+.btn:active { transform: translateY(0px); }
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Small icon action buttons (used in Doctor Management) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--surface-1);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.icon-btn:hover {
+  transform: translateY(-1px);
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.35);
+}
+.icon-btn:active {
+  transform: translateY(0);
+}
+.icon-btn[aria-disabled="true"] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-secondary {
+  background: var(--surface-1);
+  color: var(--text);
+}
+
+.status {
+  min-height: 20px;
+  padding-top: 4px;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.status.success { color: rgba(var(--success-rgb), 0.95); }
+.status.error { color: var(--danger); }
+
+@media (max-width: 640px) {
+  .container {
+    width: min(980px, 94vw);
+    margin: 18px auto;
+  }
+
+  body.students-view .container {
+    width: min(1600px, 99vw);
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .page-header h1 {
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    margin-bottom: 14px;
+  }
+
+  .grid-2 { grid-template-columns: 1fr; }
+
+  .tabs {
+    gap: 6px;
+  }
+
+  .tab {
+    padding: 10px 12px;
+  }
+}
+
+/* Dashboard layout */
+body.dashboard .layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  padding: 18px;
+  border-right: 1px solid var(--card-border);
+  background: var(--surface-2);
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-header h1 {
+  font-size: 1.25rem;
+  margin: 0 0 6px;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-top: 14px;
+}
+
+.panel h2, .panel h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.main {
+  padding: 18px;
+}
+
+.main-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.main-header h2 {
+  margin: 0 0 6px;
+}
+
+.main-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.muted { color: var(--muted); }
+
+.link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 650;
+}
+.link:hover { text-decoration: underline; }
+
+.btn-small {
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  .btn,
+  .btn-small,
+  .navlink,
+  .tab,
+  .dropdown-item,
+  .field input,
+  .field select {
+    min-height: 44px;
+  }
+
+  .dropdown-item {
+    padding: 12px 12px;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon-btn-small {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+.form.compact { gap: 10px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+}
+
+.tab {
+  border: 1px solid var(--card-border);
+  background: var(--surface-1);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tab.active {
+  border-color: rgba(var(--accent-rgb), 0.7);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);
+}
+
+/* Courses list */
+.courses-list {
+  display: grid;
+  gap: 10px;
+}
+
+.course-item {
+  border: 1px solid var(--card-border);
+  background: var(--surface-3);
+  border-radius: 12px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.course-item:hover {
+  border-color: var(--card-border);
+  background: var(--surface-2);
+}
+
+.course-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-1);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.badge-hours { color: var(--text); }
+
+/* Dashboard semantic badges */
+.badge-success {
+  border-color: var(--badge-success-border);
+  background: var(--badge-success-bg);
+  color: var(--badge-success-text);
+}
+
+.badge-danger {
+  border-color: rgba(var(--danger-rgb), 0.35);
+  background: rgba(var(--danger-rgb), 0.14);
+  color: var(--danger);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #08101e;
+}
+
+.pill {
+  background: var(--pill-bg);
+  color: var(--pill-text);
+}
+
+
+/* Schedule grid */
+.schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.schedule-header .controls .field {
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.schedule-header .controls .field label {
+  margin-bottom: 6px;
+}
+
+.schedule-header .controls .field select,
+.schedule-header .controls .field input {
+  background: var(--input-bg);
+  color: var(--text);
+}
+
+.schedule-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow: auto;
+
+  /* Keep any horizontal overflow contained to the table region (avoid page-level horizontal scroll) */
+  overflow-x: auto;
+
+  /* Nicer scrollbars (supported browsers) */
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.schedule-wrap::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.schedule-wrap::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.schedule-wrap::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+.schedule-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 12px;
+  min-width: 760px;
+}
+
+/* Mobile usability for wide schedule tables */
+@media (max-width: 760px) {
+  /* Many pages use inline min-width on filter fields; override it on mobile */
+  .field[style*="min-width"],
+  .field[style*="min-width:"] {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Some pages hardcode container widths inline. */
+  main.container[style*="width"],
+  .card[style*="width"],
+  .modal-card[style*="width"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* If a page used inline flex rows for filters/actions, make them stack */
+  .panel-title-row,
+  .main-header {
+    flex-wrap: wrap;
+  }
+
+  /* Schedule header stack */
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-header .controls {
+    width: 100%;
+  }
+
+  .schedule-grid {
+    /* keep horizontal scroll inside .schedule-wrap, but reduce the hard minimum */
+    min-width: 640px;
+    border-spacing: 10px;
+  }
+
+  /* Sticky header row + first column for easier reading while scrolling */
+  .schedule-grid thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--surface-2);
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .schedule-grid th.corner,
+  .schedule-grid td.corner {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--surface-2);
+  }
+
+  .slot {
+    min-height: 62px;
+    padding: 10px;
+  }
+}
+
+.schedule-grid td { padding: 0; }
+
+.schedule-grid th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  padding: 0 2px;
+}
+
+/* Nicer slot header (left-most column) */
+.slot-hdr {
+  display: grid;
+  gap: 2px;
+}
+.slot-hdr-num {
+  font-weight: 900;
+  color: var(--text);
+}
+.slot-hdr-time {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.schedule-grid .corner { width: 70px; }
+
+.schedule-grid td {
+  vertical-align: top;
+}
+
+.slot {
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  min-height: 70px;
+  padding: 12px;
+  background: var(--surface-3);
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  will-change: transform;
+}
+
+.slot:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+}
+
+.slot:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+.slot .slot-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.1px;
+  margin-bottom: 4px;
+}
+
+.slot .slot-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.slot.filled {
+  border-style: solid;
+}
+
+/* Make empty slots feel cleaner */
+.slot:not(.filled) .slot-title { color: var(--slot-empty-title); }
+.slot:not(.filled) .slot-sub { color: var(--slot-empty-sub); }
+
+.slot.filled.type-unavail {
+  border-color: var(--slot-unavail-border);
+  background: var(--slot-unavail-bg);
+}
+
+.slot.filled.type-unavail .slot-title { color: var(--slot-empty-title); }
+
+.legend {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 12px;
+}
+
+/* Checkbox multi-select (used in Course edit modal) */
+.multi-select {
+  position: relative;
+  /* Ensure dropdown can stack above following cards/sections */
+  z-index: 1;
+}
+
+/* When open, raise the whole component above subsequent content */
+.multi-select.open {
+  z-index: 100;
+}
+
+.multi-select-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--input-border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.multi-select-summary {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multi-select-menu {
+  display: none;
+  position: absolute;
+  z-index: 60;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: var(--dropdown-bg);
+  border: 1px solid var(--dropdown-border);
+  border-radius: 14px;
+  box-shadow: 0 22px 60px rgba(0,0,0,0.55);
+  padding: 8px;
+  max-height: 260px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.multi-select.open .multi-select-menu {
+  display: block;
+}
+
+.multi-select-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+.multi-select-item:hover {
+  background: var(--surface-1);
+}
+
+.multi-select-item input {
+  width: 16px;
+  height: 16px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 50;
+}
+
+.modal.open { display: flex; }
+
+/* Attendance modal: larger, more readable */
+#attendanceModal .modal-card {
+  max-height: min(92vh, 1100px);
+  padding: 20px 24px;
+  font-size: 1.15rem;
+}
+
+#attendanceModal .modal-header h3 {
+  font-size: 1.35rem;
+}
+
+#attendanceModal .modal-body {
+  gap: 14px;
+}
+
+#attendanceModal .field label {
+  font-size: 1.1rem;
+}
+
+#attendanceModal .field input,
+#attendanceModal .field select {
+  padding: 14px 16px;
+  font-size: 1.1rem;
+}
+
+#attendanceModal .modal-actions .btn,
+#attendanceModal .modal-header .btn {
+  font-size: 1.05rem;
+  padding: 10px 16px;
+}
+
+#attendanceModal .modal-header {
+  justify-content: center;
+  text-align: center;
+}
+
+#attendanceModal .modal-header .btn {
+  margin-left: auto;
+}
+
+#attendanceModal .modal-body {
+  text-align: center;
+}
+
+#attendanceModal .field,
+#attendanceModal .modal-actions,
+#attendanceModal .schedule-wrap,
+#attendanceModal #attendanceModalStatus {
+  margin-inline: auto;
+}
+
+#attendanceModal .field {
+  width: min(620px, 92%);
+}
+
+#attendanceModal .modal-actions {
+  justify-content: center !important;
+}
+
+#attendanceModal .schedule-wrap {
+  width: min(1200px, 100%);
+}
+
+#attendanceModal #attendanceModalStatus {
+  text-align: center;
+}
+
+#attendanceModal .schedule-grid {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+#attendanceModal .schedule-grid th,
+#attendanceModal .schedule-grid td {
+  font-size: 1.05rem;
+}
+
+#attendanceModal .schedule-grid th {
+  font-size: 1.05rem;
+  border-top: 1px solid var(--card-border);
+  border-bottom: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid th,
+#attendanceModal .schedule-grid td {
+  text-align: center;
+}
+
+#attendanceModal .schedule-grid thead th:first-child {
+  border-left: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid thead th:not(:last-child) {
+  border-right: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid th:nth-child(2),
+#attendanceModal .schedule-grid td:nth-child(2) {
+  text-align: left;
+}
+
+#attendanceModal .schedule-grid th:nth-child(2) {
+  text-align: center;
+}
+
+#attendanceModal .student-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#attendanceModal .attendance-cell {
+  text-align: center;
+}
+
+#attendanceModal tr.attendance-locked {
+  opacity: 0.55;
+}
+
+#attendanceModal tr.attendance-locked .attendance-present {
+  cursor: not-allowed;
+}
+
+#attendanceModal .schedule-grid td {
+  vertical-align: middle;
+}
+
+#attendanceModal .schedule-grid td:last-child {
+  text-align: center;
+}
+
+.modal .modal-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+
+.modal .modal-header {
+  border-bottom: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid tbody tr td {
+  border-bottom: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid tbody tr td:first-child {
+  border-left: 1px solid var(--card-border);
+}
+
+#attendanceModal .schedule-grid tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#attendanceModal .chk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+#attendanceModal .chk input[type="checkbox"] {
+  width: 28px;
+  height: 28px;
+  accent-color: var(--accent);
+}
+
+#attendanceModal .schedule-wrap {
+  max-height: 68vh;
+}
+
+@media (max-width: 760px) {
+  #attendanceModal .modal-card {
+    max-height: 92vh;
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+  #attendanceModal .modal-header h3 {
+    font-size: 1.15rem;
+  }
+
+  #attendanceModal .schedule-wrap {
+    max-height: 60vh;
+  }
+}
+
+/* Course Dashboard */
+/* Dashboard grid/cards */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.dashboard-card {
+  grid-column: span 6;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: radial-gradient(1200px 500px at 0% 0%, rgba(var(--accent-rgb), 0.12), transparent 55%),
+              radial-gradient(1200px 500px at 100% 0%, rgba(var(--success-rgb), 0.08), transparent 60%),
+              var(--dashboard-surface, var(--surface-1));
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+#studentGradesCards .dashboard-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+#studentGradesCards {
+  gap: 20px;
+}
+
+#studentGradesCards .dashboard-card-title {
+  font-size: 1.05rem;
+}
+
+#studentGradesCards .dashboard-card-subtitle {
+  margin-bottom: 8px;
+}
+
+.student-grade-list {
+  display: grid;
+  gap: 10px;
+  padding: 10px 0 4px;
+}
+
+.student-grade-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: none;
+  box-shadow: none;
+}
+
+.student-grade-course {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.student-grade-score {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dashboard-card-wide {
+  grid-column: span 12;
+}
+
+.dashboard-card-title {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.dashboard-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-card-actions {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .dashboard-card-actions {
+    width: 100%;
+  }
+  .dashboard-card-actions .btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+.dashboard-card-subtitle {
+  margin-top: 2px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.dashboard-card canvas {
+  width: 100%;
+  display: block;
+  margin-top: 10px;
+}
+
+.dashboard-metric {
+  margin-top: 8px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.student-insight-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--text);
+}
+
+.student-insight-note {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.82;
+}
+
+.student-trend-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.student-trend-item {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.4fr) minmax(160px, 1fr) minmax(120px, 0.6fr);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-2);
+  align-items: center;
+}
+
+.student-trend-item.up {
+  border-color: rgba(var(--success-rgb), 0.45);
+  box-shadow: 0 0 0 1px rgba(var(--success-rgb), 0.18) inset;
+}
+
+.student-trend-item.down {
+  border-color: rgba(var(--danger-rgb), 0.4);
+  box-shadow: 0 0 0 1px rgba(var(--danger-rgb), 0.2) inset;
+}
+
+.student-trend-item.steady {
+  border-color: rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.18) inset;
+}
+
+.student-trend-course {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.student-trend-score {
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.9;
+}
+
+.student-trend-delta {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.student-insight-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.student-dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border: 1px solid var(--card-border);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.student-dashboard-badge.badge-positive {
+  background: rgba(var(--success-rgb), 0.16);
+  border-color: rgba(var(--success-rgb), 0.5);
+}
+
+.student-dashboard-badge.badge-warning {
+  background: rgba(var(--warning-rgb), 0.2);
+  border-color: rgba(var(--warning-rgb), 0.5);
+}
+
+.student-dashboard-badge.badge-negative {
+  background: rgba(var(--danger-rgb), 0.2);
+  border-color: rgba(var(--danger-rgb), 0.5);
+}
+
+.student-dashboard-badge.badge-neutral {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+@media (max-width: 720px) {
+  .student-trend-item {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-card { grid-column: span 12; }
+}
+
+.dashboard-chart-wrap {
+  margin-top: 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--dashboard-surface, var(--surface-2));
+  padding: 12px;
+}
+
+.dashboard-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.dashboard-chart-legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid var(--card-border);
+}
+
+.legend-done { background: rgba(var(--success-rgb), 0.92); }
+.legend-remaining { background: rgba(var(--danger-rgb), 0.9); }
+
+.dashboard-chart-canvas-wrap {
+  width: 100%;
+}
+
+#courseDashboardChart {
+  width: 100%;
+  height: 420px;
+  display: block;
+}
+
+#studentDashboardVisuals .dashboard-card {
+  min-height: 260px;
+}
+
+#studentDashboardVisuals canvas {
+  width: 100%;
+  display: block;
+}
+
+#studentDashboardVisuals .dashboard-card-wide canvas {
+  height: 260px;
+}
+
+#studentDashboardVisuals .dashboard-card:not(.dashboard-card-wide) canvas {
+  height: 220px;
+}
+
+@media (max-width: 520px) {
+  #courseDashboardChart { height: 320px; }
+}
+
+.course-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.course-progress-item {
+  padding: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.course-progress-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.course-progress-title {
+  font-weight: 700;
+}
+
+.course-progress-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+.course-progress-bar {
+  margin-top: 10px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.course-progress-fill {
+  height: 100%;
+  width: 0%;
+  /* Left-to-right indicates progress (done) and finishes with remaining hint */
+  background: linear-gradient(90deg, rgba(var(--success-rgb), 0.95), rgba(var(--danger-rgb), 0.85));
+}
+
+.course-progress-legend {
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 6px;
+}
+
+.eval-page .schedule-header,
+.grades-page .schedule-header {
+  gap: 22px;
+  align-items: flex-end;
+}
+
+.eval-page .panel-title-row,
+.grades-page .panel-title-row {
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+.eval-page .schedule-wrap,
+.grades-page .schedule-wrap {
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--surface-2);
+}
+
+.eval-page .page-header h1,
+.grades-page .page-header h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.eval-page .page-header .subtitle,
+.grades-page .page-header .subtitle {
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.eval-page .schedule-grid th,
+.grades-page .schedule-grid th {
+  background: var(--surface-1);
+  font-weight: 800;
+  font-size: 1.12rem;
+  padding: 18px 16px;
+}
+
+.eval-page .eval-grades-table thead th,
+.grades-page .eval-grades-table thead th {
+  text-align: center;
+}
+
+.eval-page .eval-grades-table thead th.col-student,
+.grades-page .eval-grades-table thead th.col-student {
+  text-align: center;
+}
+
+.eval-page .eval-grades-table thead th .grade-max,
+.grades-page .eval-grades-table thead th .grade-max {
+  display: block;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.eval-page .eval-grades-table td.col-id,
+.grades-page .eval-grades-table td.col-id {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.eval-page .eval-grades-table th.col-id,
+.grades-page .eval-grades-table th.col-id {
+  text-align: center;
+}
+
+.eval-page .eval-grades-table td.col-student,
+.grades-page .eval-grades-table td.col-student {
+  text-align: left;
+  font-size: 1.18rem;
+  font-weight: 700;
+  min-width: 360px;
+}
+
+.eval-page .eval-grades-table th.col-student,
+.grades-page .eval-grades-table th.col-student {
+  min-width: 360px;
+}
+
+.eval-page .eval-grades-table th.col-grade,
+.grades-page .eval-grades-table th.col-grade,
+.eval-page .eval-grades-table th.col-number,
+.grades-page .eval-grades-table th.col-number,
+.eval-page .eval-grades-table td.col-number,
+.grades-page .eval-grades-table td.col-number {
+  width: 100px;
+}
+
+.eval-page .eval-grades-table th.col-id,
+.grades-page .eval-grades-table th.col-id,
+.eval-page .eval-grades-table td.col-id,
+.grades-page .eval-grades-table td.col-id {
+  width: 80px;
+}
+
+.eval-page .schedule-grid td,
+.grades-page .schedule-grid td {
+  vertical-align: middle;
+  padding: 16px 16px;
+  font-size: 1.05rem;
+  background: var(--surface-3);
+}
+
+.eval-page .eval-grades-table td,
+.grades-page .eval-grades-table td {
+  text-align: center;
+}
+
+.eval-page .eval-grades-table td.col-student,
+.grades-page .eval-grades-table td.col-student {
+  text-align: left;
+}
+
+.eval-page .col-number,
+.grades-page .col-number {
+  text-align: center;
+}
+
+.eval-page input[type="number"],
+.grades-page input[type="number"],
+.eval-page .schedule-grid input[type="number"],
+.grades-page .schedule-grid input[type="number"] {
+  text-align: center;
+}
+
+.eval-page .tab,
+.grades-page .tab {
+  font-size: 1rem;
+  padding: 10px 16px;
+}
+
+.eval-page .tab-panels,
+.grades-page .tab-panels {
+  margin-top: 10px;
+}
+
+.eval-page .legend,
+.grades-page .legend {
+  margin-top: 14px;
+  font-size: 0.95rem;
+}
+
+.eval-page .muted,
+.grades-page .muted {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.eval-page .status,
+.grades-page .status {
+  min-height: 24px;
+  font-size: 0.95rem;
+}
+
+.eval-page input[type="text"],
+.eval-page input[type="number"],
+.eval-page select,
+.grades-page input[type="text"],
+.grades-page input[type="number"],
+.grades-page select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text);
+  font-size: 1.08rem;
+  padding: 14px 16px;
+  min-height: 48px;
+  font-weight: 600;
+}
+
+.eval-page select,
+.grades-page select {
+  color: var(--text);
+}
+
+.eval-page .schedule-grid td,
+.grades-page .schedule-grid td {
+  vertical-align: middle;
+}
+
+.eval-page .eval-category {
+  color: var(--text);
+}
+
+.eval-page .eval-label[disabled] {
+  color: var(--muted);
+  background: var(--surface-3);
+}
+
+.grades-page .schedule-grid td:last-child {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.eval-page .btn,
+.grades-page .btn {
+  font-size: 1.05rem;
+  padding: 12px 20px;
+  font-weight: 700;
+}
+
+.eval-page .alert {
+  margin: 12px 0 20px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: rgba(var(--danger-rgb), 0.16);
+  border: 1px solid rgba(var(--danger-rgb), 0.35);
+  color: var(--danger);
+}
+
+.eval-page .status,
+.grades-page .status {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.card {
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+/* Smooth modal animation */
+.modal .modal-card {
+  transform: translateY(6px) scale(0.98);
+  opacity: 0;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+
+.modal.open .modal-card {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay);
+}
+
+.modal-card {
+  position: relative;
+  width: min(520px, 96vw);
+  max-height: min(84vh, 900px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-3);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.modal-body {
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 520px) {
+  .modal {
+    padding: 10px;
+  }
+  .modal-card {
+    width: 100%;
+    border-radius: 14px;
+    padding: 12px;
+    max-height: 90vh;
+  }
+  .modal-actions .btn {
+    flex: 1;
+  }
+}
+
+/* Slightly smaller schedule for 5 days */
+body.dashboard .schedule-grid {
+  min-width: 620px;
+}
+
+@media (max-width: 980px) {
+  body.dashboard .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--card-border);
+  }
+}
+
+/* Schedule Builder (dashboard layout) extra mobile polish */
+@media (max-width: 760px) {
+  body.dashboard .sidebar,
+  body.dashboard .main {
+    padding: 12px;
+  }
+
+  body.dashboard .panel-title-row {
+    gap: 10px;
+  }
+
+  /* Make doctor tabs easier to use */
+  body.dashboard .tabs {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 6px;
+  }
+
+  body.dashboard .tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Schedule builder: keep controls and tables usable on phones */
+  body.dashboard .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.dashboard .schedule-header .controls,
+  body.dashboard .panel .controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  body.dashboard .schedule-grid {
+    min-width: 520px;
+  }
+
+  body.dashboard .slot {
+    min-height: 64px;
+    padding: 10px;
+  }
+
+  .modal-card {
+    width: min(96vw, 520px);
+    max-height: 92vh;
+  }
+
+  .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .modal-actions {
+    flex-wrap: wrap;
+  }
+}

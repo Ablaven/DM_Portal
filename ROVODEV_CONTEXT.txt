@@ -1,0 +1,216 @@
+PROJECT: Digital Marketing Portal (PHP + MySQL + vanilla JS/CSS)
+
+WHAT THIS PROJECT IS
+- A web portal for managing a Digital Marketing program schedule.
+- Roles/users:
+  - admin: full management (courses, doctors, students, schedule builder, users)
+  - teacher: doctor schedule access (doctor.php), typically restricted to their own doctor_id
+  - student: student schedule access (students.php)
+- Key pages:
+  - index.php: Course Dashboard
+  - schedule_builder.php: Admin schedule builder
+  - admin_courses.php: Course Management (+ coefficient)
+  - admin_doctors.php: Doctor Management
+  - admin_students.php: Student Management
+  - admin_users.php: User Accounts + page permissions
+  - doctor.php: Doctor read-only schedule view
+  - students.php: Student schedule
+  - attendance.php: Attendance (Year-only)
+
+WHAT WE ARE DOING RIGHT NOW (CURRENT STATUS)
+- Recently fixed/implemented:
+  1) Fixed doctor export button to trigger XLSX downloads reliably.
+  2) Fixed doctor view filter helper by ensuring doesItemMatchGlobalFilters is available in the module.
+  3) Verified app.js is not referenced by any portal page.
+  4) Fixed attendance slot/meta separators and loading messages to use HTML-safe dots instead of corrupted glyphs.
+  5) Improved mobile navbar accessibility (ARIA, focus handling, ESC close) and added smooth open animation.
+  6) Fixed mobile navbar toggle to open/close correctly by syncing nav-open state.
+  7) Expanded technical documentation with deep maintenance-level details (schema, auth, APIs, deployment) and richer visuals.
+  8) Schedule Builder filters (Year/Sem) now apply immediately (no reload required).
+     - Uses a global filter event so the courses sidebar + schedule grid update instantly.
+  2) Doctor Management: per-year doctor colors (Year 1/2/3) on Add + Edit.
+     - New table: `doctor_year_colors`
+     - APIs: `php/get_doctor_year_colors.php`, `php/set_doctor_year_colors.php`
+     - Schedule Builder + Student Schedule now use year-specific doctor colors when rendering.
+  3) Schedule Builder slot modal: added `Extra time` dropdown (0/15/30/45 minutes).
+     - Slot duration remains 1h30m in the timetable; extra minutes only affect course-hours deduction.
+     - Persisted in `doctor_schedules.extra_minutes` and included in remaining-hours calculations + XLS exports.
+  4) Reintroduced Attendance (Year-only).
+     - New page: `attendance.php` (Year-only filter; slot-click modal)
+     - Attendance input changed to checkbox:
+       - Default unchecked = Absent
+       - Checked = Present
+       - Bulk actions: Mark all Present / Mark all Absent
+     - New DB table: `attendance_records` (schedule_id + student_id unique; no semester/program)
+     - New APIs: `php/get_attendance_grid.php`, `php/get_attendance.php`, `php/set_attendance.php`
+     - Export dropdown courses are filtered by selected Year + Week:
+       - API: `php/get_attendance_courses.php?year_level=...&week_id=...`
+     - XLSX export (course-wide attendance sheet + history):
+       - Endpoint: `php/export_attendance_xls.php?course_id=...&end_week_id=...`
+       - Includes all previous weeks up to the selected week where the course actually has scheduled lectures.
+       - Header uses fixed values: Faculty = "Management", Department = "Digital Marketing".
+       - Layout: Student_ID + Name on the left, then Date headers (merged across multiple lectures on that date)
+         with one status cell per lecture (P/A) under the date.
+       - Uses compact XLSX styles (smaller font) and narrower status columns; blank sub-header row is not header-styled.
+     - Permissions:
+       - admin/management: can take attendance for any slot
+       - teacher: can only take attendance for their own scheduled slots (enforced server-side)
+     - Navbar link added across pages + added to Admin Users "Allowed Pages".
+  5) Dashboard: removed the old Actions/Quick admin actions panel and replaced it with a pie chart:
+     - "Missionnaire vs Others" (2-slice pie: Missionnaire vs Others; course hours even split unless manually allocated) via `php/get_missionnaire_hours_pie.php`.
+  6) Attendance page UI aligned to Student Schedule UI.
+     - Moved Year tabs into their own row below the header controls (same layout as students.php).
+     - Kept `.tabs [data-year]` selectors + existing element IDs intact for JS.
+     - Sanity checks: `php -l attendance.php`.
+  7) Attendance modal enlarged and typography scaled up for readability.
+     - Wider modal (up to 1400px) and taller max height.
+     - Increased font sizes/padding for modal content, buttons, and table.
+  8) Attendance modal controls centered with larger checkboxes for easier clicking.
+     - Centered modal body sections and status messages.
+     - Enlarged the Present checkbox and aligned attendance cells.
+  9) Attendance modal columns simplified and scaled up.
+     - Removed email column, reordered to ID -> Student -> Present, and dropped per-row "Present" text.
+     - Student names now stay on one line with ellipsis overflow.
+     - Increased modal typography and checkbox size for easier use.
+  10) Attendance modal header/controls updated with manual save flow.
+     - Renamed "Student" header to "Student Name" and centered header text.
+     - Added a Save button; checkbox toggles are now staged until saved.
+     - Bulk actions now mark rows and prompt to save.
+  11) Fixed attendance save not persisting checkbox toggles.
+     - Checkbox changes now update the staged data model so Save sends the correct status.
+  12) Attendance is now locked for non-admin users after save.
+     - Non-admins cannot change saved checkboxes; locked rows are dimmed.
+  13) Attendance modal now shows a separator line between student rows for readability.
+- Recently fixed/implemented:
+  14) Admin Courses: added missing local `state` and `loadCourses`/`loadDoctors` helpers to prevent `loadCourses is not defined` errors on course management.
+  15) Admin Courses: added local `formatHours` helper to prevent `formatHours is not defined` runtime errors.
+  16) Global Year/Sem filters: bound page filter selects via `initPageFiltersUI` inside each page-specific JS (admin courses, course dashboard, doctor view, schedule builder), avoiding loading `app.js` everywhere.
+  17) Course Dashboard: fixed Missionnaire pie chart filters by importing `getGlobalFilters`, and updated Details list to sort by completion percentage (most done first).
+- Recently fixed/implemented:
+  18) Evaluation system updated with itemized parameters + improved UI.
+      - Parameters are itemized per category (Projects, Quizzes, etc.) with per-item weights (sum = 100).
+      - New tables: `evaluation_configs`, `evaluation_config_items`, `evaluation_grades`, `evaluation_grade_items`.
+      - Attendance remains auto-calculated (present/total * 20) and can be weighted as its own item.
+      - Configuration UI updated to match Attendance layout and allow adding/removing items.
+      - SQL dump (`digital_marketing_portal.sql`) now includes evaluation tables.
+  19) Evaluation UI enhancements + student grades permissions.
+      - Attendance items auto-lock the label field (no manual name).
+      - Added Year/Semester filters on evaluation page.
+      - Student Grades page shows per-item breakdown and admin can view all students.
+      - Student Grades link now appears only for admins or students with a student_id.
+  20) Student Grades admin filters + UI polish.
+      - Admins can filter by course (subject) in Student Grades.
+      - Evaluation and Student Grades pages aligned visually with Attendance styling.
+  21) Student Grades course filter + UI sizing upgrades.
+      - Course dropdown now respects Year/Semester filters.
+      - Increased typography and contrast for Evaluation/Grades controls and tables.
+  22) Evaluation marks + split workflow improvements.
+      - Config items are now marks (sum = 100), not percentages.
+      - Attendance + Participation auto-label, disallow split, and are limited to one item each.
+      - Split button now uses a modal for clean input.
+      - Grade inputs enforce max based on item mark; totals are centered.
+      - Evaluation UI updated with larger fonts and clearer alert messaging.
+  23) Navbar layout + Profile shortcut.
+      - Navbar now uses two rows (primary + admin links) to reduce crowding.
+      - Added "Open Other Website" link to Profile page (also remains on Dashboard).
+  28) Updated external website link.
+      - "Open Other Website" now points to https://sherifrostom9-boop.github.io/Digital-Marketing-tutting-plan/.
+  29) Theme system.
+      - Added dark/light theme variables with glassmorphism styling.
+      - Theme toggle in navbar with localStorage + OS preference support (sun/moon icon).
+      - Updated inputs, nav, modals, and dropdowns to use theme tokens.
+      - Softened light palette with richer blue tints and stronger dashboard contrast.
+      - Fixed evaluation/student dashboard select text colors in light mode.
+      - Dashboard charts and legends now use theme colors in both themes.
+      - Added dashboard-specific light surface to darken cards in light theme.
+      - Boosted light-theme gradients and glassiness (navbar blur/saturation).
+      - Added dark-theme track color to keep Overall Completion donut readable.
+      - Removed hard-coded colors across CSS/JS for consistent theming.
+      - Custom categories now validate against `evaluation_categories` so configs save correctly.
+  24) Global glassmorphism refresh + secured Ablaven access.
+      - Updated global styling with glassmorphism, larger typography, and enhanced gradients.
+      - Added a secure "700" entry gate on the dashboard to unlock `ablaven.php` via session.
+      - Direct URL access to `ablaven.php` now returns 403 without the session token.
+      - Ablaven page visuals boosted with stronger neon gradients and sizing.
+      - Dashboard 700 capture now listens globally and includes same-origin credentials.
+      - Mobile navbar now uses a right-side slide-in overlay.
+      - 700 listener now binds at init and uses simple relative endpoint for localhost setups.
+      - Added global 700 listener in core.js with new cache-buster for index.
+      - Added tiny bottom-right input for manual 700 trigger testing.
+      - 700 listener now binds to document+window and runs on dashboard body class.
+  25) Evaluation categories + final score scaling.
+      - Added `evaluation_categories` table and APIs for listing/creating categories.
+      - Evaluation UI now loads categories from DB and supports "+ Add Category...".
+      - Final grade is now stored/displayed as total marks divided by 5 (decimal).
+  26) Evaluation UX tweaks.
+      - Blocking add-item until a course is selected.
+      - Success messages are clearer and more prominent.
+  27) Numeric alignment update.
+      - Center-aligned all numeric inputs and number columns in evaluation config/grading.
+  28) Evaluation grading table alignment updates.
+      - Centered grading table headers (including item labels with /max marks) and ID column.
+      - Enlarged student names while keeping them left-aligned in rows.
+  29) Evaluation grading table spacing tightened.
+      - Reduced ID, attendance, category, and final column widths to give student names more room.
+      - Narrowed grade input max width to reduce column squeeze.
+  30) Evaluation config split naming + participation edits + grade exports.
+      - Split labels now use TitleCase with underscores (e.g., Present_1).
+      - Participation label is editable (attendance remains locked).
+      - Added grades XLSX export with per-item scores, attendance, and final.
+  31) Evaluation export options refinements.
+      - Renamed export to "Export Detailed Grades" and added "Export Final Grades" for final-only XLSX.
+      - Both exports now share the attendance-style metadata header block.
+  32) Navigation refinements for lecture link.
+      - Moved "Open Other Website" to the navbar as "My Lectures" for teacher accounts only.
+  33) Student dashboard page (replacing Student Grades).
+      - New `student_dashboard.php` page and `js/student_dashboard.js` using evaluation data.
+      - Admins can view all students, filter by student/course; students see only their own dashboard.
+      - Student view now shows summary cards (avg final, avg attendance, courses) and removed breakdown column.
+      - Navbar/permissions/allowed-pages updated to use `student_dashboard.php` labels.
+  32) Student dashboard student view cleanup + greeting.
+      - Student view table hides repeating Student + Attendance columns (keeps Course/Year/Sem/Final).
+      - Added `php/get_student_profile.php` to fetch the logged-in student's name.
+      - Header now greets the student by time of day (Good morning/afternoon/evening/night) with name.
+  33) Role defaults + labels.
+      - Teacher defaults now include Doctor Schedule, Attendance, Evaluation, Profile.
+      - Student defaults now include Student Schedule, Student Dashboard, Profile.
+      - Student navbar labels show "My Schedule" + "My Dashboard".
+  33) Student dashboard visuals.
+      - Replaced charts with actionable student insights (overall average, strongest/weakest course, attendance risk) + trend signals.
+      - Added badges/icons styling for quick status scanning; student summary cards are hidden in student view.
+  34) Attendance export: absent now shows "X " with no red fill; present keeps green P styling.
+  35) Evaluation configuration restricted to admin/management; non-admins see grading only.
+- Currently working on:
+  - Making the UI/UX responsive across ALL devices (phones/tablets/desktops).
+  - Implemented a responsive hamburger navbar, responsive modals, and mobile-friendly schedule tables.
+  - Added global CSS overrides to neutralize inline min-width/width styles that broke mobile layouts.
+- Notes/decisions:
+  - Scoped the larger font sizing to the Attendance modal only to avoid changing other modals.
+  - Evaluation system stores final grade and attendance score at save time; computed from weights + attendance ratio (itemized weights).
+
+HOW YOU (ROVO DEV) MUST WORK ON THIS PROJECT
+- Always break each user request into small tasks before implementing.
+  - Use a TODO list for any work with 3+ steps.
+  - Mark tasks completed as soon as each step is done.
+- Be careful and take time:
+  - Prefer general solutions over one-off hacks.
+  - Do not hard-code values for specific test cases.
+- Avoid bugs/regressions:
+  - Keep changes minimal, consistent, and reusable.
+  - Run targeted sanity checks after changes:
+    - PHP syntax check (php -l) on edited PHP files
+    - Quick grep for obvious broken selectors/IDs when changing HTML/CSS/JS
+- Respect permissions/security:
+  - Never weaken auth checks unintentionally.
+  - If changing Allowed Pages behavior, ensure it stays consistent between server-side rendering and JS hiding.
+- Keep UI responsive:
+  - Avoid fixed widths and inline min-width on mobile; prefer responsive CSS.
+  - Ensure modals fit the viewport and can scroll internally.
+  - Ensure wide tables scroll inside their containers (not page-level).
+  - Always ensure updates look great in both light/dark themes with strong contrast, larger fonts, and bold text for readability.
+
+ALWAYS KEEP THIS FILE UPDATED
+- At the end of each significant change:
+  - Update the “WHAT WE ARE DOING RIGHT NOW” section (what was fixed, what is next).
+  - Add any important decisions (why a solution was chosen).
+  - Note any risks or follow-up items.

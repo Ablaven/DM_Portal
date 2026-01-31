@@ -1,0 +1,39 @@
+/* Admin Users page layout helpers */
+
+body {
+  min-height: 100vh;
+}
+
+.allowed-pages {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,.03);
+  max-height: min(50vh, 520px);
+  overflow: auto;
+}
+
+.allowed-pages .chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.allowed-pages input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* Make it one column on narrow screens */
+@media (max-width: 720px) {
+  .allowed-pages {
+    grid-template-columns: 1fr;
+    max-height: 55vh;
+  }
+}

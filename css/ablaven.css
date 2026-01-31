@@ -1,0 +1,264 @@
+:root{
+  --egg-bg:#05020f;
+  --egg-purple:#a240ff;
+  --egg-pink:#ff66d8;
+  --egg-cyan:#5cf2ff;
+  --egg-text:rgba(255,255,255,.92);
+  --egg-muted:rgba(255,255,255,.72);
+}
+
+body.ablaven-egg{
+  min-height:100vh;
+  background:
+    radial-gradient(1000px 620px at 15% 10%, rgba(92,242,255,.22), transparent 60%),
+    radial-gradient(900px 620px at 90% 16%, rgba(162,64,255,.22), transparent 55%),
+    radial-gradient(720px 520px at 60% 90%, rgba(255,102,216,.18), transparent 55%),
+    linear-gradient(180deg, #060214, #0a0322 55%, #050216);
+  overflow-x:hidden;
+}
+
+/* Neon grid overlay (very subtle, adds structure) */
+body.ablaven-egg .egg-wrap::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.16;
+  background:
+    linear-gradient(to right, rgba(162,64,255,.18) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(92,242,255,.14) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 28%, rgba(0,0,0,1), rgba(0,0,0,0) 68%);
+}
+
+/* Subtle animated aurora */
+body.ablaven-egg::before,
+body.ablaven-egg::after{
+  content:"";
+  position:fixed;
+  inset:-30vmax;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(162,64,255,.18), transparent 45%),
+    radial-gradient(circle at 70% 40%, rgba(255,102,216,.14), transparent 42%),
+    radial-gradient(circle at 55% 75%, rgba(92,242,255,.10), transparent 46%);
+  filter: blur(30px);
+  opacity:.85;
+  pointer-events:none;
+  z-index:0;
+  transform: translate3d(0,0,0);
+  animation: eggFloat 14s ease-in-out infinite;
+}
+body.ablaven-egg::after{
+  opacity:.55;
+  animation-duration: 19s;
+  animation-direction: reverse;
+}
+
+@keyframes eggFloat{
+  0%{ transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
+  50%{ transform: translate3d(2%, 1.5%, 0) scale(1.04) rotate(6deg); }
+  100%{ transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
+}
+
+.egg-wrap{
+  position:relative;
+  z-index:1;
+}
+
+.egg-card{
+  /* Card uses a spotlight highlight driven by JS via --mx/--my */
+  --mx: 50%;
+  --my: 35%;
+
+  background: rgba(16, 8, 36, .42);
+  border: 1px solid rgba(162, 64, 255, .26);
+  box-shadow:
+    0 18px 70px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.04) inset;
+  backdrop-filter: blur(14px);
+  overflow:hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Spotlight + subtle grain */
+.egg-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(700px 380px at var(--mx) var(--my), rgba(255,255,255,.09), transparent 55%),
+    radial-gradient(900px 500px at 20% 90%, rgba(162,64,255,.12), transparent 60%),
+    radial-gradient(800px 460px at 90% 10%, rgba(255,102,216,.10), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0, rgba(255,255,255,.02) 1px, transparent 1px, transparent 3px);
+  opacity: .95;
+  z-index: 1;
+}
+
+/* Animated border glow */
+.egg-card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: conic-gradient(from 90deg,
+    rgba(162,64,255,.0),
+    rgba(162,64,255,.65),
+    rgba(255,102,216,.55),
+    rgba(92,242,255,.35),
+    rgba(162,64,255,.0)
+  );
+  filter: blur(12px);
+  opacity:.55;
+  pointer-events:none;
+  animation: eggSpin 6.5s linear infinite;
+}
+@keyframes eggSpin{ to { transform: rotate(360deg); } }
+
+.egg-card > *{
+  position:relative;
+  z-index:2;
+}
+
+.egg-hero{
+  display:grid;
+  gap:16px;
+}
+
+.egg-divider{
+  height: 1px;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(162,64,255,0),
+    rgba(162,64,255,.80),
+    rgba(255,102,216,.60),
+    rgba(92,242,255,.40),
+    rgba(162,64,255,0)
+  );
+  opacity: .78;
+  filter: drop-shadow(0 0 18px rgba(162,64,255,.26));
+}
+
+.egg-title{
+  margin:0;
+  letter-spacing:.6px;
+  line-height:1.02;
+  font-size: clamp(2.6rem, 4.6vw, 3.8rem);
+  background: linear-gradient(90deg, var(--egg-purple), var(--egg-pink), var(--egg-cyan));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip:text;
+  color: transparent;
+  animation: eggGradient 5.5s ease-in-out infinite;
+  text-shadow: 0 0 40px rgba(162,64,255,.26);
+}
+@keyframes eggGradient{
+  0%{ background-position: 0% 50%; }
+  50%{ background-position: 100% 50%; }
+  100%{ background-position: 0% 50%; }
+}
+
+.egg-by{
+  margin-top:-6px;
+  color: rgba(255,255,255,.80);
+  font-weight: 800;
+  letter-spacing: .28px;
+}
+
+.egg-realname{
+  color: rgba(255,255,255,.78);
+  font-size: 1.02rem;
+  margin-top: 10px; /* push it lower under Ablaven */
+  letter-spacing: .16px;
+}
+
+.egg-joke{
+  margin-top: 14px;
+  color: rgba(255,255,255,.78);
+  font-size: 0.98rem;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(162,64,255,.22);
+  background: linear-gradient(90deg, rgba(162,64,255,.10), rgba(255,102,216,.08));
+  width: fit-content;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+
+.egg-joke strong{
+  color: rgba(255,255,255,.95);
+}
+
+.egg-sub{
+  color: var(--egg-muted);
+  margin:0;
+  line-height:1.55;
+  font-size: 1.05rem;
+}
+
+.egg-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(162,64,255,.28);
+  background: rgba(162,64,255,.10);
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  letter-spacing: .18px;
+}
+
+.egg-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top: 4px;
+}
+
+/* Give existing buttons a more neon feel inside the egg page */
+body.ablaven-egg .btn{
+  border-color: rgba(162,64,255,.32);
+  box-shadow: 0 16px 36px rgba(0,0,0,.35);
+  font-size: 1.05rem;
+  padding: 12px 22px;
+}
+
+body.ablaven-egg .btn:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+/* Entrance animation */
+.egg-enter{
+  opacity:0;
+  transform: translateY(10px) scale(.99);
+}
+.egg-enter.egg-entered{
+  opacity:1;
+  transform: translateY(0) scale(1);
+  transition: opacity .55s ease, transform .55s ease;
+}
+
+/* Particle canvas */
+#eggParticles{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.ablaven-egg::before,
+  body.ablaven-egg::after,
+  .egg-title,
+  .egg-card::before {
+    animation: none !important;
+  }
+  .egg-enter {
+    opacity: 1;
+    transform: none;
+  }
+}

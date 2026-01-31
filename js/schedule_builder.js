@@ -1,0 +1,1140 @@
+(function () {
+  "use strict";
+
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl } = window.dmportal || {};
+
+  // Dashboard scheduling UI
+  // -----------------------------
+  // Week starts Sunday. Weekend Fri/Sat are not scheduled.
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
+  const SLOTS = [1, 2, 3, 4, 5];
+  const SLOT_HOURS = 1.5;
+
+  // Slot timing (updated):
+  // 1) 8:30–10:00
+  // 2) 10:10–11:30
+  // 3) 11:40–1:00
+  // 4) 1:10–2:40
+  // 5) 2:50–4:20
+  const SLOT_TIMES = {
+  1: "8:30 AM–10:00 AM",
+  2: "10:10 AM–11:30 AM",
+  3: "11:40 AM–1:00 PM",
+  4: "1:10 PM–2:40 PM",
+  5: "2:50 PM–4:20 PM",
+  };
+
+  function slotLabel(slot) {
+  const t = SLOT_TIMES[slot] || "";
+  // Cleaner label than "#1 (...)" (also looks better in exports/screenshots).
+  return t ? `Slot ${slot} • ${t}` : `Slot ${slot}`;
+  }
+
+
+  let state = {
+  doctors: [],
+  courses: [],
+  weeks: [],
+  activeWeekId: null,
+  activeDoctorId: null,
+  adminDoctorsWeekId: null,
+  scheduleGrid: {}, // grid[day][slot] = course
+  cancellations: {}, // cancellations[day] = reason
+  slotCancellations: {}, // slotCancellations[day][slot] = reason
+  unavailability: [], // list of ranges
+  };
+
+  function formatHours(n) {
+  const num = Number(n);
+  if (Number.isNaN(num)) return "0.00";
+  return num.toFixed(2);
+  }
+
+  function getWeekLabel(weekId) {
+  const w = (state.weeks || []).find((x) => String(x.week_id) === String(weekId));
+  return String(w?.label || "").trim();
+  }
+
+  function renderDoctorsTabs() {
+  const tabs = document.getElementById("doctorTabs");
+  if (!tabs) return;
+
+  tabs.innerHTML = "";
+  for (const d of state.doctors) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tab" + (String(d.doctor_id) === String(state.activeDoctorId) ? " active" : "");
+    btn.textContent = d.full_name;
+    btn.addEventListener("click", async () => {
+      await setActiveDoctor(d.doctor_id);
+    });
+    tabs.appendChild(btn);
+  }
+
+  if (state.doctors.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "muted";
+    empty.textContent = "No doctors found.";
+    tabs.appendChild(empty);
+  }
+  }
+
+  function renderCoursesSidebar() {
+  const list = document.getElementById("coursesList");
+  if (!list) return;
+
+  const filtered = getFilteredCoursesForUI();
+  if (!filtered.length) {
+    list.innerHTML = `<div class="muted">No courses found for the selected filters.</div>`;
+    return;
+  }
+
+  list.innerHTML = "";
+  for (const c of filtered) {
+    const item = document.createElement("div");
+    item.className = "course-item";
+
+    const top = document.createElement("div");
+    top.className = "course-top";
+
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <div>
+        <div class="muted" style="font-size:0.85rem; margin-top:2px;">${escapeHtml(c.program)}</div>
+        <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</div>
+        <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
+          <span class="pill">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span>
+          <div><strong>${escapeHtml(c.course_name)}</strong></div>
+        </div>
+      </div>
+    `;
+
+    const badge = document.createElement("span");
+    badge.className = "badge badge-hours";
+    badge.textContent = `${formatHours(c.remaining_hours)}h`;
+
+    top.appendChild(left);
+    top.appendChild(badge);
+    item.appendChild(top);
+    list.appendChild(item);
+  }
+  }
+
+  function setHiddenCourseId(v) {
+  const hid = document.getElementById("modal_course_id");
+  if (hid) hid.value = v ? String(v) : "";
+  }
+
+  function getHiddenCourseId() {
+  return document.getElementById("modal_course_id")?.value || "";
+  }
+
+  function courseDisplayLine(c) {
+  // Requested layout:
+  // 1) Program
+  // 2) Year + Semester
+  // 3) Code + Name
+  return `${c.program} | Year ${c.year_level} Sem ${c.semester} | ${makeCourseLabel(c.course_type, c.subject_code)} ${c.course_name}`;
+  }
+
+  function getCoursesForActiveDoctorModal() {
+  // For Schedule Builder slot modal:
+  // show ONLY courses assigned to the currently selected doctor.
+  // Supports multi-doctor assignment via get_courses.php -> doctor_ids CSV.
+  const all = getFilteredCoursesForUI();
+  const did = Number(state.activeDoctorId || 0);
+  if (!did) return all;
+
+  return all.filter((c) => {
+    // Prefer multi-doctor mapping if available
+    const ids = parseDoctorIdsCsv(c?.doctor_ids);
+    if (ids.length) return ids.includes(did);
+    // Fallback to legacy single doctor_id
+    return Number(c?.doctor_id || 0) === did;
+  });
+  }
+
+  function populateModalCourses() {
+  const codeSel = document.getElementById("modal_course_code");
+  const nameSel = document.getElementById("modal_course_name");
+  if (!codeSel || !nameSel) return;
+
+  const courses = getCoursesForActiveDoctorModal();
+  const currentId = getHiddenCourseId();
+
+  codeSel.innerHTML = `<option value="">Select a code</option>`;
+  nameSel.innerHTML = `<option value="">Select a course</option>`;
+
+  for (const c of courses) {
+    // Course Code dropdown
+    const optCode = document.createElement("option");
+    optCode.value = String(c.course_id);
+    // NOTE: course codes may be duplicated, so include type + year/sem + name for clarity.
+    const codeLabel = String(c.subject_code || "").trim();
+    optCode.textContent = codeLabel
+      ? `${makeCourseLabel(c.course_type, c.subject_code)} • Year ${c.year_level} Sem ${c.semester} • ${c.course_name}`
+      : `(ID ${c.course_id})`;
+    codeSel.appendChild(optCode);
+
+    // Course Name dropdown
+    const optName = document.createElement("option");
+    optName.value = String(c.course_id);
+    optName.textContent = `${courseDisplayLine(c)} (${formatHours(c.remaining_hours)}h left)`;
+    nameSel.appendChild(optName);
+  }
+
+  // Keep selection in sync after repopulating
+  if (currentId) {
+    codeSel.value = String(currentId);
+    nameSel.value = String(currentId);
+  }
+  }
+
+  function parseLocalDateTime(s) {
+  // Accepts "YYYY-MM-DD HH:mm:ss" or ISO; returns Date or null
+  if (!s) return null;
+  const iso = String(s).includes("T") ? String(s) : String(s).replace(" ", "T");
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  function slotDateRange(day, slot) {
+  // Uses week start date from state.weeks
+  const week = (state.weeks || []).find((w) => String(w.week_id) === String(state.activeWeekId));
+  if (!week?.start_date) return null;
+
+  const base = new Date(String(week.start_date) + "T00:00:00");
+  const offsets = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4 };
+  const dayOffset = offsets[day];
+  if (dayOffset === undefined) return null;
+
+  const startTimes = { 1: "08:30", 2: "10:10", 3: "11:40", 4: "13:10", 5: "14:50" };
+  const endTimes = { 1: "10:00", 2: "11:30", 3: "13:00", 4: "14:40", 5: "16:20" };
+
+  const start = new Date(base);
+  start.setDate(start.getDate() + dayOffset);
+  const [sh, sm] = startTimes[slot].split(":").map(Number);
+  start.setHours(sh, sm, 0, 0);
+
+  const end = new Date(base);
+  end.setDate(end.getDate() + dayOffset);
+  const [eh, em] = endTimes[slot].split(":").map(Number);
+  end.setHours(eh, em, 0, 0);
+
+  return { start, end };
+  }
+
+  function isSlotUnavailable(day, slot) {
+  const r = slotDateRange(day, slot);
+  if (!r) return false;
+  for (const u of state.unavailability || []) {
+    const us = parseLocalDateTime(u.start_datetime);
+    const ue = parseLocalDateTime(u.end_datetime);
+    if (!us || !ue) continue;
+    // overlap
+    if (us < r.end && ue > r.start) return true;
+  }
+  return false;
+  }
+
+  function renderUnavailabilityList() {
+  const wrap = document.getElementById("unavailList");
+  if (!wrap) return;
+
+  const items = state.unavailability || [];
+  if (!items.length) {
+    wrap.innerHTML = `<div class="muted">No unavailability added for this week.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = "";
+  for (const u of items) {
+    const card = document.createElement("div");
+    card.className = "course-item";
+    const start = escapeHtml(u.start_datetime);
+    const end = escapeHtml(u.end_datetime);
+    const reason = escapeHtml(u.reason || "");
+    card.innerHTML = `
+      <div class="course-top">
+        <div><strong>Unavailable</strong></div>
+        <button class="btn btn-secondary btn-small" type="button" data-unavail-del="1" data-id="${escapeHtml(u.unavailability_id)}">Remove</button>
+      </div>
+      <div class="muted" style="font-size:0.9rem;">${start} → ${end}${reason ? " • " + reason : ""}</div>
+    `;
+    wrap.appendChild(card);
+  }
+  }
+
+  async function refreshUnavailability() {
+  if (!state.activeDoctorId || !state.activeWeekId) return;
+  try {
+    const qs = new URLSearchParams({ doctor_id: String(state.activeDoctorId), week_id: String(state.activeWeekId) });
+    const payload = await fetchJson(`php/get_unavailability.php?${qs.toString()}`);
+    if (!payload.success) throw new Error(payload.error || "Failed");
+    state.unavailability = payload.data?.items || [];
+    renderUnavailabilityList();
+  } catch (err) {
+    setStatusById("unavailStatus", err.message, "error");
+  }
+  }
+
+  async function setActiveDoctor(doctorId) {
+  state.activeDoctorId = doctorId;
+  renderDoctorsTabs();
+
+  try {
+  maybeAutoSetBuilderFiltersForDoctor(doctorId);
+  } catch {
+  // ignore
+  }
+
+  setStatusById("scheduleStatus", "Loading…");
+  await loadSchedule(doctorId);
+  await refreshUnavailability();
+  renderScheduleMetaHint();
+  renderScheduleGrid();
+  updateDoctorExportShareLinks();
+  setStatusById("scheduleStatus", "");
+  }
+
+  function renderScheduleMetaHint() {
+  const el = document.getElementById("scheduleMetaHint");
+  if (!el) return;
+
+  const wkLabel = getWeekLabel(state.activeWeekId) || (state.activeWeekId ? `Week ${state.activeWeekId}` : "");
+  const f = getGlobalFilters();
+  const y = f?.year_level ? `Year ${f.year_level}` : "All Years";
+  const s = f?.semester ? `Sem ${f.semester}` : "All Sem";
+
+  const parts = [];
+  if (wkLabel) parts.push(wkLabel);
+  parts.push("Week starts Sunday");
+  parts.push("Each slot = 1 hour 30 minutes");
+  parts.push(`Scope: ${y} • ${s}`);
+
+  el.textContent = parts.join(" • ");
+  }
+
+  function renderScheduleGrid() {
+  const body = document.getElementById("scheduleBody");
+  if (!body) return;
+
+  body.innerHTML = "";
+
+  for (const slot of SLOTS) {
+    const tr = document.createElement("tr");
+
+    const th = document.createElement("th");
+    th.innerHTML = `<div class="slot-hdr"><div class="slot-hdr-num">Slot ${slot}</div><div class="slot-hdr-time">${escapeHtml(SLOT_TIMES[slot] || "")}</div></div>`;
+    tr.appendChild(th);
+
+    for (const day of DAYS) {
+      const td = document.createElement("td");
+      const cell = document.createElement("div");
+      cell.className = "slot";
+
+      // Cancelled day: block all slots
+      if (state.cancellations?.[day] !== undefined) {
+        const reason = state.cancellations[day];
+        cell.classList.add("filled");
+        cell.style.background = "#99999922";
+        cell.style.borderColor = "#99999988";
+        cell.innerHTML = `
+          <div class="slot-title">Canceled</div>
+          <div class="slot-sub">${reason ? reason : "Doctor not coming"}</div>
+        `;
+        cell.style.cursor = "not-allowed";
+        td.appendChild(cell);
+        tr.appendChild(td);
+        continue;
+      }
+
+      // Cancelled slot: show as cancelled BUT allow opening the modal to UN-cancel.
+      if (state.slotCancellations?.[day]?.[String(slot)] !== undefined) {
+        const reason = state.slotCancellations[day][String(slot)];
+        cell.classList.add("filled");
+        cell.style.background = "#99999922";
+        cell.style.borderColor = "#99999988";
+        cell.innerHTML = `
+          <div class="slot-title">Canceled</div>
+          <div class="slot-sub">${reason ? reason : "Slot canceled"}</div>
+          <div class="slot-sub muted" style="margin-top:4px; font-size:0.8rem;">Click to undo</div>
+        `;
+        cell.style.cursor = "pointer";
+        cell.addEventListener("click", () => openSlotModal(day, slot, null));
+        td.appendChild(cell);
+        tr.appendChild(td);
+        continue;
+      }
+
+      // Unavailable slot: block and render
+      if (isSlotUnavailable(day, slot)) {
+        cell.classList.add("filled");
+        cell.classList.add("type-unavail");
+        cell.innerHTML = `
+          <div class="slot-title">Unavailable</div>
+          <div class="slot-sub">Blocked</div>
+        `;
+        cell.style.cursor = "not-allowed";
+        td.appendChild(cell);
+        tr.appendChild(td);
+        continue;
+      }
+
+      const assigned = state.scheduleGrid?.[day]?.[String(slot)];
+      const assignedMatchesFilters = assigned ? doesItemMatchGlobalFilters(assigned) : true;
+
+      if (assigned) {
+        cell.classList.add("filled");
+
+        // If the assigned course is for a different Year/Sem, show it as occupied/locked.
+        if (!assignedMatchesFilters) {
+          cell.style.background = "#99999922";
+          cell.style.borderColor = "#99999988";
+          cell.innerHTML = `
+            <div class="slot-title">Occupied</div>
+            <div class="slot-sub">Other Year/Sem course</div>
+          `;
+          cell.style.cursor = "not-allowed";
+          td.appendChild(cell);
+          tr.appendChild(td);
+          continue;
+        }
+
+        // Color is per doctor (background/border set below); do not style by course type.
+        if (assigned.doctor_color) {
+          cell.style.background = assigned.doctor_color + "22";
+          cell.style.borderColor = assigned.doctor_color + "88";
+        }
+        const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
+        cell.innerHTML = `
+          <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
+          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
+        `;
+      } else {
+        cell.innerHTML = `
+          <div class="slot-title">Empty</div>
+          <div class="slot-sub">Click to assign</div>
+        `;
+      }
+
+      cell.addEventListener("click", () => openSlotModal(day, slot, assigned));
+      td.appendChild(cell);
+      tr.appendChild(td);
+
+      // reset styles when reused
+      if (!assigned) {
+        cell.style.background = "";
+        cell.style.borderColor = "";
+      }
+    }
+
+    body.appendChild(tr);
+  }
+  }
+
+  function openModal() {
+    const modal = document.getElementById("slotModal");
+    if (!modal) return;
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal() {
+    const modal = document.getElementById("slotModal");
+    if (!modal) return;
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+    setStatusById("modalStatus", "");
+  }
+
+  async function updateSlotConflictHint() {
+  const conflictEl = document.getElementById("modalConflict");
+  if (conflictEl) {
+    conflictEl.textContent = "";
+    conflictEl.className = "status";
+  }
+
+  const doctorId = document.getElementById("modal_doctor_id")?.value;
+  const day = document.getElementById("modal_day")?.value;
+  const slot = document.getElementById("modal_slot")?.value;
+  const courseId = getHiddenCourseId();
+  const roomCode = getRoomCodeFromModal();
+
+  if (!doctorId || !day || !slot || !courseId || !state.activeWeekId) return;
+
+  // If the UI already marks it unavailable, block early
+  if (isSlotUnavailable(String(day), Number(slot))) {
+    setStatusById("modalConflict", "Doctor is unavailable during this slot.", "error");
+    return;
+  }
+
+  // If the UI already marks it slot-cancelled, block early
+  if (state.slotCancellations?.[String(day)]?.[String(slot)] !== undefined) {
+    setStatusById("modalConflict", "This slot is cancelled for the doctor.", "error");
+    return;
+  }
+
+  try {
+    const qs = new URLSearchParams({
+      doctor_id: String(doctorId),
+      week_id: String(state.activeWeekId),
+      day_of_week: String(day),
+      slot_number: String(slot),
+      course_id: String(courseId),
+    });
+
+    const roomCode = getRoomCodeFromModal();
+    if (roomCode) qs.set("room_code", String(roomCode));
+
+    const payload = await fetchJson(`php/check_slot_conflict.php?${qs.toString()}`);
+    if (!payload.success) return;
+
+    const data = payload.data || {};
+
+    if (data.cancelled) {
+      setStatusById("modalConflict", "This day is cancelled for the doctor. You cannot schedule here.", "error");
+      return;
+    }
+
+    if (data.slot_cancelled) {
+      setStatusById("modalConflict", "This slot is cancelled for the doctor. You cannot schedule here.", "error");
+      return;
+    }
+
+    if (data.conflict) {
+      const withInfo = data.conflict_with;
+      setStatusById(
+        "modalConflict",
+        `Conflict: ${withInfo.course_name} is already scheduled in this slot with ${withInfo.doctor_name} (same Program/Year/Sem).`,
+        "error"
+      );
+      return;
+    }
+
+    if (data.room_conflict) {
+      const withInfo = data.room_conflict_with;
+      setStatusById(
+        "modalConflict",
+        `Room conflict: Room ${withInfo.room_code} is already used in this slot by ${withInfo.doctor_name}.`,
+        "error"
+      );
+      return;
+    }
+
+    setStatusById("modalConflict", "No conflicts detected.", "success");
+  } catch (err) {
+    // silent
+  }
+  }
+
+  async function saveSlotFromModal() {
+    const doctorId = document.getElementById("modal_doctor_id")?.value;
+    const day = document.getElementById("modal_day")?.value;
+    const slot = document.getElementById("modal_slot")?.value;
+    const courseId = getHiddenCourseId();
+
+    if (!doctorId || !day || !slot) {
+      setStatusById("modalStatus", "Missing slot selection.", "error");
+      return;
+    }
+
+    if (!courseId) {
+      setStatusById("modalStatus", "Please select a course.", "error");
+      return;
+    }
+
+    setStatusById("modalStatus", "Saving…");
+
+    const fd = new FormData();
+    fd.append("doctor_id", doctorId);
+    if (state.activeWeekId) fd.append("week_id", String(state.activeWeekId));
+    fd.append("day_of_week", day);
+    fd.append("slot_number", slot);
+    fd.append("course_id", courseId);
+    const roomCode = getRoomCodeFromModal();
+    if (!roomCode) {
+      setStatusById("modalStatus", "Room is required.", "error");
+      return;
+    }
+    if (String(roomCode).length > 50) {
+      setStatusById("modalStatus", "Room is too long (max 50 characters).", "error");
+      return;
+    }
+
+    fd.append("room_code", normalizeSeparator(roomCode));
+
+    const cth = document.getElementById("modal_counts_towards_hours")?.checked ? "1" : "0";
+    fd.append("counts_towards_hours", cth);
+
+    const extraSel = document.getElementById("modal_extra_minutes");
+    const extraMinutes = extraSel ? String(extraSel.value || "0") : "0";
+    fd.append("extra_minutes", extraMinutes);
+
+    try {
+      const payload = await fetchJson("php/manage_schedule.php", { method: "POST", body: fd });
+      if (!payload.success) throw new Error(payload.error || "Failed to save slot.");
+
+      await loadSchedule(doctorId);
+      renderScheduleGrid();
+      updateDoctorExportShareLinks();
+      closeModal();
+      setStatusById("scheduleStatus", "Saved.", "success");
+      renderCoursesSidebar();
+    } catch (err) {
+      setStatusById("modalStatus", err.message || "Failed to save slot.", "error");
+    }
+  }
+
+  async function cancelSlotFromModal() {
+    const doctorId = document.getElementById("modal_doctor_id")?.value;
+    const day = document.getElementById("modal_day")?.value;
+    const slot = document.getElementById("modal_slot")?.value;
+
+    if (!doctorId || !day || !slot || !state.activeWeekId) {
+      setStatusById("modalStatus", "Missing slot selection.", "error");
+      return;
+    }
+
+    setStatusById("modalStatus", "Canceling slot…");
+    const reason = document.getElementById("modal_slot_cancel_reason")?.value || "";
+
+    try {
+      const fd = new FormData();
+      fd.append("week_id", String(state.activeWeekId));
+      fd.append("doctor_id", String(doctorId));
+      fd.append("day_of_week", String(day));
+      fd.append("slot_number", String(slot));
+      fd.append("reason", String(reason));
+
+      const payload = await fetchJson("php/set_doctor_slot_cancellation.php", { method: "POST", body: fd });
+      if (!payload.success) throw new Error(payload.error || "Failed to cancel slot");
+
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleGrid();
+
+      setStatusById("scheduleStatus", "Slot canceled.", "success");
+      setStatusById("modalStatus", "Slot canceled.", "success");
+      setStatusById("modalConflict", "This slot is cancelled for the doctor.", "error");
+    } catch (err) {
+      setStatusById("modalStatus", err.message, "error");
+    }
+  }
+
+  async function uncancelSlotFromModal() {
+    const doctorId = document.getElementById("modal_doctor_id")?.value;
+    const day = document.getElementById("modal_day")?.value;
+    const slot = document.getElementById("modal_slot")?.value;
+
+    if (!doctorId || !day || !slot || !state.activeWeekId) {
+      setStatusById("modalStatus", "Missing slot selection.", "error");
+      return;
+    }
+
+    setStatusById("modalStatus", "Restoring slot…");
+
+    try {
+      const fd = new FormData();
+      fd.append("week_id", String(state.activeWeekId));
+      fd.append("doctor_id", String(doctorId));
+      fd.append("day_of_week", String(day));
+      fd.append("slot_number", String(slot));
+
+      const payload = await fetchJson("php/clear_doctor_slot_cancellation.php", { method: "POST", body: fd });
+      if (!payload.success) throw new Error(payload.error || "Failed to restore slot");
+
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleGrid();
+
+      setStatusById("scheduleStatus", "Slot restored.", "success");
+      setStatusById("modalStatus", "Slot restored.", "success");
+      setStatusById("modalConflict", "", "");
+    } catch (err) {
+      setStatusById("modalStatus", err.message, "error");
+    }
+  }
+
+  async function removeSlotFromModal() {
+    const doctorId = document.getElementById("modal_doctor_id")?.value;
+    const day = document.getElementById("modal_day")?.value;
+    const slot = document.getElementById("modal_slot")?.value;
+
+    if (!doctorId || !day || !slot) {
+      setStatusById("modalStatus", "Missing slot selection.", "error");
+      return;
+    }
+
+    setStatusById("modalStatus", "Removing…");
+
+    const fd = new FormData();
+    fd.append("doctor_id", doctorId);
+    if (state.activeWeekId) fd.append("week_id", String(state.activeWeekId));
+    fd.append("day_of_week", day);
+    fd.append("slot_number", slot);
+    fd.append("action", "remove");
+
+    try {
+      const payload = await fetchJson("php/manage_schedule.php", { method: "POST", body: fd });
+      if (!payload.success) throw new Error(payload.error || "Failed to remove");
+
+      await loadCourses();
+      renderCoursesSidebar();
+
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleGrid();
+
+      setStatusById("scheduleStatus", `Removed (+${SLOT_HOURS}h).`, "success");
+      closeModal();
+    } catch (err) {
+      setStatusById("modalStatus", err.message, "error");
+    }
+  }
+
+  function openSlotModal(day, slot, assigned) {
+  const doctorId = state.activeDoctorId;
+  if (!doctorId) return;
+
+  document.getElementById("modal_doctor_id").value = doctorId;
+  document.getElementById("modal_day").value = day;
+  document.getElementById("modal_slot").value = String(slot);
+  document.getElementById("modalSlotLabel").value = `${day} / Slot ${slot}`;
+
+  // IMPORTANT: set selected course first, then populate dropdowns so the selection can be restored.
+  setHiddenCourseId(assigned ? String(assigned.course_id) : "");
+  populateModalCourses();
+  const cid = getHiddenCourseId();
+  const codeSel = document.getElementById("modal_course_code");
+  const nameSel = document.getElementById("modal_course_name");
+  if (codeSel) codeSel.value = cid;
+  if (nameSel) nameSel.value = cid;
+
+  const preferredRoomCode = assigned?.room_code
+    ? String(assigned.room_code)
+    : getConsecutiveRoomCode(day, slot) || getDefaultRoomCodeForCourse(getHiddenCourseId());
+
+  const roomInput = document.getElementById("modal_room_code");
+  if (roomInput) roomInput.value = preferredRoomCode ? String(preferredRoomCode) : "";
+
+  // counts towards hours
+  const cth = document.getElementById("modal_counts_towards_hours");
+  if (cth) cth.checked = assigned ? Boolean(Number(assigned.counts_towards_hours ?? 1)) : true;
+
+  // extra minutes (0/15/30/45)
+  const extraSel = document.getElementById("modal_extra_minutes");
+  if (extraSel) {
+    const v = assigned ? Number(assigned.extra_minutes ?? 0) : 0;
+    extraSel.value = [0, 15, 30, 45].includes(v) ? String(v) : "0";
+  }
+
+  // prefill cancel reason if slot is already cancelled
+  const cancelReason = document.getElementById("modal_slot_cancel_reason");
+  if (cancelReason) cancelReason.value = state.slotCancellations?.[day]?.[String(slot)] || "";
+
+  setStatusById("modalConflict", "");
+
+  // If we recently auto-switched Year/Sem for the selected doctor, explain it here.
+  try {
+    const note = lastBuilderAutoFilterNote;
+    if (note && Number(note.doctor_id) === Number(doctorId) && Date.now() - Number(note.at || 0) < 15_000) {
+      setStatusById(
+        "modalStatus",
+        `Filters auto-switched to Year ${note.year_level} / Sem ${note.semester} for this doctor.`,
+        "success"
+      );
+    } else {
+      setStatusById("modalStatus", "");
+    }
+  } catch {
+    setStatusById("modalStatus", "");
+  }
+
+  openModal();
+  // Lazy pre-check conflict if a course is already selected
+  updateSlotConflictHint();
+  }
+
+  async function loadDoctors() {
+  const payload = await fetchJson("php/get_doctors.php");
+  if (!payload.success) throw new Error(payload.error || "Failed to load doctors");
+  state.doctors = payload.data || [];
+  }
+
+  async function loadCourses() {
+  const payload = await fetchJson("php/get_courses.php");
+  if (!payload.success) throw new Error(payload.error || "Failed to load courses");
+  state.courses = payload.data || [];
+  }
+
+  async function loadSchedule(doctorId) {
+  const qs = new URLSearchParams({ doctor_id: doctorId });
+  if (state.activeWeekId) qs.set("week_id", String(state.activeWeekId));
+
+  const payload = await fetchJson(`php/get_schedule.php?${qs.toString()}`);
+  if (!payload.success) throw new Error(payload.error || "Failed to load schedule");
+  state.scheduleGrid = payload.data?.grid || {};
+  state.cancellations = payload.data?.cancellations || {};
+  state.slotCancellations = payload.data?.slot_cancellations || {};
+  state.unavailability = payload.data?.unavailability || [];
+  }
+
+  function updateDoctorExportShareLinks() {
+  const emailBtn = document.getElementById("exportDoctorEmail");
+  const waBtn = document.getElementById("exportDoctorWhatsApp");
+
+  if (!emailBtn && !waBtn) return;
+
+  const d = (state.doctors || []).find((x) => String(x.doctor_id) === String(state.activeDoctorId));
+  const weekLabel = getWeekLabel(state.activeWeekId) || (state.activeWeekId ? `Week ${state.activeWeekId}` : "");
+
+  if (emailBtn) {
+    if (d?.email) {
+      const subject = weekLabel ? `Schedule — ${weekLabel}` : "Schedule";
+      const body = buildDoctorScheduleGreetingText(d.full_name);
+      emailBtn.href = buildMailtoHref(d.email, subject, body);
+      emailBtn.setAttribute("aria-disabled", "false");
+
+      if (emailBtn.dataset.downloadBound !== "1") {
+        emailBtn.dataset.downloadBound = "1";
+        emailBtn.addEventListener("click", (e) => {
+          if (emailBtn.getAttribute("aria-disabled") === "true" || !emailBtn.getAttribute("href")) {
+            e.preventDefault();
+            return;
+          }
+          const exportUrl = buildDoctorScheduleExportUrl(state.activeDoctorId, state.activeWeekId);
+          triggerBackgroundDownload(exportUrl);
+        });
+      }
+    } else {
+      emailBtn.href = "";
+      emailBtn.setAttribute("aria-disabled", "true");
+    }
+  }
+
+  if (waBtn) {
+    const p = normalizePhoneForWhatsApp(d?.phone_number);
+    if (p) {
+      const msg = buildDoctorScheduleGreetingText(d?.full_name);
+      waBtn.href = buildWhatsAppSendUrl(p, msg);
+      waBtn.setAttribute("aria-disabled", "false");
+    } else {
+      waBtn.href = "";
+      waBtn.setAttribute("aria-disabled", "true");
+    }
+  }
+  }
+
+  function getFilteredCoursesForUI() {
+  return applyPageFiltersToCourses(state.courses || []);
+  }
+
+  function getDefaultRoomCodeForCourse(courseId) {
+  if (!courseId) return "";
+  const c = (state.courses || []).find((x) => String(x.course_id) === String(courseId));
+  return c?.default_room_code ? String(c.default_room_code) : "";
+  }
+
+  function getConsecutiveRoomCode(day, slot) {
+  const prevSlot = Number(slot) - 1;
+  if (prevSlot < 1) return "";
+  const prev = state.scheduleGrid?.[String(day)]?.[String(prevSlot)];
+  return prev?.room_code ? String(prev.room_code) : "";
+  }
+
+  function getRoomCodeFromModal() {
+  return String(document.getElementById("modal_room_code")?.value || "").trim();
+  }
+
+  function normalizeSeparator(input) {
+  return String(input || "").replace(/\s*[•·\u2022]+\s*/g, " • ");
+  }
+
+  async function loadWeeks() {
+  const payload = await fetchJson("php/get_weeks.php");
+  if (!payload.success) throw new Error(payload.error || "Failed to load weeks");
+  state.weeks = payload.data || [];
+
+  // Select active week if present
+  const active = state.weeks.find((w) => w.status === "active");
+  state.activeWeekId = active ? Number(active.week_id) : null;
+  }
+
+  function renderWeeksSelect() {
+    const sel = document.getElementById("weekSelect");
+    if (!sel) return;
+
+    sel.innerHTML = "";
+    if (!state.weeks.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No weeks";
+      sel.appendChild(opt);
+      return;
+    }
+
+    for (const w of state.weeks) {
+      const opt = document.createElement("option");
+      opt.value = w.week_id;
+      opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+      sel.appendChild(opt);
+    }
+
+    if (state.activeWeekId) sel.value = String(state.activeWeekId);
+  }
+
+  // -----------------------------------------------------------------------------
+
+  async function initDashboard() {
+  try {
+    setStatusById("scheduleStatus", "Loading…");
+
+    initPageFiltersUI({ yearSelectId: "builderYearFilter", semesterSelectId: "builderSemesterFilter" });
+
+    await loadDoctors();
+    await loadCourses();
+    await loadWeeks();
+
+    renderWeeksSelect();
+    renderDoctorsTabs();
+    renderCoursesSidebar();
+
+    window.addEventListener("dmportal:globalFiltersChanged", () => {
+      // Filters affect:
+      // - Courses sidebar list
+      // - Slot modal course dropdown
+      // - Schedule grid (slots from other Year/Sem become "Occupied")
+      renderCoursesSidebar();
+      renderScheduleMetaHint();
+      renderScheduleGrid();
+
+      // Refresh modal course dropdown if open
+      if (document.getElementById("slotModal")?.classList.contains("open")) {
+        populateModalCourses();
+        // Re-check conflicts for the newly filtered course selection (best-effort)
+        updateSlotConflictHint();
+      }
+    });
+
+    // pick first doctor
+    if (state.doctors.length > 0) {
+      renderScheduleMetaHint();
+      await setActiveDoctor(state.doctors[0].doctor_id);
+    } else {
+      renderScheduleGrid();
+      setStatusById("scheduleStatus", "No doctors found.", "error");
+    }
+
+    // Sidebar refresh
+    document.getElementById("refreshCourses")?.addEventListener("click", async () => {
+      await loadCourses();
+      renderCoursesSidebar();
+    });
+
+    // Week select
+    document.getElementById("weekSelect")?.addEventListener("change", async (e) => {
+      const v = e.target.value;
+      state.activeWeekId = v ? Number(v) : null;
+      if (state.activeDoctorId) {
+        await loadSchedule(state.activeDoctorId);
+        await refreshUnavailability();
+        renderScheduleMetaHint();
+        renderScheduleGrid();
+        updateDoctorExportShareLinks();
+      }
+    });
+
+    // Start/Stop week
+    document.getElementById("startWeekBtn")?.addEventListener("click", async () => {
+      const d = document.getElementById("weekStartDate")?.value;
+      if (!d) {
+        setStatusById("scheduleStatus", "Pick a start date first.", "error");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("start_date", d);
+      await fetchJson("php/start_week.php", { method: "POST", body: fd });
+      await loadWeeks();
+      renderWeeksSelect();
+      if (state.activeDoctorId) {
+        await loadSchedule(state.activeDoctorId);
+        await refreshUnavailability();
+        renderScheduleMetaHint();
+        renderScheduleGrid();
+      }
+    });
+
+    document.getElementById("stopWeekBtn")?.addEventListener("click", async () => {
+      await fetchJson("php/stop_week.php", { method: "POST", body: new FormData() });
+      await loadWeeks();
+      renderWeeksSelect();
+    });
+
+    document.getElementById("exportDoctorXls")?.addEventListener("click", () => {
+      if (!state.activeDoctorId) return;
+      const qs = new URLSearchParams({ doctor_id: String(state.activeDoctorId) });
+      if (state.activeWeekId) qs.set("week_id", String(state.activeWeekId));
+      window.location.href = `php/export_doctor_week_xls.php?${qs.toString()}`;
+    });
+
+    document.getElementById("exportAllDoctorsXls")?.addEventListener("click", () => {
+      const qs = new URLSearchParams();
+      if (state.activeWeekId) qs.set("week_id", String(state.activeWeekId));
+      window.location.href = `php/export_all_doctors_week_xls.php?${qs.toString()}`;
+    });
+
+    // Unavailability add/remove
+    document.getElementById("addUnavailBtn")?.addEventListener("click", async () => {
+      if (!state.activeDoctorId || !state.activeWeekId) {
+        setStatusById("unavailStatus", "Select a week and a doctor first.", "error");
+        return;
+      }
+
+      const start = document.getElementById("unavailStart")?.value;
+      const end = document.getElementById("unavailEnd")?.value;
+      const reason = document.getElementById("unavailReason")?.value || "";
+
+      if (!start || !end) {
+        setStatusById("unavailStatus", "Start and end are required.", "error");
+        return;
+      }
+
+      try {
+        setStatusById("unavailStatus", "Saving…");
+        const fd = new FormData();
+        fd.append("doctor_id", String(state.activeDoctorId));
+        // datetime-local returns YYYY-MM-DDTHH:mm
+        fd.append("start_datetime", String(start).replace("T", " ") + ":00");
+        fd.append("end_datetime", String(end).replace("T", " ") + ":00");
+        fd.append("reason", String(reason));
+        await fetchJson("php/add_unavailability.php", { method: "POST", body: fd });
+        setStatusById("unavailStatus", "Saved.", "success");
+        await refreshUnavailability();
+        renderScheduleMetaHint();
+        renderScheduleGrid();
+      } catch (err) {
+        setStatusById("unavailStatus", err.message, "error");
+      }
+    });
+
+    document.getElementById("unavailList")?.addEventListener("click", async (e) => {
+      const btn = e.target?.closest?.("button[data-unavail-del]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (!id) return;
+
+      const ok = confirm("Remove this unavailability block?");
+      if (!ok) return;
+
+      try {
+        setStatusById("unavailStatus", "Removing…");
+        const fd = new FormData();
+        fd.append("unavailability_id", String(id));
+        await fetchJson("php/delete_unavailability.php", { method: "POST", body: fd });
+        setStatusById("unavailStatus", "Removed.", "success");
+        await refreshUnavailability();
+        renderScheduleMetaHint();
+        renderScheduleGrid();
+      } catch (err) {
+        setStatusById("unavailStatus", err.message, "error");
+      }
+    });
+
+    // Cancel/uncancel day
+    document.getElementById("cancelDayBtn")?.addEventListener("click", async () => {
+      if (!state.activeDoctorId || !state.activeWeekId) {
+        setStatusById("cancelStatus", "Select a week and a doctor first.", "error");
+        return;
+      }
+      const day = document.getElementById("cancelDaySelect")?.value;
+      const reason = document.getElementById("cancelReason")?.value || "";
+      const fd = new FormData();
+      fd.append("week_id", String(state.activeWeekId));
+      fd.append("doctor_id", String(state.activeDoctorId));
+      fd.append("day_of_week", day);
+      fd.append("reason", reason);
+      await fetchJson("php/set_doctor_cancellation.php", { method: "POST", body: fd });
+      setStatusById("cancelStatus", "Day canceled.", "success");
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleMetaHint();
+      renderScheduleGrid();
+    });
+
+    document.getElementById("uncancelDayBtn")?.addEventListener("click", async () => {
+      if (!state.activeDoctorId || !state.activeWeekId) {
+        setStatusById("cancelStatus", "Select a week and a doctor first.", "error");
+        return;
+      }
+      const day = document.getElementById("cancelDaySelect")?.value;
+      const fd = new FormData();
+      fd.append("week_id", String(state.activeWeekId));
+      fd.append("doctor_id", String(state.activeDoctorId));
+      fd.append("day_of_week", day);
+      await fetchJson("php/clear_doctor_cancellation.php", { method: "POST", body: fd });
+      setStatusById("cancelStatus", "Day restored.", "success");
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleMetaHint();
+      renderScheduleGrid();
+    });
+
+    // Schedule refresh
+    document.getElementById("refreshSchedule")?.addEventListener("click", async () => {
+      if (!state.activeDoctorId) return;
+      await loadSchedule(state.activeDoctorId);
+      renderScheduleMetaHint();
+      renderScheduleGrid();
+    });
+
+    // Modal buttons
+    document.getElementById("modalSave")?.addEventListener("click", saveSlotFromModal);
+    document.getElementById("modalRemove")?.addEventListener("click", removeSlotFromModal);
+    document.getElementById("modalCancelSlot")?.addEventListener("click", cancelSlotFromModal);
+    document.getElementById("modalUncancelSlot")?.addEventListener("click", uncancelSlotFromModal);
+
+    // Conflict hint
+    async function onCoursePicked(courseId) {
+      setHiddenCourseId(courseId);
+
+      const defaultCode = getDefaultRoomCodeForCourse(courseId);
+      const roomInput = document.getElementById("modal_room_code");
+      if (roomInput && defaultCode) {
+        roomInput.value = String(defaultCode);
+      }
+
+      updateSlotConflictHint();
+    }
+
+    document.getElementById("modal_course_code")?.addEventListener("change", async (e) => {
+      const v = e.target?.value || "";
+      // Sync other dropdown
+      const nameSel = document.getElementById("modal_course_name");
+      if (nameSel) nameSel.value = v;
+      await onCoursePicked(v);
+    });
+
+    document.getElementById("modal_course_name")?.addEventListener("change", async (e) => {
+      const v = e.target?.value || "";
+      // Sync other dropdown
+      const codeSel = document.getElementById("modal_course_code");
+      if (codeSel) codeSel.value = v;
+      await onCoursePicked(v);
+    });
+
+    // Close handlers (backdrop, close, cancel)
+    document.querySelectorAll("#slotModal [data-close='1']")?.forEach((el) => {
+      el.addEventListener("click", closeModal);
+    });
+
+    // Escape to close
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    setStatusById("scheduleStatus", "");
+  } catch (err) {
+    setStatusById("scheduleStatus", err.message, "error");
+  }
+  }
+
+
+  window.dmportal = window.dmportal || {};
+  window.dmportal.initScheduleBuilder = initDashboard;
+})();
