@@ -187,6 +187,11 @@ WHAT WE ARE DOING RIGHT NOW (CURRENT STATUS)
 - Notes/decisions:
   - Scoped the larger font sizing to the Attendance modal only to avoid changing other modals.
   - Evaluation system stores final grade and attendance score at save time; computed from weights + attendance ratio (itemized weights).
+  - Added a Python Tkinter patcher utility (`patcher/patcher.py`) to install/update/uninstall the portal from the DM_Portal GitHub repo into `htdocs/DM_Portal`.
+  - Patcher uses GitHub archive downloads (no git required) and syncs files based on SHA-256 hashes.
+  - Update flow copies only changed files and removes stale ones.
+  - UI lets users browse for the `htdocs` path (default `C:\\xampp\\htdocs`).
+  - Packaging: use PyInstaller to generate a Windows `.exe`.
 
 HOW YOU (ROVO DEV) MUST WORK ON THIS PROJECT
 - Always break each user request into small tasks before implementing.
