@@ -22,7 +22,7 @@ auth_require_roles(['admin','management']);
 
   <main class="container container-top">
     <header class="page-header">
-      <h1>Course Dashboard</h1>
+      <h1>Dr.Sheirf</h1>
       <p class="subtitle">Total hours vs completed hours for each course (based on scheduled slots).</p>
     </header>
 
