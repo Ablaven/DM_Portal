@@ -36,6 +36,9 @@ auth_require_roles(['admin','management']);
           <div class="muted" style="margin-top:4px;">Use the filters on the right to narrow results.</div>
         </div>
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
+            <?php if ((auth_current_user()['role'] ?? '') === 'admin') : ?>
+              <a class="btn btn-secondary" href="php/export_database_sql.php">Export Database SQL</a>
+            <?php endif; ?>
             <div class="field" style="margin:0; min-width:140px;">
               <label class="muted" style="font-size:0.85rem;" for="dashboardYearFilter">Academic Year</label>
               <select id="dashboardYearFilter" class="navlink" style="padding:7px 10px;">
