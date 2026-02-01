@@ -20,7 +20,7 @@ $pdo = get_pdo();
 set_time_limit(0);
 
 $timestamp = gmdate('Ymd_His');
-$filename = "digital_marketing_portal_{$timestamp}.sql";
+$filename = "digital_marketing_portal_full_{$timestamp}.sql";
 
 header('Content-Type: application/sql; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

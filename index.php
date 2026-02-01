@@ -38,6 +38,13 @@ auth_require_roles(['admin','management']);
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
             <?php if ((auth_current_user()['role'] ?? '') === 'admin') : ?>
               <a class="btn btn-secondary" href="php/export_database_sql.php">Export Database SQL</a>
+              <form class="field" action="php/import_database_sql.php" method="post" enctype="multipart/form-data" style="margin:0;">
+                <label class="muted" style="font-size:0.85rem;" for="importSqlFile">Import SQL</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input id="importSqlFile" name="sql_file" type="file" accept=".sql" required />
+                  <button class="btn btn-secondary" type="submit">Upload</button>
+                </div>
+              </form>
             <?php endif; ?>
             <div class="field" style="margin:0; min-width:140px;">
               <label class="muted" style="font-size:0.85rem;" for="dashboardYearFilter">Academic Year</label>
