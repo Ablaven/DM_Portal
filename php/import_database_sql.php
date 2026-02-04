@@ -158,5 +158,5 @@ if ($errors) {
     exit;
 }
 
-header('Location: ../index.php?import_status=success', true, 302);
+header('Location: ../admin_panel.php?import_status=success', true, 302);
 exit;

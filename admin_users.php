@@ -63,6 +63,7 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="admin_doctors.php" /> Doctor Management</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="admin_students.php" /> Student Management</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="admin_users.php" /> User Accounts</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="admin_panel.php" /> Admin Panel</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="doctor.php" /> Doctor Schedule Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="availability.php" /> Availability Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="students.php" /> Student Schedule Page</label>
@@ -159,9 +160,11 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" value="admin_doctors.php" /> Doctor Management</label>
               <label class="chk"><input type="checkbox" value="admin_students.php" /> Student Management</label>
               <label class="chk"><input type="checkbox" value="admin_users.php" /> User Accounts</label>
+              <label class="chk"><input type="checkbox" value="admin_panel.php" /> Admin Panel</label>
               <label class="chk"><input type="checkbox" value="doctor.php" /> Doctor Schedule Page</label>
               <label class="chk"><input type="checkbox" value="students.php" /> Student Schedule Page</label>
               <label class="chk"><input type="checkbox" value="attendance.php" /> Attendance Page</label>
+              <label class="chk"><input type="checkbox" value="availability.php" /> Availability Page</label>
               <label class="chk"><input type="checkbox" value="evaluation.php" /> Evaluation Page</label>
               <label class="chk"><input type="checkbox" value="student_dashboard.php" /> Student Dashboard Page</label>
               <label class="chk"><input type="checkbox" value="profile.php" /> Profile</label>

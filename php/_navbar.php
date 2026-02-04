@@ -58,6 +58,7 @@ function render_portal_navbar(string $activePage): void
     auth_render_nav_link('admin_users.php', 'User Accounts', $activePage);
 
     if (($u['role'] ?? '') === 'admin') {
+        auth_render_nav_link('admin_panel.php', 'Admin Panel', $activePage);
         auth_render_nav_link('hours_report.php', 'Hours Report', $activePage);
     }
 
