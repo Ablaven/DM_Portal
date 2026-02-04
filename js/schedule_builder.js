@@ -973,7 +973,7 @@
   try {
     setStatusById("scheduleStatus", "Loading…");
 
-    initPageFiltersUI({ yearSelectId: "builderYearFilter", semesterSelectId: "builderSemesterFilter" });
+    initPageFiltersUI({ yearSelectId: "builderYearFilterMain", semesterSelectId: "builderSemesterFilterMain" });
 
     await loadDoctors();
     await loadCourses();
@@ -1019,12 +1019,6 @@
         return;
       }
       await setActiveDoctor(v);
-    });
-
-    // Sidebar refresh
-    document.getElementById("refreshCourses")?.addEventListener("click", async () => {
-      await loadCourses();
-      renderCoursesSidebar();
     });
 
     // Week select

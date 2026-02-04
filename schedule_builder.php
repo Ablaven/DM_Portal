@@ -21,49 +21,7 @@ auth_require_roles(['admin','management']);
 <body class="dashboard">
   <?php render_portal_navbar('schedule_builder.php'); ?>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1>Doctor Schedule Builder</h1>
-        <p class="subtitle">Simple scheduling (Sun–Thu)</p>
-      </div>
-
-      <section class="panel">
-        <div class="panel-title-row">
-          <h2>Courses</h2>
-          <button id="refreshCourses" class="btn btn-small btn-secondary" type="button">Refresh</button>
-        </div>
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-top:6px;">
-        <div class="field" style="margin:0; min-width:140px;">
-          <label class="muted" style="font-size:0.85rem;" for="builderYearFilter">Academic Year</label>
-          <select id="builderYearFilter" class="navlink" style="padding:7px 10px;">
-            <option value="">All</option>
-            <option value="1">Year 1</option>
-            <option value="2">Year 2</option>
-            <option value="3">Year 3</option>
-          </select>
-        </div>
-        <div class="field" style="margin:0; min-width:140px;">
-          <label class="muted" style="font-size:0.85rem;" for="builderSemesterFilter">Semester</label>
-          <select id="builderSemesterFilter" class="navlink" style="padding:7px 10px;">
-            <option value="">All</option>
-            <option value="1">Sem 1</option>
-            <option value="2">Sem 2</option>
-          </select>
-        </div>
-        <p class="muted" style="margin:0;">Remaining hours are computed automatically from Total Hours (each scheduled slot = 1.5h).</p>
-      </div>
-
-        <div id="coursesList" class="courses-list" aria-live="polite">
-          <div class="muted">Loading courses…</div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <!-- Add courses via Course Management -->
-        </div>
-      </section>
-    </aside>
-
+  <div class="layout layout-single">
     <main class="main">
       <header class="main-header">
         <div>
@@ -95,11 +53,31 @@ auth_require_roles(['admin','management']);
       </header>
 
       <div class="panel" style="margin-bottom:12px; padding:12px 16px;">
-        <div class="field" style="margin:0; max-width:420px;">
-          <label class="muted" for="doctorSelect" style="font-size:0.85rem;">Doctor</label>
-          <select id="doctorSelect" class="navlink" style="padding:8px 10px;">
-            <option value="">Loading doctors…</option>
-          </select>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="margin:0; min-width:220px;">
+            <label class="muted" for="doctorSelect" style="font-size:0.85rem;">Doctor</label>
+            <select id="doctorSelect" class="navlink" style="padding:8px 10px;">
+              <option value="">Loading doctors…</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0; min-width:140px;">
+            <label class="muted" style="font-size:0.85rem;" for="builderYearFilterMain">Academic Year</label>
+            <select id="builderYearFilterMain" class="navlink" style="padding:7px 10px;">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0; min-width:140px;">
+            <label class="muted" style="font-size:0.85rem;" for="builderSemesterFilterMain">Semester</label>
+            <select id="builderSemesterFilterMain" class="navlink" style="padding:7px 10px;">
+              <option value="">All Sem</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+            </select>
+          </div>
+          <p class="muted" style="margin:0;">Remaining hours are computed automatically from Total Hours (each scheduled slot = 1.5h).</p>
         </div>
       </div>
 
@@ -156,19 +134,6 @@ auth_require_roles(['admin','management']);
         <div class="schedule-header">
           <div id="scheduleMetaHint" class="muted">Week starts Sunday • Each slot = 1 hour 30 minutes</div>
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <!-- Scheduling scope (which Year/Sem you are assigning into). Synced with sidebar filters. -->
-            <select id="builderYearFilterMain" class="navlink" style="padding:7px 10px;">
-              <option value="">All Years</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-            </select>
-            <select id="builderSemesterFilterMain" class="navlink" style="padding:7px 10px;">
-              <option value="">All Sem</option>
-              <option value="1">Sem 1</option>
-              <option value="2">Sem 2</option>
-            </select>
-
             <div id="scheduleStatus" class="status" role="status" aria-live="polite"></div>
           </div>
         </div>

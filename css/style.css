@@ -736,6 +736,10 @@ body.dashboard .layout {
   min-height: 100vh;
 }
 
+body.dashboard .layout.layout-single {
+  grid-template-columns: 1fr;
+}
+
 .sidebar {
   padding: 18px;
   border-right: 1px solid var(--card-border);
