@@ -94,9 +94,14 @@ auth_require_roles(['admin','management']);
         </div>
       </header>
 
-      <nav id="doctorTabs" class="tabs" aria-label="Doctors">
-        <button class="tab" type="button" disabled>Loading doctors…</button>
-      </nav>
+      <div class="panel" style="margin-bottom:12px; padding:12px 16px;">
+        <div class="field" style="margin:0; max-width:420px;">
+          <label class="muted" for="doctorSelect" style="font-size:0.85rem;">Doctor</label>
+          <select id="doctorSelect" class="navlink" style="padding:8px 10px;">
+            <option value="">Loading doctors…</option>
+          </select>
+        </div>
+      </div>
 
       <section class="panel">
         <div class="schedule-header" style="margin-bottom: 12px;">

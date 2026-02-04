@@ -56,27 +56,36 @@
   return String(w?.label || "").trim();
   }
 
-  function renderDoctorsTabs() {
-  const tabs = document.getElementById("doctorTabs");
-  if (!tabs) return;
+  function renderDoctorsSelect() {
+  const select = document.getElementById("doctorSelect");
+  if (!select) return;
 
-  tabs.innerHTML = "";
-  for (const d of state.doctors) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tab" + (String(d.doctor_id) === String(state.activeDoctorId) ? " active" : "");
-    btn.textContent = d.full_name;
-    btn.addEventListener("click", async () => {
-      await setActiveDoctor(d.doctor_id);
-    });
-    tabs.appendChild(btn);
-  }
+  select.innerHTML = "";
 
   if (state.doctors.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "muted";
-    empty.textContent = "No doctors found.";
-    tabs.appendChild(empty);
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No doctors found";
+    select.appendChild(opt);
+    select.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select a doctor";
+  select.appendChild(placeholder);
+
+  for (const d of state.doctors) {
+    const opt = document.createElement("option");
+    opt.value = String(d.doctor_id);
+    opt.textContent = d.full_name;
+    select.appendChild(opt);
+  }
+
+  if (state.activeDoctorId) {
+    select.value = String(state.activeDoctorId);
   }
   }
 
@@ -348,7 +357,7 @@
 
   async function setActiveDoctor(doctorId) {
   state.activeDoctorId = doctorId;
-  renderDoctorsTabs();
+  renderDoctorsSelect();
 
   try {
   maybeAutoSetBuilderFiltersForDoctor(doctorId);
@@ -971,7 +980,7 @@
     await loadWeeks();
 
     renderWeeksSelect();
-    renderDoctorsTabs();
+    renderDoctorsSelect();
     renderCoursesSidebar();
 
     window.addEventListener("dmportal:globalFiltersChanged", () => {
@@ -999,6 +1008,18 @@
       renderScheduleGrid();
       setStatusById("scheduleStatus", "No doctors found.", "error");
     }
+
+    document.getElementById("doctorSelect")?.addEventListener("change", async (e) => {
+      const v = e.target.value;
+      if (!v) {
+        state.activeDoctorId = null;
+        renderScheduleMetaHint();
+        renderScheduleGrid();
+        updateDoctorExportShareLinks();
+        return;
+      }
+      await setActiveDoctor(v);
+    });
 
     // Sidebar refresh
     document.getElementById("refreshCourses")?.addEventListener("click", async () => {
