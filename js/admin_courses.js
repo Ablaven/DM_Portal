@@ -983,7 +983,12 @@ async function saveCourseEditModal() {
 
     // If 2+ doctors are assigned, ensure hour split is set (or let user update it).
     if ((patch.doctor_ids || []).length >= 2) {
-      const currentAlloc = await getCourseDoctorHours(Number(cid));
+      let currentAlloc = [];
+      try {
+        currentAlloc = await getCourseDoctorHours(Number(cid));
+      } catch {
+        currentAlloc = [];
+      }
       const hasAny = (currentAlloc || []).length > 0;
       // If no allocations exist, prompt user now.
       if (!hasAny) {
