@@ -91,6 +91,10 @@ try {
     // so the SQL remains valid regardless of additional joins.
     $courseFilterSql = $where ? (' AND ' . implode(' AND ', $where)) : '';
 
+    $allocJoin = $hasCourseDoctorHours
+        ? 'LEFT JOIN (SELECT course_id, COUNT(*) AS alloc_cnt FROM course_doctor_hours GROUP BY course_id) ha ON ha.course_id = c.course_id'
+        : 'LEFT JOIN (SELECT NULL AS course_id, 0 AS alloc_cnt) ha ON 1=0';
+
     $sql = "
         SELECT
           d.doctor_id,
@@ -100,9 +104,10 @@ try {
           c.course_type,
           c.subject_code,
           c.total_hours,
-          COALESCE(h.allocated_hours,
-            CASE WHEN cd.cnt = 1 THEN c.total_hours ELSE 0 END
-          ) AS allocated_hours,
+          CASE
+            WHEN COALESCE(ha.alloc_cnt, 0) > 0 THEN COALESCE(h.allocated_hours, 0)
+            ELSE (COALESCE(c.total_hours, 0) / GREATEST(cd.cnt, 1))
+          END AS allocated_hours,
           ROUND(COALESCE(s.done_slots, 0) * 1.5 + (COALESCE(s.done_extra_minutes,0) / 60), 2) AS done_hours
         FROM doctors d
         JOIN (
@@ -118,6 +123,7 @@ try {
           GROUP BY course_id
         ) cd ON cd.course_id = c.course_id
         $hJoin
+        $allocJoin
         LEFT JOIN (
           $doneSubquery
         ) s ON s.doctor_id = d.doctor_id AND s.course_id = c.course_id
