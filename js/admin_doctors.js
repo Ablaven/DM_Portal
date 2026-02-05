@@ -21,6 +21,26 @@
     state.doctors = payload.data || [];
   }
 
+  async function fetchDoctorYearColors(doctorId) {
+    const payload = await fetchJson(`php/get_doctor_year_colors.php?doctor_id=${doctorId}`);
+    if (!payload.success) throw new Error(payload.error || "Failed to load doctor year colors.");
+    return payload.data || {};
+  }
+
+  async function saveDoctorYearColors(doctorId, colors) {
+    const yearLevels = [1, 2, 3];
+    await Promise.all(
+      yearLevels.map(async (level) => {
+        const fd = new FormData();
+        fd.append("doctor_id", String(doctorId));
+        fd.append("year_level", String(level));
+        fd.append("color_code", colors[level] || colors.base || "#0055A4");
+        const payload = await fetchJson("php/set_doctor_year_colors.php", { method: "POST", body: fd });
+        if (!payload.success) throw new Error(payload.error || "Failed to save doctor year colors.");
+      })
+    );
+  }
+
   async function loadWeeks() {
     const payload = await fetchJson("php/get_weeks.php");
     if (!payload.success) throw new Error(payload.error || "Failed to load weeks.");
@@ -75,7 +95,7 @@
     }
   }
 
-  function openDoctorEditModal(doctor) {
+  async function openDoctorEditModal(doctor) {
     const modal = document.getElementById("doctorEditModal");
     if (!modal) return;
 
@@ -85,9 +105,20 @@
     document.getElementById("edit_doctor_phone").value = doctor.phone_number || "";
     document.getElementById("edit_doctor_color").value = doctor.color_code || "#0055A4";
 
-    document.getElementById("edit_doctor_color_y1").value = doctor.color_y1 || doctor.color_code || "#0055A4";
-    document.getElementById("edit_doctor_color_y2").value = doctor.color_y2 || doctor.color_code || "#0055A4";
-    document.getElementById("edit_doctor_color_y3").value = doctor.color_y3 || doctor.color_code || "#0055A4";
+    document.getElementById("edit_doctor_color_y1").value = doctor.color_code || "#0055A4";
+    document.getElementById("edit_doctor_color_y2").value = doctor.color_code || "#0055A4";
+    document.getElementById("edit_doctor_color_y3").value = doctor.color_code || "#0055A4";
+
+    try {
+      const colorsPayload = await fetchDoctorYearColors(doctor.doctor_id);
+      const baseColor = colorsPayload.base_color_code || doctor.color_code || "#0055A4";
+      const yearColors = colorsPayload.year_colors || {};
+      document.getElementById("edit_doctor_color_y1").value = yearColors["1"] || baseColor;
+      document.getElementById("edit_doctor_color_y2").value = yearColors["2"] || baseColor;
+      document.getElementById("edit_doctor_color_y3").value = yearColors["3"] || baseColor;
+    } catch (err) {
+      setStatusById("doctorEditStatus", err.message || "Failed to load doctor colors.", "error");
+    }
 
     setStatusById("doctorEditStatus", "");
     modal.classList.add("open");
@@ -112,10 +143,18 @@
     fd.append("phone_number", document.getElementById("edit_doctor_phone").value);
     fd.append("color_code", document.getElementById("edit_doctor_color").value);
 
+    const yearColors = {
+      1: document.getElementById("edit_doctor_color_y1").value,
+      2: document.getElementById("edit_doctor_color_y2").value,
+      3: document.getElementById("edit_doctor_color_y3").value,
+      base: document.getElementById("edit_doctor_color").value,
+    };
+
     try {
       setStatusById("doctorEditStatus", "Saving…");
       const payload = await fetchJson("php/update_doctor.php", { method: "POST", body: fd });
       if (!payload.success) throw new Error(payload.error || "Failed to update doctor.");
+      await saveDoctorYearColors(id, yearColors);
       setStatusById("doctorEditStatus", "Saved.", "success");
       closeDoctorEditModal();
       await loadDoctors();
@@ -136,6 +175,16 @@
       try {
         const payload = await fetchJson("php/add_doctor.php", { method: "POST", body: fd });
         if (!payload.success) throw new Error(payload.error || "Failed to add doctor.");
+        const doctorId = payload.data?.doctor_id;
+        if (doctorId) {
+          const yearColors = {
+            1: document.getElementById("doctor_color_y1").value,
+            2: document.getElementById("doctor_color_y2").value,
+            3: document.getElementById("doctor_color_y3").value,
+            base: document.getElementById("doctor_color").value,
+          };
+          await saveDoctorYearColors(doctorId, yearColors);
+        }
         setStatusById("doctorStatus", "Saved.", "success");
         form.reset();
         await loadDoctors();
