@@ -161,6 +161,65 @@ body {
   overflow-x: hidden;
 }
 
+/* Seamless page transition (blur overlay without breaking fixed modals) */
+body {
+  transition: none;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 10, 18, 0.15);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, backdrop-filter 200ms ease;
+  z-index: 0;
+}
+
+body.page-transition-ready::before {
+  opacity: 0;
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+}
+
+body.page-transitioning::before {
+  opacity: 1;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  body.page-transition-ready,
+  body.page-transitioning {
+    filter: none;
+    transition: none;
+  }
+
+  body::before,
+  body.page-transition-ready::before,
+  body.page-transitioning::before {
+    opacity: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+  }
+
+  .modal,
+  .modal.open,
+  .modal .modal-card,
+  .availability-popup,
+  .availability-popup.open {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+
 /* Navbar */
 
 /* Mobile nav toggle button (injected by JS) */
@@ -1158,13 +1217,13 @@ html[data-theme="light"] .slot.available-slot {
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow);
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-6px) scale(0.98);
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
 .availability-popup.open {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .availability-popup-title {
@@ -1268,7 +1327,21 @@ html[data-theme="light"] .slot.available-slot {
   z-index: 50;
 }
 
-.modal.open { display: flex; }
+.modal.stack-top {
+  z-index: 80;
+}
+
+.modal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.modal.open {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* Attendance modal: larger, more readable */
 #attendanceModal .modal-card {
@@ -1476,6 +1549,83 @@ html[data-theme="light"] .slot.available-slot {
   padding: 14px;
   position: relative;
   overflow: hidden;
+}
+
+/* Global entrance animation (all pages) */
+.card,
+.panel,
+.dashboard-card,
+.page-header,
+.table-wrap,
+.course-progress-list,
+.form-card,
+.filters-panel,
+.section-card,
+.widget,
+.stat-card,
+.info-card {
+  animation: portalFlipIn 720ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+  transform: translateY(14px) rotateX(8deg) scale(0.98);
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+/* Staggered for dashboard grid items */
+.dashboard-card:nth-child(1) { animation-delay: 60ms; }
+.dashboard-card:nth-child(2) { animation-delay: 120ms; }
+.dashboard-card:nth-child(3) { animation-delay: 180ms; }
+.dashboard-card:nth-child(4) { animation-delay: 240ms; }
+.dashboard-card:nth-child(5) { animation-delay: 300ms; }
+.dashboard-card:nth-child(6) { animation-delay: 360ms; }
+.page-header { animation-delay: 20ms; }
+.card { animation-delay: 80ms; }
+.course-progress-list { animation-delay: 420ms; }
+
+@keyframes portalFlipIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) rotateX(8deg) scale(0.98);
+    box-shadow: 0 10px 18px rgba(0,0,0,0.2);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-2px) rotateX(0deg) scale(1.02);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.35);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg) scale(1);
+    box-shadow: var(--shadow);
+  }
+}
+
+.dashboard-card::after {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.dashboard-card:hover::after {
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .panel,
+  .dashboard-card,
+  .page-header,
+  .table-wrap,
+  .course-progress-list,
+  .form-card,
+  .filters-panel,
+  .section-card,
+  .widget,
+  .stat-card,
+  .info-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 #studentGradesCards .dashboard-card {
@@ -2056,6 +2206,21 @@ html[data-theme="light"] .slot.available-slot {
 }
 
 /* Smooth modal animation */
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .modal .modal-card {
   transform: translateY(6px) scale(0.98);
   opacity: 0;
@@ -2065,6 +2230,15 @@ html[data-theme="light"] .slot.available-slot {
 .modal.open .modal-card {
   transform: translateY(0) scale(1);
   opacity: 1;
+  animation: modalPopIn 220ms ease;
+}
+
+.availability-popup {
+  transform: translateY(-6px) scale(0.98);
+}
+
+.availability-popup.open {
+  animation: modalPopIn 200ms ease;
 }
 
 .modal-backdrop {

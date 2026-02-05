@@ -659,7 +659,7 @@ function openHoursSplitModal({ course_id, doctor_ids, total_hours, course_name, 
   setStatusById("hoursSplitStatus", "");
 
   // Open
-  modal.classList.add("open");
+  modal.classList.add("open", "stack-top");
   modal.setAttribute("aria-hidden", "false");
 
   // Return a promise that resolves when user saves or cancels.
@@ -667,7 +667,7 @@ function openHoursSplitModal({ course_id, doctor_ids, total_hours, course_name, 
     const saveBtn = document.getElementById("hoursSplitSave");
 
     function close() {
-      modal.classList.remove("open");
+      modal.classList.remove("open", "stack-top");
       modal.setAttribute("aria-hidden", "true");
       cleanup();
       resolve();

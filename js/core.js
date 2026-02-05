@@ -218,6 +218,43 @@
 
   bindEasterEggGlobalShortcut();
 
+  function initPageTransitions() {
+    const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    requestAnimationFrame(() => {
+      document.body.classList.add("page-transition-ready");
+    });
+
+    if (prefersReduced) return;
+
+    function isInternalLink(anchor) {
+      if (!anchor || !anchor.href) return false;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return false;
+      return true;
+    }
+
+    document.addEventListener("click", (event) => {
+      const anchor = event.target.closest("a");
+      if (!anchor) return;
+      if (anchor.hasAttribute("download")) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (!isInternalLink(anchor)) return;
+
+      const url = new URL(anchor.href, window.location.href);
+      if (url.hash && url.pathname === window.location.pathname) return;
+
+      event.preventDefault();
+      document.body.classList.add("page-transitioning");
+      window.setTimeout(() => {
+        window.location.href = url.toString();
+      }, 180);
+    }, true);
+  }
+
+  initPageTransitions();
+
   function initThemeToggle() {
     const root = document.documentElement;
     const stored = localStorage.getItem("dmportal-theme");
