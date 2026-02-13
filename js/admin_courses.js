@@ -1235,9 +1235,10 @@ async function drawMissionnairePieChart() {
   if (f?.year_level) qs.set("year_level", String(f.year_level));
   if (f?.semester) qs.set("semester", String(f.semester));
 
-  let missionName = "Missionnaire";
-  let missionTotal = 0;
-  let othersTotal = 0;
+  let egyptianName = "Egyptian";
+  let egyptianTotal = 0;
+  let frenchName = "French";
+  let frenchTotal = 0;
 
   try {
     const url = "php/get_missionnaire_hours_pie.php" + (qs.toString() ? `?${qs.toString()}` : "");
@@ -1245,23 +1246,24 @@ async function drawMissionnairePieChart() {
     if (!payload?.success) throw new Error(payload?.error || "Failed to load pie data");
 
     // Preferred: use explicit aggregated fields if present.
-    const m = payload?.data?.missionnaire;
-    if (m && typeof m === "object") {
-      missionName = String(m?.full_name || "Missionnaire");
-      missionTotal = Number(m?.total_hours || 0);
-      othersTotal = Number(payload?.data?.others_total_hours || 0);
+    const egyptian = payload?.data?.egyptian;
+    const french = payload?.data?.french;
+    if (egyptian && french) {
+      egyptianName = String(egyptian?.label || "Egyptian");
+      egyptianTotal = Number(egyptian?.total_hours || 0);
+      frenchName = String(french?.label || "French");
+      frenchTotal = Number(french?.total_hours || 0);
     } else {
       // Fallback: aggregate from per-doctor breakdown.
       const doctors = Array.isArray(payload?.data?.doctors) ? payload.data.doctors : [];
       for (const d of doctors) {
         const total = Number(d?.total_hours || 0);
         if (!Number.isFinite(total) || total <= 0) continue;
-        const isM = Boolean(d?.is_missionnaire) || String(d?.full_name || "").toLowerCase() === "missionnaire";
-        if (isM) {
-          missionName = String(d?.full_name || missionName);
-          missionTotal += total;
+        const type = String(d?.doctor_type || "Egyptian").toLowerCase();
+        if (type === "french") {
+          frenchTotal += total;
         } else {
-          othersTotal += total;
+          egyptianTotal += total;
         }
       }
     }
@@ -1275,9 +1277,9 @@ async function drawMissionnairePieChart() {
     return;
   }
 
-  missionTotal = Number.isFinite(missionTotal) ? Math.max(0, missionTotal) : 0;
-  othersTotal = Number.isFinite(othersTotal) ? Math.max(0, othersTotal) : 0;
-  const total = missionTotal + othersTotal;
+  egyptianTotal = Number.isFinite(egyptianTotal) ? Math.max(0, egyptianTotal) : 0;
+  frenchTotal = Number.isFinite(frenchTotal) ? Math.max(0, frenchTotal) : 0;
+  const total = egyptianTotal + frenchTotal;
 
   if (total <= 0) {
     ctx.fillStyle = C.muted;
@@ -1288,28 +1290,28 @@ async function drawMissionnairePieChart() {
     return;
   }
 
-  // Standard 2-slice pie chart: Missionnaire vs Others
+  // Standard 2-slice pie chart: Egyptian vs French
   const cx = w / 2;
   const cy = h / 2;
   const r = Math.min(w, h) * 0.38;
 
   const startAngle = -Math.PI / 2;
-  const missionPct = total > 0 ? missionTotal / total : 0;
-  const aMissionEnd = startAngle + Math.PI * 2 * missionPct;
+  const egyptianPct = total > 0 ? egyptianTotal / total : 0;
+  const aEgyptianEnd = startAngle + Math.PI * 2 * egyptianPct;
 
-  // Missionnaire slice
+  // Egyptian slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.fillStyle = C.accent;
-  ctx.arc(cx, cy, r, startAngle, aMissionEnd);
+  ctx.arc(cx, cy, r, startAngle, aEgyptianEnd);
   ctx.closePath();
   ctx.fill();
 
-  // Others slice
+  // French slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.fillStyle = "rgba(0, 220, 140, 0.92)";
-  ctx.arc(cx, cy, r, aMissionEnd, startAngle + Math.PI * 2);
+  ctx.arc(cx, cy, r, aEgyptianEnd, startAngle + Math.PI * 2);
   ctx.closePath();
   ctx.fill();
 
@@ -1372,17 +1374,17 @@ async function drawMissionnairePieChart() {
     ctx.fillText(detail, x3 + (isRight ? 2 : -2), y3 + 2);
   }
 
-  const missionAngleMid = (startAngle + aMissionEnd) / 2;
-  const othersAngleMid = (aMissionEnd + (startAngle + Math.PI * 2)) / 2;
+  const egyptAngleMid = (startAngle + aEgyptianEnd) / 2;
+  const frenchAngleMid = (aEgyptianEnd + (startAngle + Math.PI * 2)) / 2;
 
-  const missionLabel = `${missionName}`;
-  const missionDetail = `${Math.round(missionPct * 100)}% (${formatHours(missionTotal)}h)`;
-  drawSliceLabel(missionAngleMid, missionLabel, missionDetail, C.accent);
+  const egyptianLabel = `${egyptianName}`;
+  const egyptianDetail = `${Math.round(egyptianPct * 100)}% (${formatHours(egyptianTotal)}h)`;
+  drawSliceLabel(egyptAngleMid, egyptianLabel, egyptianDetail, C.accent);
 
-  const othersPct = total > 0 ? othersTotal / total : 0;
-  const othersLabel = "Others";
-  const othersDetail = `${Math.round(othersPct * 100)}% (${formatHours(othersTotal)}h)`;
-  drawSliceLabel(othersAngleMid, othersLabel, othersDetail, "rgba(0, 220, 140, 0.92)");
+  const frenchPct = total > 0 ? frenchTotal / total : 0;
+  const frenchLabel = `${frenchName}`;
+  const frenchDetail = `${Math.round(frenchPct * 100)}% (${formatHours(frenchTotal)}h)`;
+  drawSliceLabel(frenchAngleMid, frenchLabel, frenchDetail, "rgba(0, 220, 140, 0.92)");
 
   // Two-line legend under the chart
   const t = document.getElementById("missionnairePieText");
@@ -1393,16 +1395,16 @@ async function drawMissionnairePieChart() {
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid rgba(255,255,255,0.08);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
             <span style="width:10px; height:10px; border-radius:2px; background:${C.accent}; flex:0 0 auto;"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(missionName)}</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(egyptianName)}</span>
           </div>
-          <div style="white-space:nowrap;">${formatHours(missionTotal)}h</div>
+          <div style="white-space:nowrap;">${formatHours(egyptianTotal)}h</div>
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid rgba(255,255,255,0.08);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
             <span style="width:10px; height:10px; border-radius:2px; background:rgba(0, 220, 140, 0.92); flex:0 0 auto;"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Others</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(frenchName)}</span>
           </div>
-          <div style="white-space:nowrap;">${formatHours(othersTotal)}h</div>
+          <div style="white-space:nowrap;">${formatHours(frenchTotal)}h</div>
         </div>
       </div>
     `;

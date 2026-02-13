@@ -231,7 +231,8 @@
       for (const w of availabilityState.weeks) {
         const opt = document.createElement("option");
         opt.value = w.week_id;
-        opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+        const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+        opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
         weekSel.appendChild(opt);
       }
       if (availabilityState.activeWeekId) weekSel.value = String(availabilityState.activeWeekId);

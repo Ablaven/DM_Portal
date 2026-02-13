@@ -17,6 +17,7 @@
   function initEvaluationPage(options = {}) {
     const { canConfigure = true } = options;
     const courseSelect = document.getElementById("evaluationCourseSelect");
+    const doctorSelect = document.getElementById("evaluationDoctorFilter");
     const refreshBtn = document.getElementById("evaluationRefresh");
     const statusId = "evaluationStatus";
 
@@ -41,6 +42,7 @@
     let configItems = [];
     let studentsCache = [];
     let coursesCache = [];
+    let doctorsCache = [];
 
     function setStatus(msg, type = "") {
       setStatusById?.(statusId, msg, type);
@@ -330,8 +332,24 @@
       openSplitModal(row);
     }
 
+    function getSelectedDoctorId() {
+      return Number(doctorSelect?.value || 0);
+    }
+
+    function courseMatchesDoctor(course) {
+      const doctorId = getSelectedDoctorId();
+      if (!doctorId) return true;
+      const primaryDoctorId = Number(course?.doctor_id || 0);
+      if (primaryDoctorId === doctorId) return true;
+      const assignedIds = String(course?.doctor_ids || "")
+        .split(",")
+        .map((id) => Number(String(id).trim()))
+        .filter((id) => Number.isFinite(id) && id > 0);
+      return assignedIds.includes(doctorId);
+    }
+
     function renderCourses() {
-      const filtered = applyPageFiltersToCourses?.(coursesCache) || coursesCache;
+      const filtered = (applyPageFiltersToCourses?.(coursesCache) || coursesCache).filter(courseMatchesDoctor);
       courseSelect.innerHTML = '<option value="">Select course...</option>';
       filtered.forEach((c) => {
         const label = `${c.course_name} (Y${c.year_level} / S${c.semester})`;
@@ -339,6 +357,21 @@
         opt.value = String(c.course_id);
         opt.textContent = label;
         courseSelect.appendChild(opt);
+      });
+    }
+
+    function renderDoctors() {
+      if (!doctorSelect) return;
+      const current = Number(doctorSelect.value || 0);
+      doctorSelect.innerHTML = '<option value="">All</option>';
+      doctorsCache.forEach((doctor) => {
+        const opt = document.createElement("option");
+        opt.value = String(doctor.doctor_id);
+        opt.textContent = doctor.full_name || doctor.doctor_name || `Doctor #${doctor.doctor_id}`;
+        if (Number(opt.value) === current) {
+          opt.selected = true;
+        }
+        doctorSelect.appendChild(opt);
       });
     }
 
@@ -360,6 +393,17 @@
         setStatus("");
       } catch (err) {
         setStatus(err.message || "Failed to load courses.", "error");
+      }
+    }
+
+    async function loadDoctors() {
+      if (!doctorSelect) return;
+      try {
+        const payload = await fetchJson("php/get_doctors.php");
+        doctorsCache = payload?.data || [];
+        renderDoctors();
+      } catch (err) {
+        setStatus(err.message || "Failed to load doctors.", "error");
       }
     }
 
@@ -606,12 +650,24 @@
     window.addEventListener("dmportal:pageFiltersChanged", () => {
       const current = Number(courseSelect.value || 0);
       renderCourses();
-      if (current && !doesItemMatchPageFilters?.(coursesCache.find((c) => Number(c.course_id) === current))) {
+      const currentCourse = coursesCache.find((c) => Number(c.course_id) === current);
+      if (current && (!doesItemMatchPageFilters?.(currentCourse) || !courseMatchesDoctor(currentCourse))) {
         courseSelect.value = "";
         currentCourseId = 0;
       }
     });
 
+    doctorSelect?.addEventListener("change", () => {
+      const current = Number(courseSelect.value || 0);
+      renderCourses();
+      const currentCourse = coursesCache.find((c) => Number(c.course_id) === current);
+      if (current && (!courseMatchesDoctor(currentCourse) || !doesItemMatchPageFilters?.(currentCourse))) {
+        courseSelect.value = "";
+        currentCourseId = 0;
+      }
+    });
+
+    loadDoctors();
     loadCourses();
     switchTab(canConfigure ? "config" : "grading");
   }

@@ -89,11 +89,128 @@
   }
   }
 
+  function renderDoctorHoursCard(doctor) {
+    const totals = doctor.totals || {};
+    const allocT = Number(totals.allocated_hours || 0);
+    const doneT = Number(totals.done_hours || 0);
+    const remT = Number(totals.remaining_hours || 0);
+    const pct = allocT > 0 ? Math.max(0, Math.min(100, (doneT / allocT) * 100)) : 0;
+
+    const courseRows = (doctor.courses || [])
+      .filter((course) => Number(course?.remaining_hours || 0) > 0)
+      .map((course) => {
+        const alloc = Number(course.allocated_hours || 0);
+        const done = Number(course.done_hours || 0);
+        const rem = Number(course.remaining_hours || 0);
+        const title = String(course.course_name || "(Unnamed course)");
+        const metaParts = [];
+        if (course.program) metaParts.push(course.program);
+        if (course.subject_code) metaParts.push(course.subject_code);
+        if (course.year_level) metaParts.push(`Year ${course.year_level}`);
+        if (course.semester) metaParts.push(`Sem ${course.semester}`);
+        const meta = metaParts.length ? metaParts.join(" • ") : "";
+
+        return `
+          <div class="course-progress-item subject-progress-item">
+            <div class="course-progress-top">
+              <div>
+                <div class="course-progress-title">${escapeHtml(title)}</div>
+                <div class="course-progress-meta">${escapeHtml(meta)}</div>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                <span class="badge badge-success">Done ${formatHours(done)}h</span>
+                <span class="badge badge-danger">Remaining ${formatHours(rem)}h</span>
+                <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
+              </div>
+            </div>
+            <div class="course-progress-bar" aria-label="Course progress">
+              <div class="course-progress-fill" style="width:${alloc > 0 ? ((done / alloc) * 100).toFixed(2) : 0}%"></div>
+            </div>
+            <div class="course-progress-legend">
+              <span class="badge badge-success">Done: ${formatHours(done)}h</span>
+              <span class="badge badge-danger">Remaining: ${formatHours(rem)}h</span>
+              <span class="muted">${alloc > 0 ? Math.round((done / alloc) * 100) : 0}%</span>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    return `
+      <div class="course-progress-item doctor-progress-item" style="margin-bottom:18px;">
+        <div class="course-progress-top">
+          <div>
+            <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
+            <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <span class="badge">Allocated ${formatHours(allocT)}h</span>
+            <span class="badge badge-success">Done ${formatHours(doneT)}h</span>
+            <span class="badge badge-danger">Remaining ${formatHours(remT)}h</span>
+            <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
+          </div>
+        </div>
+        <div class="course-progress-bar" aria-label="Doctor progress">
+          <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
+        </div>
+        <div class="course-progress-legend">
+          <span class="badge badge-success">Done: ${formatHours(doneT)}h</span>
+          <span class="badge badge-danger">Remaining: ${formatHours(remT)}h</span>
+          <span class="muted">${pct.toFixed(0)}%</span>
+        </div>
+        <div class="hours-report-courses">${courseRows}</div>
+      </div>
+    `;
+  }
+
+  async function loadHoursRemainingPanel() {
+    const status = document.getElementById("scheduleHoursStatus");
+    const list = document.getElementById("scheduleHoursList");
+    if (!status || !list) return;
+
+    function setStatus(msg, type) {
+      status.textContent = msg || "";
+      status.classList.remove("success", "error");
+      if (type) status.classList.add(type);
+    }
+
+    setStatus("Loading...");
+    try {
+      const filters = getGlobalFilters ? getGlobalFilters() : {};
+      const qs = new URLSearchParams();
+      if (filters?.year_level) qs.set("year_level", String(filters.year_level));
+      if (filters?.semester) qs.set("semester", String(filters.semester));
+      const url = "php/get_hours_report.php" + (qs.toString() ? `?${qs.toString()}` : "");
+      const payload = await fetchJson(url);
+      if (!payload?.success) throw new Error(payload?.error || "Failed to load hours report.");
+      const doctors = payload?.data?.doctors || [];
+      const ordered = doctors
+        .map((doc) => ({
+          ...doc,
+          remaining: Number(doc?.totals?.remaining_hours || 0),
+        }))
+        .filter((doc) => doc.remaining > 0)
+        .sort((a, b) => b.remaining - a.remaining);
+
+      if (!ordered.length) {
+        list.innerHTML = '<div class="muted">No doctors with remaining hours found.</div>';
+        setStatus("");
+        return;
+      }
+
+      list.innerHTML = ordered.map(renderDoctorHoursCard).join("");
+      setStatus("");
+    } catch (err) {
+      list.innerHTML = '<div class="muted">Unable to load hours report.</div>';
+      setStatus(err.message || "Failed to load hours report.", "error");
+    }
+  }
+
   function renderCoursesSidebar() {
   const list = document.getElementById("coursesList");
   if (!list) return;
 
-  const filtered = getFilteredCoursesForUI();
+  const filtered = getFilteredCoursesForUI().filter((course) => Number(course?.remaining_hours || 0) > 0);
   if (!filtered.length) {
     list.innerHTML = `<div class="muted">No courses found for the selected filters.</div>`;
     return;
@@ -436,7 +553,7 @@
         cell.innerHTML = `
           <div class="slot-title">Canceled</div>
           <div class="slot-sub">${reason ? reason : "Slot canceled"}</div>
-          <div class="slot-sub muted" style="margin-top:4px; font-size:0.8rem;">Click to undo</div>
+          <div class="slot-sub slot-sub-muted">Click to undo</div>
         `;
         cell.style.cursor = "pointer";
         cell.addEventListener("click", () => openSlotModal(day, slot, null));
@@ -874,24 +991,42 @@
 
   if (emailBtn) {
     if (d?.email) {
-      const subject = weekLabel ? `Schedule — ${weekLabel}` : "Schedule";
-      const body = buildDoctorScheduleGreetingText(d.full_name);
-      emailBtn.href = buildMailtoHref(d.email, subject, body);
       emailBtn.setAttribute("aria-disabled", "false");
 
-      if (emailBtn.dataset.downloadBound !== "1") {
-        emailBtn.dataset.downloadBound = "1";
-        emailBtn.addEventListener("click", (e) => {
-          if (emailBtn.getAttribute("aria-disabled") === "true" || !emailBtn.getAttribute("href")) {
-            e.preventDefault();
+      if (emailBtn.dataset.sendBound !== "1") {
+        emailBtn.dataset.sendBound = "1";
+        emailBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (emailBtn.getAttribute("aria-disabled") === "true") {
             return;
           }
-          const exportUrl = buildDoctorScheduleExportUrl(state.activeDoctorId, state.activeWeekId);
-          triggerBackgroundDownload(exportUrl);
+
+          try {
+            emailBtn.classList.add("is-loading");
+            const payload = await fetchJson("php/email_doctor_schedule.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                doctor_id: state.activeDoctorId,
+                week_id: state.activeWeekId || 0,
+              }),
+            });
+
+            if (payload?.success) {
+              alert("Schedule emailed successfully.");
+            } else {
+              alert(payload?.error || "Failed to send email.");
+            }
+          } catch (err) {
+            alert(err?.message || "Failed to send email.");
+          } finally {
+            emailBtn.classList.remove("is-loading");
+          }
         });
       }
     } else {
-      emailBtn.href = "";
       emailBtn.setAttribute("aria-disabled", "true");
     }
   }
@@ -960,7 +1095,8 @@
     for (const w of state.weeks) {
       const opt = document.createElement("option");
       opt.value = w.week_id;
-      opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+      const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+      opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
       sel.appendChild(opt);
     }
 
@@ -982,6 +1118,7 @@
     renderWeeksSelect();
     renderDoctorsSelect();
     renderCoursesSidebar();
+    await loadHoursRemainingPanel();
 
     window.addEventListener("dmportal:globalFiltersChanged", () => {
       // Filters affect:
@@ -991,6 +1128,7 @@
       renderCoursesSidebar();
       renderScheduleMetaHint();
       renderScheduleGrid();
+      loadHoursRemainingPanel();
 
       // Refresh modal course dropdown if open
       if (document.getElementById("slotModal")?.classList.contains("open")) {
@@ -1044,6 +1182,8 @@
       }
       const fd = new FormData();
       fd.append("start_date", d);
+      const weekType = document.getElementById("weekTypeSelect")?.value || "ACTIVE";
+      fd.append("week_type", weekType);
       await fetchJson("php/start_week.php", { method: "POST", body: fd });
       await loadWeeks();
       renderWeeksSelect();
@@ -1053,6 +1193,39 @@
         await refreshAvailability();
         renderScheduleMetaHint();
         renderScheduleGrid();
+      }
+    });
+
+    document.getElementById("updateWeekTypeBtn")?.addEventListener("click", async () => {
+      if (!state.activeWeekId) {
+        setStatusById("scheduleStatus", "Pick a week first.", "error");
+        return;
+      }
+      const value = document.getElementById("weekTypeUpdate")?.value || "";
+      if (!value) {
+        setStatusById("scheduleStatus", "Choose a week type to apply.", "error");
+        return;
+      }
+      try {
+        setStatusById("scheduleStatus", "Updating week type...");
+        const fd = new FormData();
+        fd.append("week_id", String(state.activeWeekId));
+        fd.append("week_type", value);
+        const payload = await fetchJson("php/set_week_type.php", { method: "POST", body: fd });
+        if (!payload?.success) throw new Error(payload?.error || "Failed to update week.");
+        document.getElementById("weekTypeUpdate").value = "";
+        await loadWeeks();
+        renderWeeksSelect();
+        if (state.activeDoctorId) {
+          await loadSchedule(state.activeDoctorId);
+          await refreshUnavailability();
+          await refreshAvailability();
+          renderScheduleMetaHint();
+          renderScheduleGrid();
+        }
+        setStatusById("scheduleStatus", "Week updated.", "success");
+      } catch (err) {
+        setStatusById("scheduleStatus", err.message || "Failed to update week.", "error");
       }
     });
 
@@ -1176,6 +1349,7 @@
       await refreshAvailability();
       renderScheduleMetaHint();
       renderScheduleGrid();
+      await loadHoursRemainingPanel();
     });
 
     // Modal buttons

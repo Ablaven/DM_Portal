@@ -4,37 +4,68 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
-
-auth_require_roles(['admin','management','student']);
 require_once __DIR__ . '/_xlsx_writer.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
+require_once __DIR__ . '/_smtp_mailer.php';
 
-// XLSX export for Student Schedule (Program + Year + Semester + Week)
+header('Content-Type: application/json');
 
-$program = trim((string)($_GET['program'] ?? ''));
-$yearLevel = (int)($_GET['year_level'] ?? 0);
-$semester = (int)($_GET['semester'] ?? 0);
-$weekId = (int)($_GET['week_id'] ?? 0);
+auth_require_roles(['admin', 'management'], true);
 
-if ($program === '' || $yearLevel < 1 || $yearLevel > 3 || $semester < 1 || $semester > 2) {
+$input = json_decode(file_get_contents('php://input') ?: '{}', true);
+
+$program = trim((string)($input['program'] ?? ''));
+$yearLevel = (int)($input['year_level'] ?? 0);
+$semester = (int)($input['semester'] ?? 0);
+$weekId = (int)($input['week_id'] ?? 0);
+
+if ($program === '') {
     http_response_code(400);
-    header('Content-Type: text/plain');
-    echo 'program, year_level(1-3), and semester(1-2) are required';
+    echo json_encode(['success' => false, 'error' => 'program is required.']);
+    exit;
+}
+
+if ($yearLevel < 1 || $yearLevel > 3) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'year_level must be 1-3.']);
+    exit;
+}
+
+if ($semester < 1 || $semester > 2) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'semester must be 1 or 2.']);
     exit;
 }
 
 try {
     $pdo = get_pdo();
 
-    // Ensure optional per-year doctor color table exists.
+    $defaultCc = ['asmaa.sharif@ufe.edu.eg', 'Sherrost@yahoo.com'];
+    $emailStmt = $pdo->prepare(
+        'SELECT DISTINCT email FROM students WHERE program = :program AND year_level = :year_level AND email IS NOT NULL AND TRIM(email) <> "" ORDER BY full_name ASC'
+    );
+    $emailStmt->execute([':program' => $program, ':year_level' => $yearLevel]);
+    $emails = array_values(array_filter(array_map('trim', array_column($emailStmt->fetchAll(), 'email'))));
+
+    if (empty($emails)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'No student emails found for this year level.']);
+        exit;
+    }
+
+    $recipient = array_shift($emails);
+    $cc = array_values(array_unique(array_filter(array_merge($emails, $defaultCc), function ($email) use ($recipient) {
+        $value = trim((string)$email);
+        return $value !== '' && $value !== $recipient;
+    })));
+
     dmportal_ensure_doctor_year_colors_table($pdo);
 
     if ($weekId <= 0) {
         $wk = $pdo->query("SELECT week_id, label FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
         if (!$wk) {
             http_response_code(400);
-            header('Content-Type: text/plain');
-            echo 'No active week';
+            echo json_encode(['success' => false, 'error' => 'No active week']);
             exit;
         }
         $weekId = (int)$wk['week_id'];
@@ -74,7 +105,6 @@ try {
     $stmt->execute([':week_id' => $weekId, ':program' => $program, ':year_level' => $yearLevel, ':semester' => $semester]);
     $rows = $stmt->fetchAll();
 
-    // Combine (if multiple per slot => Multiple)
     $grid = [];
     foreach ($rows as $r) {
         $day = (string)$r['day_of_week'];
@@ -91,29 +121,25 @@ try {
                 'color_code' => '#999999',
                 'year_level' => $yearLevel,
                 'room_code' => null,
+                'extra_minutes' => 0,
             ];
         }
     }
 
     $xlsx = new SimpleXlsxWriter();
-
     $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
-    $rowHeights = [];
 
     $dataRows[] = [$title, '', '', '', '', ''];
     $styleMap[] = [0 => $xlsx->styleTitle()];
-    $rowHeights[] = 24;
 
     $hdr = array_merge(['Time'], $days);
     $dataRows[] = $hdr;
     $styleMap[] = array_fill(0, count($hdr), $xlsx->styleHeader());
-    $rowHeights[] = 20;
 
     foreach ($slots as $slot) {
-        // Show time only (no "Slot" prefix)
         $slotLabel = match ($slot) {
             1 => '8:30 AM–10:00 AM',
             2 => '10:10 AM–11:30 AM',
@@ -128,7 +154,6 @@ try {
 
         foreach ($days as $d) {
             $isStripeRow = ($slot % 2 === 0);
-
             $text = '';
             $style = $isStripeRow ? $xlsx->styleStripe() : $xlsx->styleCell();
 
@@ -152,7 +177,6 @@ try {
                 }
 
                 $hex = strtoupper(ltrim((string)($r['color_code'] ?? '#999999'), '#'));
-                // Make doctor color fills much lighter for a cleaner Excel look.
                 $style = $xlsx->styleLectureFill(XlsxColor::pastelize($hex, 0.85));
             }
 
@@ -162,10 +186,8 @@ try {
 
         $dataRows[] = $row;
         $styleMap[] = $rowStyles;
-        $rowHeights[] = 64;
     }
 
-    // Only set header heights. Let Excel auto-size schedule rows to avoid text being squeezed.
     $xlsx->addSheet(
         'Student Schedule',
         $dataRows,
@@ -178,9 +200,28 @@ try {
     );
 
     $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester} - {$weekLabel}.xlsx";
-    $xlsx->download($fileName);
+    $xlsxBytes = $xlsx->downloadToString($fileName);
+
+    $subject = "Student Schedule — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $body = "Dear Students,\n\nPlease find attached the schedule for {$program} (Year {$yearLevel}, Semester {$semester}) for {$weekLabel}." .
+        "\n\nIf you have any questions or require clarification, please contact the Academic Office." .
+        "\n\nKind regards,\nDigital Marketing Portal";
+
+    $mailer = new DmportalSmtpMailer();
+    $mailer->send(
+        $recipient,
+        $subject,
+        $body,
+        [[
+            'name' => $fileName,
+            'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'data' => $xlsxBytes,
+        ]],
+        $cc
+    );
+
+    echo json_encode(['success' => true]);
 } catch (Throwable $e) {
     http_response_code(500);
-    header('Content-Type: text/plain');
-    echo 'Export failed';
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }

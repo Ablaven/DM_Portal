@@ -14,7 +14,7 @@ auth_require_roles(['admin','management']);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dr.Sheirf</title>
+  <title>Dashboard</title>
   <link rel="stylesheet" href="css/style.css?v=20251229" />
 </head>
 <body class="course-dashboard">
@@ -86,22 +86,38 @@ auth_require_roles(['admin','management']);
           <canvas id="courseDashboardChart" height="420" aria-label="Course progress chart" role="img"></canvas>
         </div>
 
-        <div class="dashboard-card">
+        <div class="dashboard-card dashboard-card-wide">
           <div class="dashboard-card-head">
             <div>
-              <div class="dashboard-card-title">Missionnaire vs Others</div>
+              <div class="dashboard-card-title">Egyptian vs French</div>
               <div class="dashboard-card-subtitle muted">Total course hours (even split across assigned doctors unless manually allocated)</div>
             </div>
           </div>
 
-          <canvas id="missionnairePie" height="240" aria-label="Missionnaire vs other doctors pie chart" role="img"></canvas>
+          <canvas id="missionnairePie" height="240" aria-label="Egyptian vs French pie chart" role="img"></canvas>
           <div id="missionnairePieText" class="dashboard-metric"></div>
         </div>
 
         <div class="dashboard-card">
-          <div class="dashboard-card-title">Top Remaining</div>
-          <div class="dashboard-card-subtitle muted">Courses with most hours left</div>
-          <canvas id="courseDashboardTopRemaining" height="240" aria-label="Top remaining courses" role="img"></canvas>
+          <div class="dashboard-card-head">
+            <div>
+              <div class="dashboard-card-title">Egyptian Hours (Done vs Remaining)</div>
+              <div class="dashboard-card-subtitle muted">Total hours grouped by doctor type</div>
+            </div>
+          </div>
+          <canvas id="dashboardEgyptianHours" height="220" aria-label="Egyptian hours done vs remaining" role="img"></canvas>
+          <div id="dashboardEgyptianHoursText" class="dashboard-metric"></div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="dashboard-card-head">
+            <div>
+              <div class="dashboard-card-title">French Hours (Done vs Remaining)</div>
+              <div class="dashboard-card-subtitle muted">Total hours grouped by doctor type</div>
+            </div>
+          </div>
+          <canvas id="dashboardFrenchHours" height="220" aria-label="French hours done vs remaining" role="img"></canvas>
+          <div id="dashboardFrenchHoursText" class="dashboard-metric"></div>
         </div>
       </div>
 

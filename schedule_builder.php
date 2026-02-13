@@ -22,7 +22,16 @@ auth_require_roles(['admin','management']);
   <?php render_portal_navbar('schedule_builder.php'); ?>
 
   <div class="layout layout-single">
-    <main class="main">
+    <div class="schedule-builder-layout">
+      <aside class="schedule-hours-panel">
+        <div class="panel-header">
+          <h3>Hours Report</h3>
+          <p class="muted">Matches the Hours Report page (sorted by remaining hours).</p>
+        </div>
+        <div id="scheduleHoursStatus" class="status" role="status" aria-live="polite"></div>
+        <div id="scheduleHoursList" class="hours-report-panel"></div>
+      </aside>
+      <main class="main">
       <header class="main-header">
         <div>
           <h2>Build Doctor Schedules</h2>
@@ -35,14 +44,26 @@ auth_require_roles(['admin','management']);
               <option value="">Loading…</option>
             </select>
             <input id="weekStartDate" class="navlink" style="padding:8px 10px;" type="date" />
+            <select id="weekTypeSelect" class="navlink" style="padding:8px 10px;">
+              <option value="ACTIVE">Active Week</option>
+              <option value="PREP">Prep Week</option>
+            </select>
             <button id="startWeekBtn" class="btn btn-secondary btn-small" type="button">Start</button>
             <button id="stopWeekBtn" class="btn btn-secondary btn-small" type="button">Stop</button>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="weekTypeUpdate" class="navlink" style="padding:8px 10px;">
+                <option value="">Set selected week...</option>
+                <option value="ACTIVE">Make Active</option>
+                <option value="PREP">Make Prep</option>
+              </select>
+              <button id="updateWeekTypeBtn" class="btn btn-secondary btn-small" type="button">Apply</button>
+            </div>
           </div>
           <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
             <button id="exportDoctorXls" class="btn btn-secondary" type="button">Export Doctor (.xlsx)</button>
-            <a id="exportDoctorEmail" class="icon-btn" href="" target="_blank" rel="noopener" title="Email doctor schedule" aria-label="Email doctor schedule" aria-disabled="true">
+            <button id="exportDoctorEmail" class="icon-btn" type="button" title="Email doctor schedule" aria-label="Email doctor schedule" aria-disabled="true">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
-            </a>
+            </button>
             <a id="exportDoctorWhatsApp" class="icon-btn" href="" target="_blank" rel="noopener" title="WhatsApp doctor schedule" aria-label="WhatsApp doctor schedule" aria-disabled="true">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.5 3.5A11 11 0 0 0 2.9 17.8L2 22l4.3-.9A11 11 0 0 0 20.5 3.5Zm-8.9 17a9 9 0 0 1-4.6-1.2l-.3-.2-2.6.6.6-2.5-.2-.3A9 9 0 1 1 11.6 20.5Zm5-6.4c-.3-.2-1.6-.8-1.9-.9s-.5-.1-.7.2-.8.9-1.1.4-.4.3-.2.1a7.4 7.4 0 0 1-2.2-1.4 8.2 8.2 0 0 1-1.5-1.9c-.2-.4 0-.6.2-.8l.4-.5c.1-.2.2-.4.3-.5.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.3-.6-.6-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.8 1.2 3.3 1.4 3.5c.2.2 2.3 3.5 5.6 4.9.8.3 1.4.5 1.9.6.8.3 1.6.2 2.2.1.7-.1 2.1-.9 2.4-1.7.3-.8.3-1.5.2-1.7-.1-.2-.3-.3-.6-.5Z"/></svg>
             </a>
@@ -154,7 +175,10 @@ auth_require_roles(['admin','management']);
           </table>
         </div>
       </section>
-    </main>
+        </div>
+      </div>
+      </main>
+    </div>
   </div>
 
   <!-- Simple modal for slot assignment -->

@@ -29,39 +29,56 @@ try {
     $params = [];
 
     if ($role === 'teacher') {
-        $sql =
-            "SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
-                    c.course_type, c.subject_code
-             FROM courses c
-             WHERE c.doctor_id = :doctor_id";
         $params[':doctor_id'] = $doctorId;
+        $params[':doctor_id2'] = $doctorId;
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $courses = $stmt->fetchAll();
-
-        // Try merging course_doctors assignments if table exists.
         try {
-            $sql2 =
+            $stmt = $pdo->prepare(
                 "SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
-                        c.course_type, c.subject_code
+                        c.course_type, c.subject_code,
+                        c.doctor_id,
+                        (SELECT GROUP_CONCAT(DISTINCT cd.doctor_id ORDER BY cd.doctor_id SEPARATOR ',')
+                         FROM course_doctors cd
+                         WHERE cd.course_id = c.course_id) AS doctor_ids
                  FROM courses c
-                 JOIN course_doctors cd ON cd.course_id = c.course_id AND cd.doctor_id = :doctor_id";
-            $stmt2 = $pdo->prepare($sql2);
-            $stmt2->execute($params);
-            $courses = array_merge($courses, $stmt2->fetchAll());
+                 WHERE c.doctor_id = :doctor_id
+                    OR EXISTS (
+                        SELECT 1
+                        FROM course_doctors cd2
+                        WHERE cd2.course_id = c.course_id AND cd2.doctor_id = :doctor_id2
+                    )"
+            );
+            $stmt->execute($params);
+            $courses = $stmt->fetchAll();
         } catch (PDOException $e) {
-            if ((int)($e->errorInfo[1] ?? 0) !== 1146) {
+            $code = (int)($e->errorInfo[1] ?? 0);
+            if (!in_array($code, [1146, 1055], true)) {
                 throw $e;
             }
+            $stmt = $pdo->prepare(
+                "SELECT course_id, course_name, program, year_level, semester,
+                        course_type, subject_code, doctor_id,
+                        NULL AS doctor_ids
+                 FROM courses
+                 WHERE doctor_id = :doctor_id"
+            );
+            $stmt->execute($params);
+            $courses = $stmt->fetchAll();
         }
 
-        // De-duplicate by course_id
-        $unique = [];
-        foreach ($courses as $row) {
-            $unique[(int)$row['course_id']] = $row;
+        if (!$courses) {
+            $stmt = $pdo->prepare(
+                "SELECT DISTINCT c.course_id, c.course_name, c.program, c.year_level, c.semester,
+                        c.course_type, c.subject_code,
+                        c.doctor_id,
+                        NULL AS doctor_ids
+                 FROM doctor_schedules s
+                 JOIN courses c ON c.course_id = s.course_id
+                 WHERE s.doctor_id = :doctor_id"
+            );
+            $stmt->execute($params);
+            $courses = $stmt->fetchAll();
         }
-        $courses = array_values($unique);
 
         usort($courses, fn($a, $b) => [$a['year_level'], $a['course_name']] <=> [$b['year_level'], $b['course_name']]);
 
@@ -71,8 +88,12 @@ try {
 
     $sql =
         "SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
-                c.course_type, c.subject_code
+                c.course_type, c.subject_code,
+                c.doctor_id,
+                GROUP_CONCAT(DISTINCT cd.doctor_id ORDER BY cd.doctor_id SEPARATOR ',') AS doctor_ids
          FROM courses c
+         LEFT JOIN course_doctors cd ON cd.course_id = c.course_id
+         GROUP BY c.course_id
          ORDER BY c.year_level ASC, c.course_name ASC";
 
     $stmt = $pdo->query($sql);

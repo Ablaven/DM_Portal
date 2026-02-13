@@ -197,7 +197,7 @@ function auth_allowed_pages_for_user(array $user): ?array
         return null; // full access
     }
     if (($user['role'] ?? '') === 'teacher') {
-        return ['doctor.php', 'availability.php', 'attendance.php', 'evaluation.php', 'profile.php'];
+        return ['doctor.php', 'availability.php', 'attendance.php', 'evaluation.php', 'hours_report.php', 'hours_report_detail.php', 'attendance_report.php', 'evaluation_reports.php', 'profile.php'];
     }
     if (($user['role'] ?? '') === 'student') {
         $studentId = (int)($user['student_id'] ?? 0);
@@ -257,7 +257,7 @@ function auth_nav_home_href(): string
 
     $role = (string)($u['role'] ?? '');
     if ($role === 'student') return 'students.php';
-    if ($role === 'teacher') return 'index.php';
+    if ($role === 'teacher') return 'doctor.php';
     if ($role === 'management') return 'index.php';
     return 'index.php';
 }

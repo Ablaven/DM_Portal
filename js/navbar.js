@@ -125,20 +125,20 @@
         const nameLink = document.createElement("a");
         nameLink.className = "dropdown-doctor-name";
         nameLink.href = `doctor.php?doctor_id=${encodeURIComponent(d.doctor_id)}`;
-        nameLink.textContent = d.full_name;
+
+        const rawName = String(d.full_name || d.fullName || d.doctor_name || d.name || "").trim();
+        const fallbackName = rawName || (d.email ? String(d.email).trim() : "") || (d.doctor_id ? `Doctor #${d.doctor_id}` : "Doctor");
+        nameLink.textContent = fallbackName || "Doctor";
+        nameLink.title = rawName || fallbackName || "Doctor";
 
         const actions = document.createElement("div");
         actions.className = "dropdown-doctor-actions";
 
-        const emailHref = buildMailtoHref(d.email, "Weekly Schedule", buildDoctorScheduleGreetingText(d.full_name));
-        const emailA = document.createElement("a");
+        const emailA = document.createElement("button");
+        emailA.type = "button";
         emailA.className = "icon-btn icon-btn-small";
-        emailA.href = emailHref || "";
-        emailA.target = "_blank";
-        emailA.rel = "noopener";
         emailA.title = "Email";
         emailA.setAttribute("aria-label", "Email");
-        if (!emailHref) emailA.setAttribute("aria-disabled", "true");
         emailA.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>`;
 
         const p = normalizePhoneForWhatsApp(d.phone_number);
@@ -153,17 +153,31 @@
         if (!waHref) waA.setAttribute("aria-disabled", "true");
         waA.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M16.6 14.2c-.3-.2-1.7-.8-1.9-.9-.2-.1-.4-.2-.6.1l-.8.9c-.2.2-.3.2-.5.1-.3-.1-1.2-.4-2.2-1.4-.8-.7-1.3-1.6-1.4-1.9-.1-.3 0-.4.1-.6l.4-.4c.1-.1.2-.3.3-.4.1-.1.1-.3 0-.4-.1-.2-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9 0 1.1.8 2.2.9 2.3.1.2 1.6 2.5 4 3.4.6.2 1 .3 1.3.4.6.1 1.1.1 1.6.1.5-.1 1.7-.7 1.9-1.3.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.4-.3zM12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.5A10 10 0 1 0 12 2z"/></svg>`;
 
-        emailA.addEventListener("click", (e) => {
-          if (emailA.getAttribute("aria-disabled") === "true") {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-
-          const exportUrl = buildDoctorScheduleExportUrl(d.doctor_id, state?.activeWeekId);
-          triggerBackgroundDownload(exportUrl);
-
+        emailA.addEventListener("click", async (e) => {
+          e.preventDefault();
           e.stopPropagation();
+
+          try {
+            emailA.disabled = true;
+            const payload = await fetchJson("php/email_doctor_schedule.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                doctor_id: d.doctor_id,
+                week_id: state?.activeWeekId || 0,
+              }),
+            });
+
+            if (payload?.success) {
+              alert("Schedule emailed successfully.");
+            } else {
+              alert(payload?.error || "Failed to send email.");
+            }
+          } catch (err) {
+            alert(err?.message || "Failed to send email.");
+          } finally {
+            emailA.disabled = false;
+          }
         });
         waA.addEventListener("click", (e) => {
           if (waA.getAttribute("aria-disabled") === "true") e.preventDefault();
@@ -176,6 +190,10 @@
         row.appendChild(nameLink);
         row.appendChild(actions);
         menu.appendChild(row);
+
+        if (!rawName) {
+          row.classList.add("doctor-name-missing");
+        }
       }
 
       btn.addEventListener("click", (e) => {
@@ -218,7 +236,8 @@
       }
 
       const isInternal = !/^https?:\/\//i.test(href) && /\.php(\?|#|$)/i.test(href);
-      if (isInternal && allowed && !allowed.has(href)) {
+      const baseHref = href.split("?")[0];
+      if (isInternal && allowed && !(allowed.has(href) || allowed.has(baseHref))) {
         a.style.display = "none";
       } else {
         a.style.display = "";

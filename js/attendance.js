@@ -155,8 +155,10 @@
 
   async function initAttendancePage() {
   let currentCtx = null; // {schedule_id:number, items:[]}
+  let latestGrid = {};
   const me = meCache || (await authFetchMe());
-  const isAdmin = String(me?.role || "").toLowerCase() === "admin";
+  const role = String(me?.role || "").toLowerCase();
+  const isAdmin = role === "admin" || role === "management";
 
   try {
     setStatusById("attendanceStatus", "Loading...");
@@ -202,7 +204,8 @@
       for (const w of attendanceState.weeks || []) {
         const opt = document.createElement("option");
         opt.value = String(w.week_id);
-        opt.textContent = String(w.label || `Week ${w.week_id}`);
+        const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+        opt.textContent = String(w.label || `Week ${w.week_id}`) + prepTag + (w.status === "active" ? " (active)" : "");
         if (w.status === "active") opt.selected = true;
         weekSel.appendChild(opt);
       }
@@ -235,7 +238,9 @@
       const payload = await fetchJson(`php/get_attendance_grid.php?${qs.toString()}`);
       if (!payload.success) throw new Error(payload.error || "Failed to load attendance grid");
 
-      renderAttendanceGrid(payload.data?.grid || {}, async (_day, _slot, chosen) => {
+      latestGrid = payload.data?.grid || {};
+
+      renderAttendanceGrid(latestGrid, async (_day, _slot, chosen) => {
         try {
           if (!chosen?.schedule_id) {
             setStatusById("attendanceStatus", "No schedule in this slot.", "error");
@@ -243,6 +248,7 @@
           }
 
           currentCtx = { schedule_id: Number(chosen.schedule_id), items: [] };
+          setStatusById("attendanceModalStatus", "");
 
           const meta = document.getElementById("attendanceModalMeta");
           if (meta) {
@@ -356,8 +362,10 @@
     if (!isAdmin) {
       const bulkPresent = document.getElementById("attendanceMarkAllPresent");
       const bulkAbsent = document.getElementById("attendanceMarkAllAbsent");
+      const copyNextBtn = document.getElementById("attendanceCopyNextLecture");
       if (bulkPresent) bulkPresent.style.display = "none";
       if (bulkAbsent) bulkAbsent.style.display = "none";
+      if (copyNextBtn) copyNextBtn.style.display = "none";
     }
 
     document.getElementById("attendanceSaveChanges")?.addEventListener("click", async () => {
@@ -365,10 +373,18 @@
         setStatusById("attendanceModalStatus", "Open a slot first.", "error");
         return;
       }
-      const targets = Array.from(dirtyStudents || []).filter((n) => Number(n) > 0);
+      const allIds = (currentCtx.items || []).map((x) => Number(x.student_id)).filter((n) => n > 0);
+      const targets = isAdmin ? Array.from(dirtyStudents || []).filter((n) => Number(n) > 0) : allIds;
       if (!targets.length) {
         setStatusById("attendanceModalStatus", "No changes to save.", "info");
         return;
+      }
+
+      if (!isAdmin) {
+        for (const it of currentCtx.items || []) {
+          const status = String(it?.attendance_status || "").toUpperCase();
+          it.attendance_status = status === "PRESENT" ? "PRESENT" : "ABSENT";
+        }
       }
 
       try {
@@ -385,10 +401,7 @@
         dirtyStudents.clear();
         if (!isAdmin) {
           for (const it of currentCtx.items || []) {
-            const status = String(it?.attendance_status || "").toUpperCase();
-            if (status === "PRESENT" || status === "ABSENT") {
-              it.attendance_locked = true;
-            }
+            it.attendance_locked = true;
           }
           renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin });
         }
@@ -399,6 +412,70 @@
     });
 
     // Export whole subject (course) with 20-week placeholders
+    document.getElementById("attendanceCopyNextLecture")?.addEventListener("click", async () => {
+      if (!isAdmin) {
+        setStatusById("attendanceModalStatus", "Admins only.", "error");
+        return;
+      }
+      if (!currentCtx?.schedule_id) {
+        setStatusById("attendanceModalStatus", "Open a slot first.", "error");
+        return;
+      }
+      if (dirtyStudents.size > 0) {
+        setStatusById("attendanceModalStatus", "Save changes before copying.", "warn");
+        return;
+      }
+      try {
+        setStatusById("attendanceModalStatus", "Copying to next lecture...");
+        const fd = new FormData();
+        fd.append("schedule_id", String(currentCtx.schedule_id));
+        const payload = await fetchJson("php/copy_attendance_next_lecture.php", { method: "POST", body: fd });
+        if (!payload.success) throw new Error(payload.error || "Copy failed");
+
+        setStatusById(
+          "attendanceModalStatus",
+          `Copied ${payload.data?.copied || 0} records to next lecture (week ${payload.data?.target_week_id}, ${payload.data?.target_day_of_week} slot ${payload.data?.target_slot_number}).`,
+          "success"
+        );
+
+        await refreshAttendanceGrid();
+
+        const nextScheduleId = Number(payload.data?.target_schedule_id || 0);
+        if (nextScheduleId) {
+          let nextSlot = null;
+          for (const day of Object.keys(latestGrid || {})) {
+            const slots = latestGrid?.[day] || {};
+            for (const slot of Object.keys(slots || {})) {
+              const items = slots?.[slot]?.items || [];
+              const found = items.find((it) => Number(it?.schedule_id) === nextScheduleId);
+              if (found) {
+                nextSlot = found;
+                break;
+              }
+            }
+            if (nextSlot) break;
+          }
+
+          if (nextSlot) {
+            currentCtx = { schedule_id: Number(nextSlot.schedule_id), items: [] };
+            const meta = document.getElementById("attendanceModalMeta");
+            if (meta) {
+              meta.innerHTML = `<strong>${escapeHtml(nextSlot.course_name || "")}</strong> &middot; Year ${escapeHtml(nextSlot.year_level)}${nextSlot.room_code ? ` &middot; Room ${escapeHtml(nextSlot.room_code)}` : ""}`;
+            }
+            setStatusById("attendanceModalStatus", "Loading students...");
+            const attPayload = await fetchJson(`php/get_attendance.php?schedule_id=${encodeURIComponent(nextSlot.schedule_id)}`);
+            if (!attPayload.success) throw new Error(attPayload.error || "Failed to load attendance");
+            currentCtx.items = attPayload.data?.items || [];
+            renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin });
+            dirtyStudents.clear();
+            setStatusById("attendanceModalStatus", "");
+          }
+        }
+      } catch (err) {
+        setStatusById("attendanceModalStatus", err.message || "Copy failed", "error");
+      }
+    });
+
     document.getElementById("exportAttendanceXls")?.addEventListener("click", () => {
       const courseId = Number(document.getElementById("attendanceCourseSelect")?.value || 0);
       if (!courseId) {

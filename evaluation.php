@@ -52,6 +52,12 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
               <option value="2">Sem 2</option>
             </select>
           </div>
+          <div class="field" style="min-width:220px;">
+            <label for="evaluationDoctorFilter">Doctor</label>
+            <select id="evaluationDoctorFilter">
+              <option value="">All</option>
+            </select>
+          </div>
           <div class="field" style="min-width:280px;">
             <label for="evaluationCourseSelect">Course</label>
             <select id="evaluationCourseSelect">

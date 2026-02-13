@@ -5,6 +5,7 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_week_schema_helpers.php';
 
 auth_require_roles(['admin','management'], true);
 
@@ -21,23 +22,43 @@ if ($startDate === '') bad_request('start_date is required (YYYY-MM-DD).');
 
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) bad_request('Invalid start_date format.');
 
+$weekType = strtoupper(trim((string)($_POST['week_type'] ?? 'ACTIVE')));
+if (!in_array($weekType, ['ACTIVE', 'PREP'], true)) {
+    bad_request('week_type must be ACTIVE or PREP.');
+}
+$isPrep = $weekType === 'PREP' ? 1 : 0;
+
 try {
     $pdo = get_pdo();
     $pdo->beginTransaction();
 
-    // Close any existing active week
-    $pdo->exec("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active'");
+    dmportal_ensure_weeks_prep_column($pdo);
+
+    if ($isPrep === 0) {
+        // Close any existing active week
+        $pdo->exec("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active'");
+    }
 
     // Compute next label
     $max = $pdo->query("SELECT COALESCE(MAX(week_id),0) AS max_id FROM weeks")->fetch();
     $next = ((int)$max['max_id']) + 1;
-    $label = 'Week ' . $next;
+    $label = ($isPrep === 1 ? 'Prep Week ' : 'Week ') . $next;
 
-    $stmt = $pdo->prepare("INSERT INTO weeks (label, start_date, status) VALUES (:label, :start_date, 'active')");
-    $stmt->execute([':label'=>$label, ':start_date'=>$startDate]);
+    $status = $isPrep === 1 ? 'closed' : 'active';
+
+    $stmt = $pdo->prepare("INSERT INTO weeks (label, start_date, status, is_prep) VALUES (:label, :start_date, :status, :is_prep)");
+    $stmt->execute([':label'=>$label, ':start_date'=>$startDate, ':status'=>$status, ':is_prep'=>$isPrep]);
 
     $pdo->commit();
-    echo json_encode(['success'=>true,'data'=>['week_id'=>(int)$pdo->lastInsertId(),'label'=>$label]]);
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'week_id' => (int)$pdo->lastInsertId(),
+            'label' => $label,
+            'status' => $status,
+            'is_prep' => $isPrep,
+        ],
+    ]);
 } catch (Throwable $e) {
     if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);

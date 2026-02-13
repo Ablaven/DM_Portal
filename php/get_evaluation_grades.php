@@ -42,7 +42,8 @@ try {
         }
     }
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $doctorId);
+    $configDoctorId = $role === 'teacher' ? 0 : $doctorId;
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId);
     $items = $config['items'] ?? [];
 
     $studentsStmt = $pdo->prepare(
@@ -92,6 +93,7 @@ try {
             'weight' => (float)$item['weight'],
         ];
     }
+    $attendanceMax = dmportal_eval_get_attendance_weight($itemsOut);
 
     $itemsPayload = [];
     foreach ($students as $s) {
@@ -100,7 +102,7 @@ try {
         $gradeId = $existing ? (int)$existing['grade_id'] : 0;
         $scores = $gradeId ? ($scoreMap[$gradeId] ?? []) : [];
 
-        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid);
+        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid, $attendanceMax);
         $attendanceScore = $attendance['score'];
         $finalScore = null;
         if ($items) {

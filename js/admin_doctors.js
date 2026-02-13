@@ -13,7 +13,7 @@
     buildWhatsAppSendUrl,
   } = window.dmportal || {};
 
-  const state = { doctors: [], weeks: [] };
+  const state = { doctors: [], weeks: [], doctorTypes: ["Egyptian", "French"] };
 
   async function loadDoctors() {
     const payload = await fetchJson("php/get_doctors.php");
@@ -104,6 +104,10 @@
     document.getElementById("edit_doctor_email").value = doctor.email || "";
     document.getElementById("edit_doctor_phone").value = doctor.phone_number || "";
     document.getElementById("edit_doctor_color").value = doctor.color_code || "#0055A4";
+    const typeInput = document.getElementById("edit_doctor_type");
+    if (typeInput) {
+      typeInput.value = doctor.doctor_type || "Egyptian";
+    }
 
     document.getElementById("edit_doctor_color_y1").value = doctor.color_code || "#0055A4";
     document.getElementById("edit_doctor_color_y2").value = doctor.color_code || "#0055A4";
@@ -141,6 +145,7 @@
     fd.append("full_name", document.getElementById("edit_doctor_full_name").value);
     fd.append("email", document.getElementById("edit_doctor_email").value);
     fd.append("phone_number", document.getElementById("edit_doctor_phone").value);
+    fd.append("doctor_type", document.getElementById("edit_doctor_type")?.value || "Egyptian");
     fd.append("color_code", document.getElementById("edit_doctor_color").value);
 
     const yearColors = {
@@ -172,6 +177,7 @@
       e.preventDefault();
       setStatusById("doctorStatus", "Saving…");
       const fd = new FormData(form);
+      if (!fd.get("doctor_type")) fd.set("doctor_type", "Egyptian");
       try {
         const payload = await fetchJson("php/add_doctor.php", { method: "POST", body: fd });
         if (!payload.success) throw new Error(payload.error || "Failed to add doctor.");
@@ -187,6 +193,8 @@
         }
         setStatusById("doctorStatus", "Saved.", "success");
         form.reset();
+        const typeSelect = document.getElementById("doctor_type");
+        if (typeSelect) typeSelect.value = "Egyptian";
         await loadDoctors();
         renderDoctorsList();
       } catch (err) {
@@ -255,7 +263,8 @@
       for (const w of state.weeks) {
         const opt = document.createElement("option");
         opt.value = w.week_id;
-        opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+        const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+        opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
         weekSel.appendChild(opt);
       }
     }

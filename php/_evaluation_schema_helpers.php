@@ -163,30 +163,46 @@ function dmportal_eval_items_sum(array $items): float
     return round($sum, 2);
 }
 
-function dmportal_eval_compute_attendance(PDO $pdo, int $courseId, int $studentId): array
+function dmportal_eval_get_attendance_weight(array $items, float $default = 20.0): float
 {
-    $stmt = $pdo->prepare(
-        "SELECT ar.status
-         FROM attendance_records ar
-         JOIN doctor_schedules s ON s.schedule_id = ar.schedule_id
-         WHERE s.course_id = :course_id AND ar.student_id = :student_id"
-    );
-    $stmt->execute([':course_id' => $courseId, ':student_id' => $studentId]);
-    $rows = $stmt->fetchAll();
-
-    $total = count($rows);
-    $present = 0;
-    foreach ($rows as $r) {
-        if ((string)$r['status'] === 'PRESENT') {
-            $present++;
+    foreach ($items as $item) {
+        $category = (string)($item['category_key'] ?? $item['category'] ?? '');
+        if ($category === 'attendance') {
+            $weight = (float)($item['weight'] ?? 0);
+            return $weight > 0 ? $weight : $default;
         }
     }
-    $score = $total > 0 ? round(($present / $total) * 20, 2) : 0.0;
+    return $default;
+}
+
+function dmportal_eval_compute_attendance(PDO $pdo, int $courseId, int $studentId, float $maxScore = 20.0): array
+{
+    $totalStmt = $pdo->prepare(
+        "SELECT COUNT(DISTINCT s.schedule_id)
+         FROM doctor_schedules s
+         WHERE s.course_id = :course_id"
+    );
+    $totalStmt->execute([':course_id' => $courseId]);
+    $total = (int)$totalStmt->fetchColumn();
+
+    $presentStmt = $pdo->prepare(
+        "SELECT COUNT(*)
+         FROM attendance_records ar
+         JOIN doctor_schedules s ON s.schedule_id = ar.schedule_id
+         WHERE s.course_id = :course_id
+           AND ar.student_id = :student_id
+           AND UPPER(ar.status) = 'PRESENT'"
+    );
+    $presentStmt->execute([':course_id' => $courseId, ':student_id' => $studentId]);
+    $present = (int)$presentStmt->fetchColumn();
+
+    $score = $total > 0 ? round(($present / $total) * $maxScore, 2) : 0.0;
 
     return [
         'total' => $total,
         'present' => $present,
         'score' => $score,
+        'max_score' => $maxScore,
     ];
 }
 
@@ -199,7 +215,7 @@ function dmportal_eval_compute_final(array $items, array $scores, float $attenda
         $category = (string)($item['category_key'] ?? $item['category'] ?? '');
 
         if ($category === 'attendance') {
-            $sum += ($attendanceScore / 20.0) * $mark;
+            $sum += min($attendanceScore, $mark);
             continue;
         }
         $val = 0.0;
@@ -256,6 +272,12 @@ function dmportal_eval_fetch_config(PDO $pdo, int $courseId, int $doctorId): ?ar
     $stmt = $pdo->prepare('SELECT config_id FROM evaluation_configs WHERE course_id = :course_id AND doctor_id = :doctor_id LIMIT 1');
     $stmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
     $row = $stmt->fetch();
+
+    if (!$row && $doctorId !== 0) {
+        $stmt->execute([':course_id' => $courseId, ':doctor_id' => 0]);
+        $row = $stmt->fetch();
+    }
+
     if (!$row) {
         return null;
     }

@@ -7,7 +7,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
 
-auth_require_roles(['admin','student'], true);
+auth_require_roles(['admin','management','student'], true);
 
 $program = trim((string)($_GET['program'] ?? ''));
 $yearLevel = (int)($_GET['year_level'] ?? 0);

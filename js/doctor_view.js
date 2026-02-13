@@ -280,25 +280,37 @@
 
         const emailBtn = document.getElementById("doctorEmail");
         if (emailBtn) {
-          const href = buildMailtoHref(d.email, "Weekly Schedule", buildDoctorScheduleGreetingText(d.full_name));
-          if (href) {
-            emailBtn.href = href;
-            emailBtn.setAttribute("aria-disabled", "false");
+          emailBtn.removeAttribute("href");
+          emailBtn.setAttribute("aria-disabled", "false");
 
-            if (emailBtn.dataset.downloadBound !== "1") {
-              emailBtn.dataset.downloadBound = "1";
-              emailBtn.addEventListener("click", (e) => {
-                if (emailBtn.getAttribute("aria-disabled") === "true" || !emailBtn.getAttribute("href")) {
-                  e.preventDefault();
-                  return;
+          if (emailBtn.dataset.sendBound !== "1") {
+            emailBtn.dataset.sendBound = "1";
+            emailBtn.addEventListener("click", async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              try {
+                emailBtn.classList.add("is-loading");
+                const payload = await fetchJson("php/email_doctor_schedule.php", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    doctor_id: d.doctor_id,
+                    week_id: doctorState.activeWeekId || 0,
+                  }),
+                });
+
+                if (payload?.success) {
+                  alert("Schedule emailed successfully.");
+                } else {
+                  alert(payload?.error || "Failed to send email.");
                 }
-                const exportUrl = buildDoctorScheduleExportUrl(d.doctor_id, doctorState.activeWeekId);
-                triggerBackgroundDownload(exportUrl);
-              });
-            }
-          } else {
-            emailBtn.href = "";
-            emailBtn.setAttribute("aria-disabled", "true");
+              } catch (err) {
+                alert(err?.message || "Failed to send email.");
+              } finally {
+                emailBtn.classList.remove("is-loading");
+              }
+            });
           }
         }
 
@@ -322,7 +334,8 @@
         for (const w of doctorState.weeks) {
           const opt = document.createElement("option");
           opt.value = w.week_id;
-          opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+          const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+          opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
           weekSel.appendChild(opt);
         }
         if (doctorState.activeWeekId) weekSel.value = String(doctorState.activeWeekId);

@@ -92,6 +92,53 @@ function getDashboardPalette() {
   };
 }
 
+function fitFontToArc(ctx, text, radius, arcSpan, baseSize) {
+  const safeRadius = Math.max(1, radius);
+  const maxWidth = Math.max(0, arcSpan * safeRadius * 0.92);
+  let size = baseSize;
+  ctx.font = `700 ${size}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+  let width = ctx.measureText(text).width;
+  while (width > maxWidth && size > 9) {
+    size -= 1;
+    ctx.font = `700 ${size}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+    width = ctx.measureText(text).width;
+  }
+  return size;
+}
+
+function drawTextAlongArc(ctx, text, cx, cy, radius, startAngle, endAngle, options = {}) {
+  if (!text) return;
+  const { color = "#000", baseSize = 13 } = options;
+  let arcSpan = endAngle - startAngle;
+  if (arcSpan < 0) arcSpan += Math.PI * 2;
+  if (arcSpan < 0.35) return;
+
+  const size = fitFontToArc(ctx, text, radius, arcSpan, baseSize);
+  ctx.font = `700 ${size}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+
+  const glyphs = Array.from(String(text));
+  const widths = glyphs.map((glyph) => ctx.measureText(glyph).width);
+  const totalWidth = widths.reduce((sum, w) => sum + w, 0);
+  const textAngle = totalWidth / Math.max(1, radius);
+  const centerAngle = startAngle + arcSpan / 2;
+  let currentAngle = centerAngle - textAngle / 2;
+
+  ctx.fillStyle = color;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+
+  glyphs.forEach((glyph, idx) => {
+    const w = widths[idx];
+    const angle = currentAngle + w / (2 * Math.max(1, radius));
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.fillText(glyph, 0, -radius);
+    ctx.restore();
+    currentAngle += w / Math.max(1, radius);
+  });
+}
+
 function drawCourseDashboardDonut(courses) {
   const canvas = document.getElementById("courseDashboardDonut");
   if (!canvas) return;
@@ -256,9 +303,10 @@ async function drawMissionnairePieChart() {
   if (f?.year_level) qs.set("year_level", String(f.year_level));
   if (f?.semester) qs.set("semester", String(f.semester));
 
-  let missionName = "Missionnaire";
-  let missionTotal = 0;
-  let othersTotal = 0;
+  let egyptianName = "Egyptian";
+  let egyptianTotal = 0;
+  let frenchName = "French";
+  let frenchTotal = 0;
 
   try {
     const url = "php/get_missionnaire_hours_pie.php" + (qs.toString() ? `?${qs.toString()}` : "");
@@ -266,23 +314,24 @@ async function drawMissionnairePieChart() {
     if (!payload?.success) throw new Error(payload?.error || "Failed to load pie data");
 
     // Preferred: use explicit aggregated fields if present.
-    const m = payload?.data?.missionnaire;
-    if (m && typeof m === "object") {
-      missionName = String(m?.full_name || "Missionnaire");
-      missionTotal = Number(m?.total_hours || 0);
-      othersTotal = Number(payload?.data?.others_total_hours || 0);
+    const egyptian = payload?.data?.egyptian;
+    const french = payload?.data?.french;
+    if (egyptian && french) {
+      egyptianName = String(egyptian?.label || "Egyptian");
+      egyptianTotal = Number(egyptian?.total_hours || 0);
+      frenchName = String(french?.label || "French");
+      frenchTotal = Number(french?.total_hours || 0);
     } else {
       // Fallback: aggregate from per-doctor breakdown.
       const doctors = Array.isArray(payload?.data?.doctors) ? payload.data.doctors : [];
       for (const d of doctors) {
         const total = Number(d?.total_hours || 0);
         if (!Number.isFinite(total) || total <= 0) continue;
-        const isM = Boolean(d?.is_missionnaire) || String(d?.full_name || "").toLowerCase() === "missionnaire";
-        if (isM) {
-          missionName = String(d?.full_name || missionName);
-          missionTotal += total;
+        const type = String(d?.doctor_type || "Egyptian").toLowerCase();
+        if (type === "french") {
+          frenchTotal += total;
         } else {
-          othersTotal += total;
+          egyptianTotal += total;
         }
       }
     }
@@ -296,9 +345,9 @@ async function drawMissionnairePieChart() {
     return;
   }
 
-  missionTotal = Number.isFinite(missionTotal) ? Math.max(0, missionTotal) : 0;
-  othersTotal = Number.isFinite(othersTotal) ? Math.max(0, othersTotal) : 0;
-  const total = missionTotal + othersTotal;
+  egyptianTotal = Number.isFinite(egyptianTotal) ? Math.max(0, egyptianTotal) : 0;
+  frenchTotal = Number.isFinite(frenchTotal) ? Math.max(0, frenchTotal) : 0;
+  const total = egyptianTotal + frenchTotal;
 
   if (total <= 0) {
     ctx.fillStyle = C.muted;
@@ -309,28 +358,28 @@ async function drawMissionnairePieChart() {
     return;
   }
 
-  // Standard 2-slice pie chart: Missionnaire vs Others
+  // Standard 2-slice pie chart: Egyptian vs French
   const cx = w / 2;
   const cy = h / 2;
   const r = Math.min(w, h) * 0.38;
 
   const startAngle = -Math.PI / 2;
-  const missionPct = total > 0 ? missionTotal / total : 0;
-  const aMissionEnd = startAngle + Math.PI * 2 * missionPct;
+  const egyptianPct = total > 0 ? egyptianTotal / total : 0;
+  const aEgyptianEnd = startAngle + Math.PI * 2 * egyptianPct;
 
-  // Missionnaire slice
+  // Egyptian slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.fillStyle = C.accent;
-  ctx.arc(cx, cy, r, startAngle, aMissionEnd);
+  ctx.arc(cx, cy, r, startAngle, aEgyptianEnd);
   ctx.closePath();
   ctx.fill();
 
-  // Others slice
+  // French slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
   ctx.fillStyle = getDashboardPalette().done;
-  ctx.arc(cx, cy, r, aMissionEnd, startAngle + Math.PI * 2);
+  ctx.arc(cx, cy, r, aEgyptianEnd, startAngle + Math.PI * 2);
   ctx.closePath();
   ctx.fill();
 
@@ -341,69 +390,25 @@ async function drawMissionnairePieChart() {
   ctx.arc(cx, cy, r, startAngle, startAngle + Math.PI * 2);
   ctx.stroke();
 
-  // Slice labels (outside) with callout lines
-  const labelFont = "600 12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const subFont = "11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const egyptAngleMid = (startAngle + aEgyptianEnd) / 2;
+  const frenchAngleMid = (aEgyptianEnd + (startAngle + Math.PI * 2)) / 2;
 
-  /**
-   * @param {number} midAngle
-   * @param {string} title
-   * @param {string} detail
-   * @param {string} color
-   */
-  function drawSliceLabel(midAngle, title, detail, color) {
-    // points
-    const r1 = r * 0.92;
-    const r2 = r * 1.12;
-    const x1 = cx + Math.cos(midAngle) * r1;
-    const y1 = cy + Math.sin(midAngle) * r1;
-    const x2 = cx + Math.cos(midAngle) * r2;
-    const y2 = cy + Math.sin(midAngle) * r2;
+  const egyptianLabel = `${egyptianName} ${Math.round(egyptianPct * 100)}%`;
+  const frenchPct = total > 0 ? frenchTotal / total : 0;
+  const frenchLabel = `${frenchName} ${Math.round(frenchPct * 100)}%`;
 
-    const isRight = Math.cos(midAngle) >= 0;
-    const elbow = 16;
-    const x3 = x2 + (isRight ? elbow : -elbow);
-    const y3 = y2;
+  const labelRadius = r * 0.68;
+  const textColor = "#000";
 
-    // line
-    ctx.strokeStyle = getDashboardPalette().muted;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.lineTo(x3, y3);
-    ctx.stroke();
+  drawTextAlongArc(ctx, egyptianLabel, cx, cy, labelRadius, startAngle, aEgyptianEnd, {
+    color: textColor,
+    baseSize: 13,
+  });
 
-    // dot
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(x1, y1, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // text
-    ctx.textAlign = isRight ? "left" : "right";
-    ctx.textBaseline = "bottom";
-    ctx.fillStyle = C.text;
-    ctx.font = labelFont;
-    ctx.fillText(title, x3 + (isRight ? 2 : -2), y3 - 1);
-
-    ctx.textBaseline = "top";
-    ctx.fillStyle = C.muted;
-    ctx.font = subFont;
-    ctx.fillText(detail, x3 + (isRight ? 2 : -2), y3 + 2);
-  }
-
-  const missionAngleMid = (startAngle + aMissionEnd) / 2;
-  const othersAngleMid = (aMissionEnd + (startAngle + Math.PI * 2)) / 2;
-
-  const missionLabel = `${missionName}`;
-  const missionDetail = `${Math.round(missionPct * 100)}% (${formatHours(missionTotal)}h)`;
-  drawSliceLabel(missionAngleMid, missionLabel, missionDetail, C.accent);
-
-  const othersPct = total > 0 ? othersTotal / total : 0;
-  const othersLabel = "Others";
-  const othersDetail = `${Math.round(othersPct * 100)}% (${formatHours(othersTotal)}h)`;
-  drawSliceLabel(othersAngleMid, othersLabel, othersDetail, getDashboardPalette().done);
+  drawTextAlongArc(ctx, frenchLabel, cx, cy, labelRadius, aEgyptianEnd, startAngle + Math.PI * 2, {
+    color: textColor,
+    baseSize: 13,
+  });
 
   // Two-line legend under the chart
   const t = document.getElementById("missionnairePieText");
@@ -414,82 +419,149 @@ async function drawMissionnairePieChart() {
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid var(--card-border);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
             <span style="width:10px; height:10px; border-radius:2px; background:${C.accent}; flex:0 0 auto;"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(missionName)}</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(egyptianName)}</span>
           </div>
-          <div style="white-space:nowrap;">${formatHours(missionTotal)}h</div>
+          <div style="white-space:nowrap;">${formatHours(egyptianTotal)}h</div>
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid var(--card-border);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
             <span style="width:10px; height:10px; border-radius:2px; background: ${getDashboardPalette().done}; flex:0 0 auto;"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Others</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(frenchName)}</span>
           </div>
-          <div style="white-space:nowrap;">${formatHours(othersTotal)}h</div>
+          <div style="white-space:nowrap;">${formatHours(frenchTotal)}h</div>
         </div>
       </div>
     `;
   }
 }
 
-function drawCourseDashboardTopRemaining(courses) {
-  const canvas = document.getElementById("courseDashboardTopRemaining");
-  if (!canvas) return;
+async function drawDoctorTypeHoursCharts() {
+  const egyptCanvas = document.getElementById("dashboardEgyptianHours");
+  const frenchCanvas = document.getElementById("dashboardFrenchHours");
+  if (!egyptCanvas || !frenchCanvas) return;
 
-  const { ctx, w, h } = prepareCanvas2d(canvas, { minW: 260, minH: 220 });
-  const C = getDashboardPalette();
+  const egyptCtx = prepareCanvas2d(egyptCanvas, { minW: 260, minH: 200 });
+  const frenchCtx = prepareCanvas2d(frenchCanvas, { minW: 260, minH: 200 });
+  const palette = getDashboardPalette();
 
-  const items = getDashboardCoursesSorted(courses || []).map((c) => {
-    const { total, done } = computeCourseDoneHours(c);
-    return { c, remaining: Math.max(0, total - done) };
-  });
-
-  items.sort((a, b) => b.remaining - a.remaining);
-  const top = items.filter((x) => x.remaining > 0).slice(0, 5);
-
-  ctx.clearRect(0, 0, w, h);
-
-  if (!top.length) {
-    ctx.fillStyle = C.muted;
-    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("No remaining hours.", 12, 20);
-    return;
+  function clearCanvas(ctxObj) {
+    ctxObj.ctx.clearRect(0, 0, ctxObj.w, ctxObj.h);
   }
 
-  const pad = { top: 10, right: 10, bottom: 10, left: 10 };
-  const rowH = Math.floor((h - pad.top - pad.bottom) / top.length);
-  const maxR = Math.max(1, ...top.map((x) => x.remaining));
+  clearCanvas(egyptCtx);
+  clearCanvas(frenchCtx);
 
-  for (let i = 0; i < top.length; i++) {
-    const { c, remaining } = top[i];
-    const y = pad.top + i * rowH;
-    const barY = y + rowH * 0.48;
-    const barH = Math.max(10, rowH * 0.28);
+  const f = getGlobalFilters();
+  const qs = new URLSearchParams();
+  if (f?.year_level) qs.set("year_level", String(f.year_level));
+  if (f?.semester) qs.set("semester", String(f.semester));
 
-    ctx.fillStyle = C.muted;
-    ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "top";
+  try {
+    const url = "php/get_doctor_type_hours_summary.php" + (qs.toString() ? `?${qs.toString()}` : "");
+    const payload = await fetchJson(url);
+    if (!payload?.success) throw new Error(payload?.error || "Failed to load summary");
 
-    const name = String(c.course_name || "").trim();
-    const label = name.length > 26 ? name.slice(0, 26) + "…" : name;
-    ctx.fillText(label, pad.left, y + 2);
+    const egypt = payload?.data?.egyptian || { label: "Egyptian", done_hours: 0, remaining_hours: 0 };
+    const french = payload?.data?.french || { label: "French", done_hours: 0, remaining_hours: 0 };
 
-    // Track
-    const trackX = pad.left;
-    const trackW = w - pad.left - pad.right;
-    ctx.fillStyle = getDashboardPalette().track;
-    ctx.fillRect(trackX, barY, trackW, barH);
+    const charts = [
+      { type: "Egyptian", data: egypt, canvas: egyptCtx, labelId: "dashboardEgyptianHoursText" },
+      { type: "French", data: french, canvas: frenchCtx, labelId: "dashboardFrenchHoursText" },
+    ];
 
-    // Bar
-    const bw = (remaining / maxR) * trackW;
-    ctx.fillStyle = C.remain;
-    ctx.fillRect(trackX, barY, bw, barH);
+    charts.forEach(({ data, canvas, labelId, type }) => {
+      const done = Number(data?.done_hours || 0);
+      const remaining = Number(data?.remaining_hours || 0);
+      const total = done + remaining;
+      const ctx = canvas.ctx;
+      const w = canvas.w;
+      const h = canvas.h;
 
-    // Value
-    ctx.fillStyle = C.text;
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.font = "700 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText(`${formatHours(remaining)}h`, w - pad.right, barY + barH / 2);
+      if (total <= 0) {
+        ctx.fillStyle = palette.muted;
+        ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+        ctx.fillText("No hours yet.", 12, 22);
+        const t = document.getElementById(labelId);
+        if (t) t.textContent = "";
+        return;
+      }
+
+      const cx = w / 2;
+      const cy = h / 2 + 4;
+      const r = Math.min(w, h) * 0.32;
+      const startAngle = -Math.PI / 2;
+      const donePct = total > 0 ? done / total : 0;
+      const aDone = startAngle + Math.PI * 2 * donePct;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.fillStyle = palette.done;
+      ctx.arc(cx, cy, r, startAngle, aDone);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.fillStyle = palette.remain;
+      ctx.arc(cx, cy, r, aDone, startAngle + Math.PI * 2);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = palette.grid;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const labelRadius = r * 0.68;
+      const doneLabel = `${Math.round(donePct * 100)}% Done`;
+      const remainLabel = `${Math.round((1 - donePct) * 100)}% Remaining`;
+
+      drawTextAlongArc(ctx, doneLabel, cx, cy, labelRadius, startAngle, aDone, {
+        color: "#000",
+        baseSize: 12,
+      });
+      drawTextAlongArc(ctx, remainLabel, cx, cy, labelRadius, aDone, startAngle + Math.PI * 2, {
+        color: "#000",
+        baseSize: 12,
+      });
+
+      const t = document.getElementById(labelId);
+      if (t) {
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        t.innerHTML = `
+          <div class="badge" style="display:inline-block; margin-bottom:8px; background: var(--surface-1); border: 1px solid var(--card-border); color: var(--text);">Total ${formatHours(total)}h</div>
+          <div style="margin-top:4px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid var(--card-border);">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                <span style="width:10px; height:10px; border-radius:2px; background:${palette.done}; flex:0 0 auto;"></span>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Done</span>
+              </div>
+              <div style="white-space:nowrap;">${formatHours(done)}h</div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid var(--card-border);">
+              <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                <span style="width:10px; height:10px; border-radius:2px; background:${palette.remain}; flex:0 0 auto;"></span>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Remaining</span>
+              </div>
+              <div style="white-space:nowrap;">${formatHours(remaining)}h</div>
+            </div>
+            <div class="muted" style="margin-top:4px;">${pct}% done (${type})</div>
+          </div>
+        `;
+      }
+    });
+  } catch (err) {
+    [
+      { canvas: egyptCtx, labelId: "dashboardEgyptianHoursText" },
+      { canvas: frenchCtx, labelId: "dashboardFrenchHoursText" },
+    ].forEach(({ canvas, labelId }) => {
+      canvas.ctx.fillStyle = palette.muted;
+      canvas.ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      canvas.ctx.fillText("Failed to load.", 12, 22);
+      const t = document.getElementById(labelId);
+      if (t) t.textContent = "";
+    });
   }
 }
 
@@ -647,7 +719,7 @@ function redrawAllDashboardCharts() {
   drawCourseDashboardChart(state.courses || []);
   // Removed Hours by Year/Sem chart from the dashboard UI.
   // drawCourseDashboardByYear(state.courses || []);
-  drawCourseDashboardTopRemaining(state.courses || []);
+  drawDoctorTypeHoursCharts();
   drawMissionnairePieChart();
 }
 

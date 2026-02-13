@@ -27,25 +27,45 @@ try {
 
     try {
         if ($doctorFilterId !== null) {
-            $stmt = $pdo->prepare('SELECT doctor_id, full_name, email, phone_number, color_code FROM doctors WHERE doctor_id = :id LIMIT 1');
+            $stmt = $pdo->prepare('SELECT doctor_id, full_name, email, phone_number, color_code, doctor_type FROM doctors WHERE doctor_id = :id LIMIT 1');
             $stmt->execute([':id' => $doctorFilterId]);
         } else {
-            $stmt = $pdo->query('SELECT doctor_id, full_name, email, phone_number, color_code FROM doctors ORDER BY full_name ASC');
+            $stmt = $pdo->query('SELECT doctor_id, full_name, email, phone_number, color_code, doctor_type FROM doctors ORDER BY full_name ASC');
         }
         $doctors = $stmt->fetchAll();
+        foreach ($doctors as &$d) {
+            $name = trim((string)($d['full_name'] ?? ''));
+            if ($name === '') {
+                $email = trim((string)($d['email'] ?? ''));
+                $name = $email !== '' ? $email : ('Doctor #' . (int)($d['doctor_id'] ?? 0));
+            }
+            $d['full_name'] = $name;
+            $d['fullName'] = $name;
+            $d['doctor_name'] = $name;
+        }
+        unset($d);
     } catch (PDOException $e) {
         // Backward compatibility: older DBs may not have doctors.phone_number yet.
         if ((int)($e->errorInfo[1] ?? 0) === 1054) {
             if ($doctorFilterId !== null) {
-                $stmt = $pdo->prepare('SELECT doctor_id, full_name, email, color_code FROM doctors WHERE doctor_id = :id LIMIT 1');
+                $stmt = $pdo->prepare('SELECT doctor_id, full_name, email, color_code, doctor_type FROM doctors WHERE doctor_id = :id LIMIT 1');
                 $stmt->execute([':id' => $doctorFilterId]);
             } else {
-                $stmt = $pdo->query('SELECT doctor_id, full_name, email, color_code FROM doctors ORDER BY full_name ASC');
+                $stmt = $pdo->query('SELECT doctor_id, full_name, email, color_code, doctor_type FROM doctors ORDER BY full_name ASC');
             }
             $doctors = $stmt->fetchAll();
             // Ensure the JSON always contains phone_number for frontend consistency.
             foreach ($doctors as &$d) {
                 if (!array_key_exists('phone_number', $d)) $d['phone_number'] = null;
+                if (!array_key_exists('doctor_type', $d)) $d['doctor_type'] = 'Egyptian';
+                $name = trim((string)($d['full_name'] ?? ''));
+                if ($name === '') {
+                    $email = trim((string)($d['email'] ?? ''));
+                    $name = $email !== '' ? $email : ('Doctor #' . (int)($d['doctor_id'] ?? 0));
+                }
+                $d['full_name'] = $name;
+                $d['fullName'] = $name;
+                $d['doctor_name'] = $name;
             }
             unset($d);
         } else {

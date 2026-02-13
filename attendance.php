@@ -102,9 +102,10 @@ auth_require_login();
             <button id="attendanceMarkAllPresent" class="btn btn-small" type="button">Mark all Present</button>
             <button id="attendanceMarkAllAbsent" class="btn btn-small btn-secondary" type="button">Mark all Absent</button>
             <button id="attendanceSaveChanges" class="btn btn-small btn-primary" type="button">Save</button>
+            <button id="attendanceCopyNextLecture" class="btn btn-small btn-secondary" type="button">Copy to next lecture</button>
           </div>
 
-          <div class="schedule-wrap" style="max-height: 60vh; overflow:auto;">
+          <div class="schedule-wrap">
             <table class="schedule-grid" aria-label="Attendance list">
               <thead>
                 <tr>

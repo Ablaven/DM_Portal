@@ -37,3 +37,21 @@ body {
     max-height: 55vh;
   }
 }
+
+@media (max-width: 520px) {
+  .allowed-pages {
+    padding: 8px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+
+  .allowed-pages .chk {
+    font-size: 0.92rem;
+    align-items: flex-start;
+  }
+
+  .allowed-pages input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}

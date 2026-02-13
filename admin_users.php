@@ -69,6 +69,10 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="students.php" /> Student Schedule Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="attendance.php" /> Attendance Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="evaluation.php" /> Evaluation Page</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="hours_report.php" /> Reports Hub</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="hours_report_detail.php" /> Hours Report</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="evaluation_reports.php" /> Evaluation Reports</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="attendance_report.php" /> Attendance Report</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="student_dashboard.php" /> Student Dashboard Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="profile.php" /> Profile</label>
             </div>
@@ -166,6 +170,10 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" value="attendance.php" /> Attendance Page</label>
               <label class="chk"><input type="checkbox" value="availability.php" /> Availability Page</label>
               <label class="chk"><input type="checkbox" value="evaluation.php" /> Evaluation Page</label>
+              <label class="chk"><input type="checkbox" value="hours_report.php" /> Reports Hub</label>
+              <label class="chk"><input type="checkbox" value="hours_report_detail.php" /> Hours Report</label>
+              <label class="chk"><input type="checkbox" value="evaluation_reports.php" /> Evaluation Reports</label>
+              <label class="chk"><input type="checkbox" value="attendance_report.php" /> Attendance Report</label>
               <label class="chk"><input type="checkbox" value="student_dashboard.php" /> Student Dashboard Page</label>
               <label class="chk"><input type="checkbox" value="profile.php" /> Profile</label>
             </div>

@@ -51,6 +51,14 @@ auth_require_roles(['admin','management']);
         </div>
 
         <div class="field">
+          <label for="doctor_type">Doctor Type</label>
+          <select id="doctor_type" name="doctor_type">
+            <option value="Egyptian">Egyptian</option>
+            <option value="French">French</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="doctor_color">Base Color (fallback)</label>
           <input id="doctor_color" name="color_code" type="color" value="#0055A4" />
           <small class="hint">Fallback color if no year-specific color is set.</small>
@@ -136,6 +144,14 @@ auth_require_roles(['admin','management']);
           <div class="field">
             <label for="edit_doctor_phone">Telephone (WhatsApp)</label>
             <input id="edit_doctor_phone" type="tel" maxlength="32" placeholder="e.g., +2010 1234 5678" />
+          </div>
+
+          <div class="field">
+            <label for="edit_doctor_type">Doctor Type</label>
+            <select id="edit_doctor_type">
+              <option value="Egyptian">Egyptian</option>
+              <option value="French">French</option>
+            </select>
           </div>
 
           <div class="field">

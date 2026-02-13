@@ -228,6 +228,30 @@ final class SimpleXlsxWriter
         }
     }
 
+    public function downloadToString(string $fileName): string
+    {
+        $fileName = preg_replace('/[^a-zA-Z0-9\-_(). \[\]]+/', '', $fileName) ?? $fileName;
+        if (!str_ends_with(strtolower($fileName), '.xlsx')) {
+            $fileName .= '.xlsx';
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'xlsx_');
+        if ($tmp === false) {
+            throw new RuntimeException('Failed to create temp file.');
+        }
+
+        try {
+            $this->buildZip($tmp);
+            $bytes = file_get_contents($tmp);
+            if ($bytes === false) {
+                throw new RuntimeException('Failed to read XLSX data.');
+            }
+            return $bytes;
+        } finally {
+            @unlink($tmp);
+        }
+    }
+
     private function buildZip(string $zipPath): void
     {
         // Styles must be built before sheet XML so we can resolve fill placeholders.

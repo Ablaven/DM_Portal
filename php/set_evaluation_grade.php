@@ -54,7 +54,8 @@ try {
         }
     }
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $doctorId);
+    $configDoctorId = $role === 'teacher' ? 0 : $doctorId;
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId);
     if (!$config) {
         bad_request('Evaluation config is required before grading.');
     }
@@ -82,7 +83,8 @@ try {
         $scores[$id] = round($num, 2);
     }
 
-    $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $studentId);
+    $attendanceMax = dmportal_eval_get_attendance_weight($items);
+    $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $studentId, $attendanceMax);
     $attendanceScore = $attendance['score'];
     $finalScore = dmportal_eval_compute_final($items, $scores, $attendanceScore);
 

@@ -80,7 +80,7 @@ try {
     );
     $stmt->execute([
         ':course_id' => $courseId,
-        ':doctor_id' => null,
+        ':doctor_id' => 0,
     ]);
 
     $config = dmportal_eval_fetch_config($pdo, $courseId, 0);

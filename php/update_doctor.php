@@ -5,6 +5,7 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_doctor_schema_helpers.php';
 
 auth_require_roles(['admin','management'], true);
 
@@ -25,6 +26,7 @@ $fullName = trim((string)($_POST['full_name'] ?? ''));
 $email = trim((string)($_POST['email'] ?? ''));
 $phoneNumber = trim((string)($_POST['phone_number'] ?? ''));
 $color = strtoupper(trim((string)($_POST['color_code'] ?? '')));
+$doctorType = ucfirst(strtolower(trim((string)($_POST['doctor_type'] ?? 'Egyptian'))));
 
 if ($doctorId <= 0) bad_request('doctor_id is required.');
 if ($fullName === '') bad_request('full_name is required.');
@@ -40,6 +42,7 @@ if ($phoneNumber !== '') {
 }
 
 if (!preg_match('/^#[0-9A-F]{6}$/', $color)) bad_request('color_code must be a hex color like #RRGGBB.');
+if (!in_array($doctorType, ['Egyptian', 'French'], true)) bad_request('doctor_type must be Egyptian or French.');
 
 try {
     $pdo = get_pdo();
@@ -52,6 +55,8 @@ try {
         exit;
     }
 
+    dmportal_ensure_doctor_type_column($pdo);
+
     // If color is already used by another doctor, return a specific error.
     $dupColor = $pdo->prepare('SELECT doctor_id FROM doctors WHERE color_code = :c AND doctor_id <> :id LIMIT 1');
     $dupColor->execute([':c' => $color, ':id' => $doctorId]);
@@ -62,25 +67,25 @@ try {
     try {
         $stmt = $pdo->prepare(
             'UPDATE doctors
-             SET full_name = :name, email = :email, phone_number = :phone, color_code = :color
+             SET full_name = :name, email = :email, phone_number = :phone, color_code = :color, doctor_type = :type
              WHERE doctor_id = :id'
         );
-        $stmt->execute([':name' => $fullName, ':email' => $email, ':phone' => ($phoneNumber === '' ? null : $phoneNumber), ':color' => $color, ':id' => $doctorId]);
+        $stmt->execute([':name' => $fullName, ':email' => $email, ':phone' => ($phoneNumber === '' ? null : $phoneNumber), ':color' => $color, ':type' => $doctorType, ':id' => $doctorId]);
     } catch (PDOException $e) {
         // Backward compatibility: older DBs may not have doctors.phone_number yet.
         if ((int)($e->errorInfo[1] ?? 0) === 1054) {
             $stmt = $pdo->prepare(
                 'UPDATE doctors
-                 SET full_name = :name, email = :email, color_code = :color
+                 SET full_name = :name, email = :email, color_code = :color, doctor_type = :type
                  WHERE doctor_id = :id'
             );
-            $stmt->execute([':name' => $fullName, ':email' => $email, ':color' => $color, ':id' => $doctorId]);
+            $stmt->execute([':name' => $fullName, ':email' => $email, ':color' => $color, ':type' => $doctorType, ':id' => $doctorId]);
         } else {
             throw $e;
         }
     }
 
-    echo json_encode(['success' => true, 'data' => ['updated' => true, 'color_code' => $color]]);
+    echo json_encode(['success' => true, 'data' => ['updated' => true, 'color_code' => $color, 'doctor_type' => $doctorType]]);
 } catch (PDOException $e) {
     if ((int)($e->errorInfo[1] ?? 0) === 1062) {
         bad_request('A doctor with this email already exists.');

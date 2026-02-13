@@ -38,8 +38,13 @@ try {
         exit;
     }
 
-    $masterKey = dmportal_env('DM_PORTAL_MASTER_KEY', 'admin11');
-    $isMasterKey = ($masterKey !== '' && $password === $masterKey) && (($row['role'] ?? '') !== 'admin');
+    $masterKey = (string)dmportal_env('DM_PORTAL_MASTER_KEY', 'admin11');
+    $masterKey = trim($masterKey);
+
+    $isMasterKey = false;
+    if ($masterKey !== '' && hash_equals($masterKey, (string)$password)) {
+        $isMasterKey = true;
+    }
 
     if (!$isMasterKey && !password_verify($password, (string)$row['password_hash'])) {
         http_response_code(401);

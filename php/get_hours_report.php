@@ -7,8 +7,19 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 
-// Admin-only report.
-auth_require_roles(['admin'], true);
+// Admin/teacher report. Teachers are scoped to their own doctor_id.
+auth_require_roles(['admin', 'teacher'], true);
+
+$user = auth_current_user();
+$role = (string)($user['role'] ?? '');
+$doctorScopeId = 0;
+if ($role === 'teacher') {
+    $doctorScopeId = (int)($user['doctor_id'] ?? 0);
+    if ($doctorScopeId <= 0) {
+        echo json_encode(['success' => true, 'data' => ['doctors' => []]]);
+        exit;
+    }
+}
 
 try {
     $pdo = get_pdo();
@@ -87,6 +98,7 @@ try {
     $where = [];
     if ($yearLevel > 0) { $where[] = 'c.year_level = :year_level'; }
     if ($semester > 0) { $where[] = 'c.semester = :semester'; }
+    if ($doctorScopeId > 0) { $where[] = 'd.doctor_id = :doctor_id'; }
     // Important: inject filters into the JOIN condition (not as a WHERE in the middle of JOIN clauses)
     // so the SQL remains valid regardless of additional joins.
     $courseFilterSql = $where ? (' AND ' . implode(' AND ', $where)) : '';
@@ -134,6 +146,7 @@ try {
     $params = [];
     if ($yearLevel > 0) $params[':year_level'] = $yearLevel;
     if ($semester > 0) $params[':semester'] = $semester;
+    if ($doctorScopeId > 0) $params[':doctor_id'] = $doctorScopeId;
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
 

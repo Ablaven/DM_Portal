@@ -77,7 +77,8 @@
         for (const w of studentState.weeks) {
           const opt = document.createElement("option");
           opt.value = w.week_id;
-          opt.textContent = `${w.label}${w.status === "active" ? " (active)" : ""}`;
+          const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
+          opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
           weekSel.appendChild(opt);
         }
         if (studentState.activeWeekId) weekSel.value = String(studentState.activeWeekId);
@@ -128,6 +129,34 @@
         const qs = new URLSearchParams({ program, year_level: String(activeYear), semester: String(semester) });
         if (weekId) qs.set("week_id", String(weekId));
         window.location.href = `php/export_student_schedule_xls.php?${qs.toString()}`;
+      });
+
+      document.getElementById("emailStudentSchedule")?.addEventListener("click", async () => {
+        try {
+          setStatusById("studentStatus", "Emailing…");
+          const program = document.getElementById("studentProgram")?.value || "Digital Marketing";
+          const weekIdVal = document.getElementById("studentWeekSelect")?.value;
+          const weekId = weekIdVal ? Number(weekIdVal) : studentState.activeWeekId;
+          const semester = document.getElementById("studentSemester")?.value || "1";
+
+          const payload = await fetchJson("php/email_student_schedule.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              program,
+              year_level: activeYear,
+              semester: Number(semester),
+              week_id: weekId,
+            }),
+          });
+
+          if (!payload.success) {
+            throw new Error(payload.error || "Failed to email student schedule");
+          }
+          setStatusById("studentStatus", "Email sent.", "success");
+        } catch (err) {
+          setStatusById("studentStatus", err.message || "Failed to email schedule", "error");
+        }
       });
 
       document.querySelectorAll(".tabs [data-year]")?.forEach((btn) => {

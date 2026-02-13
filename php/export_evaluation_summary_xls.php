@@ -180,7 +180,8 @@ try {
         $gradeId = $existing ? (int)$existing['grade_id'] : 0;
         $scores = $gradeId ? ($scoreMap[$gradeId] ?? []) : [];
 
-        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid);
+        $attendanceMax = dmportal_eval_get_attendance_weight($itemsOut);
+        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid, $attendanceMax);
         $attendanceScore = $attendance['score'];
         $finalScore = null;
         if ($itemsOut) {

@@ -6,6 +6,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_doctor_schema_helpers.php';
 
 // Dashboard widget: show course-hours distribution by doctor.
 // Uses courses.total_hours + course_doctors assignment.
@@ -44,25 +45,16 @@ try {
     };
 
     if (!$touchTable('doctors') || !$touchTable('courses')) {
-        echo json_encode(['success' => true, 'data' => ['missionnaire' => null, 'doctors' => []]]);
+        echo json_encode(['success' => true, 'data' => ['egyptian' => null, 'french' => null, 'doctors' => []]]);
         exit;
     }
+
+    dmportal_ensure_doctor_type_column($pdo);
 
     $hasCourseDoctors = $touchTable('course_doctors');
     $hasCourseDoctorHours = $touchTable('course_doctor_hours');
 
-    // Identify Missionnaire doctor.
-    $mStmt = $pdo->prepare('SELECT doctor_id, full_name FROM doctors WHERE LOWER(full_name) = :n LIMIT 1');
-    $mStmt->execute([':n' => 'missionnaire']);
-    $missionnaire = $mStmt->fetch();
-
-    if (!$missionnaire) {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'error' => 'Doctor "Missionnaire" not found.']);
-        exit;
-    }
-
-    $missionnaireId = (int)$missionnaire['doctor_id'];
+    // Aggregate by doctor_type (Egyptian vs French).
 
     $params = [];
     $where = [];
@@ -92,6 +84,7 @@ try {
             SELECT
               d.doctor_id,
               d.full_name,
+              d.doctor_type,
               ROUND(SUM(
                 CASE
                   WHEN COALESCE(ha.alloc_cnt, 0) > 0 THEN COALESCE(h.allocated_hours, 0)
@@ -109,7 +102,7 @@ try {
             $hJoin
             $allocJoin
             $whereSql
-            GROUP BY d.doctor_id, d.full_name
+            GROUP BY d.doctor_id, d.full_name, d.doctor_type
             HAVING total_hours > 0
             ORDER BY total_hours DESC, d.full_name ASC
         ";
@@ -123,12 +116,13 @@ try {
             SELECT
               d.doctor_id,
               d.full_name,
+              d.doctor_type,
               ROUND(SUM(COALESCE(c.total_hours, 0)), 2) AS total_hours
             FROM courses c
             JOIN doctors d ON d.doctor_id = c.doctor_id
             $whereSql
               " . ($whereSql ? ' AND' : 'WHERE') . " c.doctor_id IS NOT NULL
-            GROUP BY d.doctor_id, d.full_name
+            GROUP BY d.doctor_id, d.full_name, d.doctor_type
             HAVING total_hours > 0
             ORDER BY total_hours DESC, d.full_name ASC
         ";
@@ -139,36 +133,40 @@ try {
     }
 
     $doctors = [];
-    $missionnaireTotal = 0.0;
-    $othersTotal = 0.0;
+    $egyptianTotal = 0.0;
+    $frenchTotal = 0.0;
 
     foreach ($rows as $r) {
         $docId = (int)($r['doctor_id'] ?? 0);
         $name = (string)($r['full_name'] ?? '');
         $total = (float)($r['total_hours'] ?? 0);
+        $type = ucfirst(strtolower((string)($r['doctor_type'] ?? 'Egyptian')));
+        if (!in_array($type, ['Egyptian', 'French'], true)) {
+            $type = 'Egyptian';
+        }
 
-        if ($docId === $missionnaireId) $missionnaireTotal += $total;
-        else $othersTotal += $total;
+        if ($type === 'French') $frenchTotal += $total;
+        else $egyptianTotal += $total;
 
         $doctors[] = [
             'doctor_id' => $docId,
             'full_name' => $name,
             'total_hours' => round($total, 2),
-            'is_missionnaire' => ($docId === $missionnaireId),
+            'doctor_type' => $type,
         ];
     }
 
     echo json_encode([
         'success' => true,
         'data' => [
-            'missionnaire' => [
-                'doctor_id' => $missionnaireId,
-                'full_name' => $missionnaire['full_name'],
-                'total_hours' => round($missionnaireTotal, 2),
+            'egyptian' => [
+                'label' => 'Egyptian',
+                'total_hours' => round($egyptianTotal, 2),
             ],
-            // keep these for compatibility with existing frontend
-            'others_total_hours' => round($othersTotal, 2),
-            // new: per-doctor breakdown (includes Missionnaire)
+            'french' => [
+                'label' => 'French',
+                'total_hours' => round($frenchTotal, 2),
+            ],
             'doctors' => $doctors,
         ],
     ]);
