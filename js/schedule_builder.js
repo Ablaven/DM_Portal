@@ -780,9 +780,11 @@
       await loadSchedule(doctorId);
       renderScheduleGrid();
       updateDoctorExportShareLinks();
+      await loadCourses();
+      renderCoursesSidebar();
+      await loadHoursRemainingPanel();
       closeModal();
       setStatusById("scheduleStatus", "Saved.", "success");
-      renderCoursesSidebar();
     } catch (err) {
       setStatusById("modalStatus", err.message || "Failed to save slot.", "error");
     }
@@ -881,6 +883,7 @@
 
       await loadCourses();
       renderCoursesSidebar();
+      await loadHoursRemainingPanel();
 
       await loadSchedule(state.activeDoctorId);
       renderScheduleGrid();

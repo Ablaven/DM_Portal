@@ -1,6 +1,6 @@
 -- Digital Marketing Portal SQL Export
 -- Database: digital_marketing_portal
--- Generated: 2026-02-13 11:28:17 UTC
+-- Generated: 2026-02-15 11:31:07 UTC
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
@@ -42,7 +42,7 @@ CREATE TABLE `attendance_records` (
   KEY `idx_attendance_schedule` (`schedule_id`),
   CONSTRAINT `fk_attendance_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `doctor_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_attendance_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1719 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1777 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `attendance_records`
 INSERT INTO `attendance_records` (`attendance_id`, `schedule_id`, `student_id`, `status`, `created_at`, `updated_at`) VALUES
@@ -1322,7 +1322,36 @@ INSERT INTO `attendance_records` (`attendance_id`, `schedule_id`, `student_id`, 
 (1715, 174, 39, 'ABSENT', '2026-02-12 14:34:57', '2026-02-12 14:34:57'),
 (1716, 174, 40, 'ABSENT', '2026-02-12 14:34:57', '2026-02-12 14:34:57'),
 (1717, 174, 41, 'ABSENT', '2026-02-12 14:34:57', '2026-02-12 14:34:57'),
-(1718, 174, 42, 'PRESENT', '2026-02-12 14:34:57', '2026-02-12 14:34:57');
+(1718, 174, 42, 'PRESENT', '2026-02-12 14:34:57', '2026-02-12 14:34:57'),
+(1719, 185, 1, 'ABSENT', '2026-02-13 20:48:44', '2026-02-13 20:49:43'),
+(1720, 185, 2, 'ABSENT', '2026-02-13 20:48:44', '2026-02-13 20:49:44'),
+(1721, 185, 3, 'ABSENT', '2026-02-13 20:48:44', '2026-02-13 20:49:44'),
+(1722, 185, 4, 'ABSENT', '2026-02-13 20:48:44', '2026-02-13 20:49:44'),
+(1723, 185, 5, 'ABSENT', '2026-02-13 20:48:44', '2026-02-13 20:49:44'),
+(1724, 185, 6, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:44'),
+(1725, 185, 7, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:45'),
+(1726, 185, 8, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:45'),
+(1727, 185, 9, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:45'),
+(1728, 185, 10, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:45'),
+(1729, 185, 11, 'ABSENT', '2026-02-13 20:48:45', '2026-02-13 20:49:45'),
+(1730, 185, 12, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:45'),
+(1731, 185, 13, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:46'),
+(1732, 185, 14, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:46'),
+(1733, 185, 15, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:46'),
+(1734, 185, 16, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:46'),
+(1735, 185, 17, 'ABSENT', '2026-02-13 20:48:46', '2026-02-13 20:49:46'),
+(1736, 185, 18, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1737, 185, 19, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1738, 185, 20, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1739, 185, 21, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1740, 185, 22, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1741, 185, 23, 'ABSENT', '2026-02-13 20:48:47', '2026-02-13 20:49:47'),
+(1742, 185, 24, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:47'),
+(1743, 185, 25, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:48'),
+(1744, 185, 26, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:48'),
+(1745, 185, 27, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:48'),
+(1746, 185, 28, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:48'),
+(1747, 185, 29, 'ABSENT', '2026-02-13 20:48:48', '2026-02-13 20:49:48');
 
 -- ----------------------------------------
 -- Table structure for `audit_log`
@@ -1697,7 +1726,7 @@ CREATE TABLE `doctor_schedules` (
   CONSTRAINT `fk_doctor_schedules_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_week` FOREIGN KEY (`week_id`) REFERENCES `weeks` (`week_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=239 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `doctor_schedules`
 INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_id`, `day_of_week`, `slot_number`, `room_code`, `counts_towards_hours`, `extra_minutes`, `created_at`) VALUES
@@ -1845,33 +1874,31 @@ INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_i
 (183, 4, 4, 38, 'Thu', 1, '127', 1, 0, '2026-02-07 07:52:02'),
 (185, 5, 9, 41, 'Sun', 1, '127', 1, 0, '2026-02-11 19:45:01'),
 (186, 5, 9, 41, 'Sun', 2, '127', 1, 0, '2026-02-11 19:45:13'),
-(187, 5, 9, 41, 'Sun', 3, '127', 1, 0, '2026-02-11 19:45:20'),
 (188, 5, 9, 41, 'Mon', 1, '127', 1, 0, '2026-02-11 19:45:47'),
 (189, 5, 9, 41, 'Mon', 2, '127', 1, 0, '2026-02-11 19:45:52'),
-(190, 5, 9, 41, 'Mon', 3, '127', 1, 0, '2026-02-11 19:45:57'),
 (191, 5, 9, 41, 'Tue', 1, '127', 1, 0, '2026-02-11 19:46:12'),
 (192, 5, 9, 41, 'Tue', 2, '127', 1, 0, '2026-02-11 19:46:16'),
-(193, 5, 9, 41, 'Tue', 3, '127', 1, 0, '2026-02-11 19:46:21'),
-(194, 5, 9, 41, 'Wed', 1, '127', 1, 0, '2026-02-11 19:46:26'),
-(195, 5, 9, 41, 'Wed', 2, '127', 1, 0, '2026-02-11 19:46:31'),
-(196, 5, 5, 36, 'Mon', 4, '127', 1, 0, '2026-02-11 19:47:48'),
 (200, 5, 2, 51, 'Thu', 4, '127', 1, 0, '2026-02-11 20:19:17'),
 (201, 5, 2, 51, 'Thu', 5, '127', 1, 0, '2026-02-11 20:19:24'),
 (202, 5, 7, 33, 'Wed', 4, '127', 1, 0, '2026-02-11 20:20:24'),
 (203, 5, 7, 33, 'Wed', 5, '127', 1, 0, '2026-02-11 20:20:29'),
-(204, 5, 4, 55, 'Thu', 1, '127', 1, 0, '2026-02-11 20:22:35'),
-(205, 5, 4, 55, 'Thu', 2, '127', 1, 0, '2026-02-11 20:22:43'),
-(207, 5, 4, 55, 'Sun', 4, '127', 1, 0, '2026-02-11 20:24:08'),
-(208, 5, 4, 55, 'Sun', 5, '127', 1, 0, '2026-02-11 20:24:17'),
+(204, 5, 4, 38, 'Thu', 1, '127', 1, 0, '2026-02-11 20:22:35'),
+(205, 5, 4, 38, 'Thu', 2, '127', 1, 0, '2026-02-11 20:22:43'),
 (210, 5, 1, 45, 'Wed', 3, '127', 1, 0, '2026-02-11 20:27:11'),
-(211, 5, 5, 54, 'Mon', 5, '127', 1, 0, '2026-02-11 21:27:45'),
-(212, 5, 5, 36, 'Tue', 4, '127', 1, 0, '2026-02-11 21:28:20'),
 (224, 5, 4, 84, 'Thu', 4, '129', 1, 0, '2026-02-12 17:01:20'),
 (225, 5, 4, 84, 'Thu', 5, '129', 1, 0, '2026-02-12 17:01:27'),
 (226, 5, 1, 89, 'Wed', 1, '129', 1, 0, '2026-02-12 21:13:52'),
 (227, 5, 1, 90, 'Wed', 2, '129', 1, 0, '2026-02-12 21:14:06'),
 (228, 5, 1, 90, 'Wed', 4, '129', 1, 0, '2026-02-12 21:14:25'),
-(229, 5, 1, 90, 'Wed', 5, '129', 1, 0, '2026-02-12 21:14:33');
+(229, 5, 1, 90, 'Wed', 5, '129', 1, 0, '2026-02-12 21:14:33'),
+(230, 5, 9, 41, 'Sun', 4, '127', 1, 0, '2026-02-15 12:37:38'),
+(231, 5, 9, 41, 'Sun', 5, '127', 1, 0, '2026-02-15 12:37:46'),
+(233, 5, 9, 41, 'Mon', 4, '127', 1, 0, '2026-02-15 12:40:07'),
+(234, 5, 9, 41, 'Mon', 5, '127', 1, 0, '2026-02-15 12:40:42'),
+(235, 5, 9, 41, 'Tue', 4, '127', 1, 0, '2026-02-15 12:40:47'),
+(236, 5, 9, 41, 'Tue', 5, '127', 1, 0, '2026-02-15 12:43:45'),
+(237, 5, 9, 41, 'Wed', 1, '127', 1, 0, '2026-02-15 12:43:50'),
+(238, 5, 9, 41, 'Wed', 2, '127', 1, 0, '2026-02-15 12:43:54');
 
 -- ----------------------------------------
 -- Table structure for `doctor_slot_cancellations`
@@ -1976,9 +2003,9 @@ INSERT INTO `doctor_year_colors` (`doctor_id`, `year_level`, `color_code`, `upda
 (8, 1, '#A3009E', '2026-02-05 15:39:56'),
 (8, 2, '#0031A3', '2026-02-05 15:39:56'),
 (8, 3, '#E3EE91', '2026-02-05 15:40:08'),
-(9, 1, '#A31000', '2026-02-11 19:34:12'),
-(9, 2, '#A31000', '2026-02-11 19:34:12'),
-(9, 3, '#A31000', '2026-02-11 19:34:12'),
+(9, 1, '#00A3A0', '2026-02-15 13:20:46'),
+(9, 2, '#686464', '2026-02-15 13:20:46'),
+(9, 3, '#41A300', '2026-02-15 13:20:46'),
 (11, 1, '#A34F00', '2026-02-05 15:39:29'),
 (11, 2, '#A34F00', '2026-02-05 15:39:29'),
 (11, 3, '#A34F00', '2026-02-05 15:39:29'),
@@ -2014,7 +2041,7 @@ INSERT INTO `doctors` (`doctor_id`, `full_name`, `email`, `phone_number`, `color
 (6, 'Dr. Asmaa Abd El Magid', 'asmaamagiud@gmail.com', NULL, '#7365E2', 'Egyptian', '2025-12-29 20:09:44'),
 (7, 'Dr.Manal El Shafii', 'mchafei.manalchafei@gmail.com', '+201114666522', '#58748D', 'Egyptian', '2025-12-30 23:29:14'),
 (8, 'Dr.Reem', 'ream@gmail.com', '+201033515666', '#A3009E', 'Egyptian', '2025-12-31 14:35:28'),
-(9, 'chrsitophe lohou', 'Missionnaire@gmail.com', NULL, '#A31000', 'French', '2026-01-01 16:56:51'),
+(9, 'chrsitophe lohou', 'Missionnaire@gmail.com', NULL, '#C6675D', 'French', '2026-01-01 16:56:51'),
 (10, 'Aya Younes', 'Aya@gmail.com', NULL, '#00A388', 'Egyptian', '2026-01-01 17:11:46'),
 (11, 'Dr. Khaled', 'Khaled@gmail.com', NULL, '#A34F00', 'Egyptian', '2026-01-01 17:44:35'),
 (12, 'Mutasim', 'mont@gmail.com', '+201023319036', '#D742BB', 'Egyptian', '2026-02-04 17:38:54');
@@ -2453,7 +2480,7 @@ INSERT INTO `portal_users` (`user_id`, `username`, `password_hash`, `role`, `doc
 (8, 'Assma abd El Maguid', '$2y$10$4INKm6cnF72510ljMdHVneqqbtCZ6XAgomNMD2OQx6ef/z.qYd4Hy', 'teacher', 6, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 12:14:06', '2026-02-10 10:55:21'),
 (9, 'Reem', '$2y$10$3NfunhMseaD/f9AxaobPQ.5TahaYqTHIxKdC8fKBrVSqSYIjmj3ia', 'teacher', 8, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 12:14:54', '2026-02-10 10:54:55'),
 (10, 'Assma El Sharif', '$2y$10$O00VO0IghvMV/hwRJJOeT.f/EYAPQsbqTvGsgUYOAhRwx64agXtre', 'teacher', 2, NULL, '[\"index.php\",\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 14:59:57', '2026-02-10 10:54:51'),
-(11, 'Mutasim', '$2y$10$/MBOctZ8ykSmc8.xWrSdq.TEJ0FDfe0copQN6Pnvwo881BPmqYL5W', 'teacher', 12, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-06 09:54:09', '2026-02-10 10:54:47');
+(11, 'Mutasim', '$2y$10$rVf7PumL13E5uJF0ZzW4mOG7QN.PmnQjVOiXUVHDz/FXl.3COgalS', 'teacher', 12, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-06 09:54:09', '2026-02-14 13:06:25');
 
 -- ----------------------------------------
 -- Table structure for `rooms`

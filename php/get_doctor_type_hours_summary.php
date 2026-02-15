@@ -87,17 +87,23 @@ try {
     ];
 
     $doneStmt = $pdo->prepare(
-        "SELECT s.course_id, COUNT(*) AS done_slots
+        "SELECT s.course_id,
+                COUNT(*) AS done_slots,
+                SUM(COALESCE(s.extra_minutes, 0)) AS done_extra_minutes
          FROM doctor_schedules s
          JOIN courses c ON c.course_id = s.course_id
          " . ($where ? ($where . ' AND') : 'WHERE') . " s.course_id IS NOT NULL
+           AND s.counts_towards_hours = 1
          GROUP BY s.course_id"
     );
     $doneStmt->execute($params);
     $doneRows = $doneStmt->fetchAll();
     $doneMap = [];
     foreach ($doneRows as $row) {
-        $doneMap[(int)$row['course_id']] = (int)$row['done_slots'];
+        $doneMap[(int)$row['course_id']] = [
+            'slots' => (int)$row['done_slots'],
+            'extra_minutes' => (int)$row['done_extra_minutes'],
+        ];
     }
 
     foreach ($rows as $row) {
@@ -110,8 +116,8 @@ try {
         $courseHours = (float)($row['course_hours'] ?? 0);
         $allocated = (float)($row['allocated_hours'] ?? 0);
         $target = $allocated > 0 ? $allocated : $courseHours;
-        $doneSlots = $doneMap[$courseId] ?? 0;
-        $done = min($target, (float)$doneSlots);
+        $doneData = $doneMap[$courseId] ?? ['slots' => 0, 'extra_minutes' => 0];
+        $done = min($target, ((float)$doneData['slots'] * 1.5) + ((float)$doneData['extra_minutes'] / 60));
         $remaining = max(0.0, $target - $done);
 
         $summary[$type]['allocated'] += $target;
