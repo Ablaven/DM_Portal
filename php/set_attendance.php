@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -41,7 +42,7 @@ try {
     dmportal_ensure_attendance_records_table($pdo);
 
     // Validate schedule exists and enforce teacher ownership
-    $stmt = $pdo->prepare('SELECT schedule_id, doctor_id FROM doctor_schedules WHERE schedule_id = :sid LIMIT 1');
+    $stmt = $pdo->prepare('SELECT schedule_id, doctor_id, week_id FROM doctor_schedules WHERE schedule_id = :sid LIMIT 1');
     $stmt->execute([':sid' => $scheduleId]);
     $sched = $stmt->fetch();
     if (!$sched) {
@@ -71,18 +72,21 @@ try {
         exit;
     }
 
+    $termId = dmportal_get_term_id_for_week($pdo, (int)$sched['week_id']);
+
     // Upsert
-    $sql = "INSERT INTO attendance_records (schedule_id, student_id, status)
-            VALUES (:schedule_id, :student_id, :status)
+    $sql = "INSERT INTO attendance_records (term_id, schedule_id, student_id, status)
+            VALUES (:term_id, :schedule_id, :student_id, :status)
             ON DUPLICATE KEY UPDATE status = VALUES(status), updated_at = CURRENT_TIMESTAMP";
     $ins = $pdo->prepare($sql);
     $ins->execute([
+        ':term_id' => $termId,
         ':schedule_id' => $scheduleId,
         ':student_id' => $studentId,
         ':status' => $status,
     ]);
 
-    echo json_encode(['success' => true, 'data' => ['saved' => true]]);
+    echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to set attendance.']);

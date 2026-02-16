@@ -5,6 +5,7 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_roles(['admin','management'], true);
 
@@ -47,9 +48,12 @@ function slot_from_minutes(int $mins): int {
 try {
     $pdo = get_pdo();
 
-    $wk = $pdo->query("SELECT week_id, start_date FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+    $stmt = $pdo->prepare("SELECT week_id, start_date FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+    $stmt->execute([':term_id' => $termId]);
+    $wk = $stmt->fetch();
     if (!$wk) {
-        echo json_encode(['success' => true, 'data' => ['week_id' => null, 'day_of_week' => null, 'slot_number' => null, 'in_schedule' => false]]);
+        echo json_encode(['success' => true, 'data' => ['week_id' => null, 'day_of_week' => null, 'slot_number' => null, 'in_schedule' => false, 'term_id' => $termId]]);
         exit;
     }
 
@@ -65,6 +69,7 @@ try {
         'success' => true,
         'data' => [
             'week_id' => (int)$wk['week_id'],
+            'term_id' => $termId,
             'day_of_week' => $inSchedule ? $dayLabel : null,
             'slot_number' => $inSchedule ? $slot : null,
             'server_time' => $now->format('Y-m-d H:i:s'),

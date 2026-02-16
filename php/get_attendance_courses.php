@@ -6,6 +6,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -37,15 +38,19 @@ try {
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     $sql =
         "SELECT DISTINCT c.course_id, c.course_name, c.program, c.year_level, c.semester,
                 c.course_type, c.subject_code
          FROM doctor_schedules s
          JOIN courses c ON c.course_id = s.course_id
+         JOIN weeks w ON w.week_id = s.week_id
          WHERE s.week_id = :week_id
+           AND w.term_id = :term_id
            AND c.year_level = :year_level";
 
-    $params = [':week_id' => $weekId, ':year_level' => $yearLevel];
+    $params = [':week_id' => $weekId, ':term_id' => $termId, ':year_level' => $yearLevel];
 
     if ($role === 'teacher') {
         $doctorId = (int)($u['doctor_id'] ?? 0);
@@ -63,7 +68,7 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
-    echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
+    echo json_encode(['success' => true, 'data' => $stmt->fetchAll(), 'term_id' => $termId]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to fetch attendance courses.']);

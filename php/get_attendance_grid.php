@@ -8,6 +8,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -37,10 +38,14 @@ try {
     // Ensure optional per-year doctor color table exists.
     dmportal_ensure_doctor_year_colors_table($pdo);
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $stmt = $pdo->prepare("SELECT week_id FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
-            echo json_encode(['success' => true, 'data' => ['week_id' => null, 'year_level' => $yearLevel, 'grid' => []]]);
+            echo json_encode(['success' => true, 'data' => ['week_id' => null, 'year_level' => $yearLevel, 'grid' => [], 'term_id' => $termId]]);
             exit;
         }
         $weekId = (int)$wk['week_id'];
@@ -118,7 +123,7 @@ try {
         }
     }
 
-    echo json_encode(['success' => true, 'data' => ['week_id' => $weekId, 'year_level' => $yearLevel, 'grid' => $grid]]);
+    echo json_encode(['success' => true, 'data' => ['week_id' => $weekId, 'year_level' => $yearLevel, 'grid' => $grid, 'term_id' => $termId]]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to fetch attendance grid.']);

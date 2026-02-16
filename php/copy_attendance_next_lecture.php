@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -44,6 +45,7 @@ try {
     );
     $schedStmt->execute([':sid' => $scheduleId]);
     $current = $schedStmt->fetch();
+    $termId = $current ? dmportal_get_term_id_for_week($pdo, (int)$current['week_id']) : 0;
     if (!$current) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Schedule slot not found.']);
@@ -77,8 +79,8 @@ try {
         exit;
     }
 
-    $attStmt = $pdo->prepare('SELECT student_id, status FROM attendance_records WHERE schedule_id = :sid');
-    $attStmt->execute([':sid' => $scheduleId]);
+    $attStmt = $pdo->prepare('SELECT student_id, status FROM attendance_records WHERE schedule_id = :sid AND term_id = :term_id');
+    $attStmt->execute([':sid' => $scheduleId, ':term_id' => $termId]);
     $attendance = $attStmt->fetchAll();
 
     if (!$attendance) {
@@ -92,13 +94,14 @@ try {
     $pdo->beginTransaction();
 
     $upsert = $pdo->prepare(
-        "INSERT INTO attendance_records (schedule_id, student_id, status)
-         VALUES (:schedule_id, :student_id, :status)
+        "INSERT INTO attendance_records (term_id, schedule_id, student_id, status)
+         VALUES (:term_id, :schedule_id, :student_id, :status)
          ON DUPLICATE KEY UPDATE status = VALUES(status), updated_at = CURRENT_TIMESTAMP"
     );
 
     foreach ($attendance as $row) {
         $upsert->execute([
+            ':term_id' => $termId,
             ':schedule_id' => (int)$next['schedule_id'],
             ':student_id' => (int)$row['student_id'],
             ':status' => strtoupper((string)($row['status'] ?? 'ABSENT')) === 'PRESENT' ? 'PRESENT' : 'ABSENT',
@@ -113,6 +116,7 @@ try {
             'source_schedule_id' => (int)$scheduleId,
             'target_schedule_id' => (int)$next['schedule_id'],
             'target_week_id' => (int)$next['week_id'],
+            'term_id' => $termId,
             'target_day_of_week' => (string)$next['day_of_week'],
             'target_slot_number' => (int)$next['slot_number'],
             'copied' => count($attendance),

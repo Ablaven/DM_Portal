@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -51,6 +52,7 @@ try {
     $yearLevel = (int)($_GET['year_level'] ?? 0);
     $semester = (int)($_GET['semester'] ?? 0);
     $courseId = (int)($_GET['course_id'] ?? 0);
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     $where = [];
     $params = [];
@@ -73,6 +75,11 @@ try {
     if ($courseId > 0) {
         $where[] = 'c.course_id = :course_id';
         $params[':course_id'] = $courseId;
+    }
+
+    if ($termId > 0) {
+        $where[] = 'g.term_id = :term_id';
+        $params[':term_id'] = $termId;
     }
 
     $sql =
@@ -143,6 +150,7 @@ try {
         'success' => true,
         'data' => [
             'scope' => $isAdmin ? $scope : 'self',
+            'term_id' => $termId,
             'items' => $items,
         ],
     ]);

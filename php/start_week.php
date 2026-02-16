@@ -6,6 +6,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_week_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_roles(['admin','management'], true);
 
@@ -34,20 +35,25 @@ try {
 
     dmportal_ensure_weeks_prep_column($pdo);
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
     if ($isPrep === 0) {
-        // Close any existing active week
-        $pdo->exec("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active'");
+        // Close any existing active week for this term
+        $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id");
+        $stmt->execute([':term_id' => $termId]);
     }
 
-    // Compute next label
-    $max = $pdo->query("SELECT COALESCE(MAX(week_id),0) AS max_id FROM weeks")->fetch();
+    // Compute next label per term
+    $stmt = $pdo->prepare("SELECT COALESCE(MAX(week_id),0) AS max_id FROM weeks WHERE term_id = :term_id");
+    $stmt->execute([':term_id' => $termId]);
+    $max = $stmt->fetch();
     $next = ((int)$max['max_id']) + 1;
     $label = ($isPrep === 1 ? 'Prep Week ' : 'Week ') . $next;
 
     $status = $isPrep === 1 ? 'closed' : 'active';
 
-    $stmt = $pdo->prepare("INSERT INTO weeks (label, start_date, status, is_prep) VALUES (:label, :start_date, :status, :is_prep)");
-    $stmt->execute([':label'=>$label, ':start_date'=>$startDate, ':status'=>$status, ':is_prep'=>$isPrep]);
+    $stmt = $pdo->prepare("INSERT INTO weeks (term_id, label, start_date, status, is_prep) VALUES (:term_id, :label, :start_date, :status, :is_prep)");
+    $stmt->execute([':term_id' => $termId, ':label'=>$label, ':start_date'=>$startDate, ':status'=>$status, ':is_prep'=>$isPrep]);
 
     $pdo->commit();
     echo json_encode([

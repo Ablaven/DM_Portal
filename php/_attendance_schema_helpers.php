@@ -27,14 +27,16 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
         return;
     }
 
-    // 2) Does it have schedule_id?
+    // 2) Does it have schedule_id and term_id?
     $colStmt = $pdo->prepare(
-        "SELECT COUNT(*)
+        "SELECT COLUMN_NAME
          FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'schedule_id'"
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records'"
     );
     $colStmt->execute();
-    $hasScheduleId = (int)$colStmt->fetchColumn() > 0;
+    $columns = array_map('strtolower', array_column($colStmt->fetchAll(), 'COLUMN_NAME'));
+    $hasScheduleId = in_array('schedule_id', $columns, true);
+    $hasTermId = in_array('term_id', $columns, true);
 
     if (!$hasScheduleId) {
         // Incompatible old schema. Rename it out of the way (keep data for manual inspection).
@@ -43,6 +45,10 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
         $pdo->exec("RENAME TABLE attendance_records TO {$legacy}");
         dmportal_create_attendance_records_table($pdo);
         return;
+    }
+
+    if (!$hasTermId) {
+        $pdo->exec("ALTER TABLE attendance_records ADD COLUMN term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 1");
     }
 
     // 3) Ensure unique key exists (schedule_id, student_id)
@@ -59,6 +65,7 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
 
     // 4) Ensure indexes used by APIs exist
     foreach ([
+        "ALTER TABLE attendance_records ADD KEY idx_attendance_term (term_id, schedule_id)",
         "ALTER TABLE attendance_records ADD KEY idx_attendance_student (student_id)",
         "ALTER TABLE attendance_records ADD KEY idx_attendance_schedule (schedule_id)",
     ] as $sql) {
@@ -76,6 +83,7 @@ function dmportal_create_attendance_records_table(PDO $pdo): void
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS attendance_records (\n"
         ."  attendance_id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,\n"
+        ."  term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 1,\n"
         ."  schedule_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  student_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  status ENUM('PRESENT','ABSENT') NOT NULL,\n"
@@ -83,6 +91,7 @@ function dmportal_create_attendance_records_table(PDO $pdo): void
         ."  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
         ."  PRIMARY KEY (attendance_id),\n"
         ."  UNIQUE KEY uq_attendance_schedule_student (schedule_id, student_id),\n"
+        ."  KEY idx_attendance_term (term_id, schedule_id),\n"
         ."  KEY idx_attendance_student (student_id),\n"
         ."  KEY idx_attendance_schedule (schedule_id)\n"
         .") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"

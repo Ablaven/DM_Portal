@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 
 auth_require_login();
@@ -90,6 +91,7 @@ try {
 
     $pdo = get_pdo();
     dmportal_ensure_attendance_records_table($pdo);
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     // Course meta
     $cStmt = $pdo->prepare('SELECT course_id, course_name, program, year_level, semester FROM courses WHERE course_id = :id LIMIT 1');
@@ -137,10 +139,11 @@ try {
          FROM weeks w
          JOIN doctor_schedules s ON s.week_id = w.week_id
          WHERE s.course_id = :course_id
+           AND w.term_id = :term_id
            AND w.week_id <= :end_week_id
          ORDER BY w.week_id ASC'
     );
-    $wStmt->execute([':course_id' => $courseId, ':end_week_id' => $endWeekId]);
+    $wStmt->execute([':course_id' => $courseId, ':term_id' => $termId, ':end_week_id' => $endWeekId]);
     $weeks = $wStmt->fetchAll();
 
     $weekIds = array_map(fn($w) => (int)$w['week_id'], $weeks);
@@ -236,8 +239,8 @@ try {
     $attendance = []; // schedule_id => student_id => status
     if (count($scheduleIds) > 0) {
         $in = implode(',', array_fill(0, count($scheduleIds), '?'));
-        $aStmt = $pdo->prepare('SELECT schedule_id, student_id, status FROM attendance_records WHERE schedule_id IN (' . $in . ')');
-        $aStmt->execute($scheduleIds);
+        $aStmt = $pdo->prepare('SELECT schedule_id, student_id, status FROM attendance_records WHERE term_id = ? AND schedule_id IN (' . $in . ')');
+        $aStmt->execute(array_merge([$termId], $scheduleIds));
         foreach ($aStmt->fetchAll() as $r) {
             $sid = (int)$r['schedule_id'];
             $st = (int)$r['student_id'];
@@ -248,6 +251,8 @@ try {
     // Header values
     $courseName = (string)($course['course_name'] ?? '');
     $yearSem = 'Year ' . $yearLevel . ($semester > 0 ? (' / Sem ' . $semester) : '');
+    $termLabel = $termId > 0 ? (' / Term ' . $termId) : '';
+    $yearSem .= $termLabel;
 
     // Academic year computed from first available session date or first week start date
     $academicYear = '__________';

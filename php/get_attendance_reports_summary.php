@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -35,9 +36,12 @@ try {
         exit;
     }
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     $where = [];
     $params = [];
     if ($yearLevel > 0) { $where[] = 'c.year_level = :year_level'; $params[':year_level'] = $yearLevel; }
+    if ($termId > 0) { $where[] = 'ar.term_id = :term_id'; $params[':term_id'] = $termId; }
     if ($role === 'teacher' && $doctorId > 0) {
         $where[] = 's.doctor_id = :doctor_id';
         $params[':doctor_id'] = $doctorId;
@@ -102,6 +106,7 @@ try {
         'success' => true,
         'data' => [
             'metrics' => $totals,
+            'term_id' => $termId,
             'courses' => $courses,
         ],
     ]);

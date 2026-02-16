@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -38,6 +39,8 @@ try {
         echo json_encode(['success' => true, 'data' => ['metrics' => [], 'courses' => []]]);
         exit;
     }
+
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     $courseWhere = [];
     $params = [];
@@ -80,6 +83,11 @@ try {
          WHERE g.course_id IN ($placeholders)";
 
     $gradesParams = $courseIds;
+
+    if ($termId > 0) {
+        $gradesSql .= " AND g.term_id = ?";
+        $gradesParams[] = $termId;
+    }
 
     if ($role === 'teacher' && $doctorId > 0) {
         $gradesSql .= " AND g.doctor_id = ?";
@@ -137,6 +145,7 @@ try {
         'success' => true,
         'data' => [
             'metrics' => $totals,
+            'term_id' => $termId,
             'courses' => $summary,
         ],
     ]);

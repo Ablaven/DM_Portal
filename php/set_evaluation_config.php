@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -74,16 +75,19 @@ try {
 
     $pdo->beginTransaction();
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
     $stmt = $pdo->prepare(
-        'INSERT INTO evaluation_configs (course_id, doctor_id) VALUES (:course_id, :doctor_id)'
+        'INSERT INTO evaluation_configs (term_id, course_id, doctor_id) VALUES (:term_id, :course_id, :doctor_id)'
         . ' ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP'
     );
     $stmt->execute([
+        ':term_id' => $termId,
         ':course_id' => $courseId,
         ':doctor_id' => 0,
     ]);
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, 0);
+    $config = dmportal_eval_fetch_config($pdo, $courseId, 0, $termId);
     if (!$config) {
         throw new RuntimeException('Failed to load evaluation config after save.');
     }
@@ -111,7 +115,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode(['success' => true, 'data' => ['saved' => true]]);
+    echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);
 } catch (Throwable $e) {
     if ($pdo && $pdo->inTransaction()) {
         $pdo->rollBack();

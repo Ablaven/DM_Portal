@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_week_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_roles(['admin', 'management'], true);
 
@@ -38,7 +39,7 @@ try {
 
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare('SELECT week_id, status, is_prep FROM weeks WHERE week_id = :week_id LIMIT 1');
+    $stmt = $pdo->prepare('SELECT week_id, status, is_prep, term_id FROM weeks WHERE week_id = :week_id LIMIT 1');
     $stmt->execute([':week_id' => $weekId]);
     $week = $stmt->fetch();
     if (!$week) {
@@ -48,11 +49,17 @@ try {
         exit;
     }
 
+    $termId = (int)($week['term_id'] ?? 0);
+    if ($termId <= 0) {
+        $termId = dmportal_get_active_term_id($pdo);
+    }
+
     $isPrep = $weekType === 'PREP' ? 1 : 0;
     $newStatus = $weekType === 'ACTIVE' ? 'active' : 'closed';
 
     if ($weekType === 'ACTIVE') {
-        $pdo->exec("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND week_id <> " . (int)$weekId);
+        $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id AND week_id <> :week_id");
+        $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
 
     $update = $pdo->prepare('UPDATE weeks SET is_prep = :is_prep, status = :status WHERE week_id = :week_id');
@@ -68,6 +75,7 @@ try {
         'success' => true,
         'data' => [
             'week_id' => $weekId,
+            'term_id' => $termId,
             'is_prep' => $isPrep,
             'status' => $newStatus,
         ],

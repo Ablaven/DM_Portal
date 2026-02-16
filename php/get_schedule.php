@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -56,12 +57,16 @@ try {
         exit;
     }
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     // Default to active week if week_id not provided
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $stmt = $pdo->prepare("SELECT week_id FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
             // No active week yet
-            echo json_encode(['success' => true, 'data' => ['doctor_id' => $doctorId, 'week_id' => null, 'grid' => []]]);
+            echo json_encode(['success' => true, 'data' => ['doctor_id' => $doctorId, 'week_id' => null, 'grid' => [], 'term_id' => $termId]]);
             exit;
         }
         $weekId = (int)$wk['week_id'];
@@ -178,6 +183,7 @@ try {
         'data' => [
             'doctor_id' => $doctorId,
             'week_id' => $weekId,
+            'term_id' => $termId,
             'grid' => $grid,
             'cancellations' => $cancellations,
             'slot_cancellations' => $slotCancellations,

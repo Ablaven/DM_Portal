@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 
 function bad_request(string $message): void
@@ -68,12 +69,14 @@ try {
     $studentsStmt->execute([':year_level' => (int)$course['year_level']]);
     $students = $studentsStmt->fetchAll();
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     $gradesStmt = $pdo->prepare(
         'SELECT grade_id, student_id, attendance_score, final_score
          FROM evaluation_grades
-         WHERE course_id = :course_id AND doctor_id = :doctor_id'
+         WHERE course_id = :course_id AND doctor_id = :doctor_id AND term_id = :term_id'
     );
-    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId, ':term_id' => $termId]);
     $gradeRows = $gradesStmt->fetchAll();
     $gradeMap = [];
     foreach ($gradeRows as $r) {
@@ -84,9 +87,9 @@ try {
         'SELECT gi.grade_id, gi.item_id, gi.score
          FROM evaluation_grade_items gi
          JOIN evaluation_grades g ON g.grade_id = gi.grade_id
-         WHERE g.course_id = :course_id AND g.doctor_id = :doctor_id'
+         WHERE g.course_id = :course_id AND g.doctor_id = :doctor_id AND g.term_id = :term_id'
     );
-    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId, ':term_id' => $termId]);
     $itemScoreRows = $itemScoresStmt->fetchAll();
     $scoreMap = [];
     foreach ($itemScoreRows as $r) {
@@ -125,6 +128,7 @@ try {
     $header = ['Student Code', 'Student', 'Final'];
     $totalCols = count($header);
     $yearSem = 'Year ' . (string)$course['year_level'] . ((int)$course['semester'] > 0 ? (' / Sem ' . (string)$course['semester']) : '');
+    $yearSem .= $termId > 0 ? (' / Term ' . $termId) : '';
     $academicYear = academic_year_from_date(new DateTimeImmutable('now'));
     $faculty = 'Management';
     $department = 'Digital Marketing';
@@ -181,7 +185,7 @@ try {
         $scores = $gradeId ? ($scoreMap[$gradeId] ?? []) : [];
 
         $attendanceMax = dmportal_eval_get_attendance_weight($itemsOut);
-        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid, $attendanceMax);
+        $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $sid, $attendanceMax, $termId);
         $attendanceScore = $attendance['score'];
         $finalScore = null;
         if ($itemsOut) {

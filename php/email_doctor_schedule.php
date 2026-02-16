@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
 require_once __DIR__ . '/_smtp_mailer.php';
@@ -50,11 +51,15 @@ try {
         exit;
     }
 
+    $termId = dmportal_get_term_id_from_request($pdo, $input);
+
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id, label, start_date FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $stmt = $pdo->prepare("SELECT week_id, label, start_date FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'No active week']);
+            echo json_encode(['success' => false, 'error' => 'No active week for this term']);
             exit;
         }
         $weekId = (int)$wk['week_id'];
@@ -167,7 +172,8 @@ try {
     $docName = (string)$doctor['full_name'];
     $xlsx = new SimpleXlsxWriter();
 
-    $title = "{$docName} — {$weekLabel}";
+    $termLabel = $termId > 0 ? " — Term {$termId}" : '';
+    $title = "{$docName}{$termLabel} — {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
@@ -264,13 +270,15 @@ try {
         ]
     );
 
-    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $docName) . " - {$weekLabel}.xlsx";
+    $termSuffix = $termId > 0 ? " Term {$termId}" : '';
+    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $docName) . "{$termSuffix} - {$weekLabel}.xlsx";
 
     $xlsxBytes = $xlsx->downloadToString($fileName);
     $mailer = new DmportalSmtpMailer();
+    $subjectTerm = $termId > 0 ? " (Term {$termId})" : '';
     $mailer->send(
         $docEmail,
-        'Weekly Schedule',
+        'Weekly Schedule' . $subjectTerm,
         "Dear Dr. " . $docName . ",\n\nPlease find your weekly schedule attached.\n\nBest regards,",
         [[
             'name' => $fileName,

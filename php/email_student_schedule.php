@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
 require_once __DIR__ . '/_smtp_mailer.php';
@@ -62,15 +63,19 @@ try {
     dmportal_ensure_doctor_year_colors_table($pdo);
 
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id, label FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+        $stmt = $pdo->prepare("SELECT week_id, label FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'No active week']);
+            echo json_encode(['success' => false, 'error' => 'No active week for this term.']);
             exit;
         }
         $weekId = (int)$wk['week_id'];
         $weekLabel = (string)$wk['label'];
     } else {
+        $termId = dmportal_get_term_id_from_request($pdo, $_GET);
         $wkStmt = $pdo->prepare('SELECT week_id, label FROM weeks WHERE week_id = :id');
         $wkStmt->execute([':id' => $weekId]);
         $wk = $wkStmt->fetch();
@@ -127,7 +132,8 @@ try {
     }
 
     $xlsx = new SimpleXlsxWriter();
-    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $termLabel = $termId > 0 ? " — Term {$termId}" : '';
+    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester}{$termLabel} — {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
@@ -199,10 +205,12 @@ try {
         ]
     );
 
-    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester} - {$weekLabel}.xlsx";
+    $termSuffix = $termId > 0 ? " Term {$termId}" : '';
+    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester}{$termSuffix} - {$weekLabel}.xlsx";
     $xlsxBytes = $xlsx->downloadToString($fileName);
 
-    $subject = "Student Schedule — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $termSubject = $termId > 0 ? " — Term {$termId}" : '';
+    $subject = "Student Schedule — Year {$yearLevel} — Sem {$semester}{$termSubject} — {$weekLabel}";
     $body = "Dear Students,\n\nPlease find attached the schedule for {$program} (Year {$yearLevel}, Semester {$semester}) for {$weekLabel}." .
         "\n\nIf you have any questions or require clarification, please contact the Academic Office." .
         "\n\nKind regards,\nDigital Marketing Portal";

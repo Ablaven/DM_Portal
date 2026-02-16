@@ -5,6 +5,7 @@ declare(strict_types=1);
 header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_roles(['admin','management'], true);
 
@@ -26,10 +27,14 @@ if ($semester !== 0 && ($semester < 1 || $semester > 2)) {
 try {
     $pdo = get_pdo();
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $stmt = $pdo->prepare("SELECT week_id FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
-            echo json_encode(['success'=>true,'data'=>['week_id'=>null,'doctors'=>[],'courses'=>[]]]);
+            echo json_encode(['success'=>true,'data'=>['week_id'=>null,'doctors'=>[],'courses'=>[], 'term_id' => $termId]]);
             exit;
         }
         $weekId = (int)$wk['week_id'];
@@ -145,6 +150,7 @@ try {
         'success' => true,
         'data' => [
             'week_id' => $weekId,
+            'term_id' => $termId,
             'doctors' => $docStmt->fetchAll(),
             'courses' => $courseStmt->fetchAll(),
             'filters' => ['year_level' => $yearLevel, 'semester' => $semester],

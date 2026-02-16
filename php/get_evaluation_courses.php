@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -27,6 +28,7 @@ try {
 
     $courses = [];
     $params = [];
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     if ($role === 'teacher') {
         $params[':doctor_id'] = $doctorId;
@@ -82,7 +84,7 @@ try {
 
         usort($courses, fn($a, $b) => [$a['year_level'], $a['course_name']] <=> [$b['year_level'], $b['course_name']]);
 
-        echo json_encode(['success' => true, 'data' => $courses]);
+        echo json_encode(['success' => true, 'data' => $courses, 'term_id' => $termId]);
         exit;
     }
 
@@ -97,7 +99,7 @@ try {
          ORDER BY c.year_level ASC, c.course_name ASC";
 
     $stmt = $pdo->query($sql);
-    echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
+    echo json_encode(['success' => true, 'data' => $stmt->fetchAll(), 'term_id' => $termId]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to fetch evaluation courses.']);

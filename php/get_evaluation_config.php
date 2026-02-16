@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -40,7 +41,9 @@ try {
         exit;
     }
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, 0);
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
+    $config = dmportal_eval_fetch_config($pdo, $courseId, 0, $termId);
     $items = $config['items'] ?? [];
 
     $catStmt = $pdo->query('SELECT category_key, label FROM evaluation_categories ORDER BY sort_order ASC, category_key ASC');
@@ -56,6 +59,7 @@ try {
                 'semester' => (int)$course['semester'],
             ],
             'doctor_id' => $doctorId,
+            'term_id' => $termId,
             'items' => $items,
             'categories' => $categories,
         ],

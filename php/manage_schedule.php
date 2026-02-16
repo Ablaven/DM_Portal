@@ -6,6 +6,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
 
 auth_require_roles(['admin','management'], true);
@@ -70,12 +71,16 @@ try {
 
     $pdo->beginTransaction();
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
     // Default to active week if week_id not provided
     if ($weekId <= 0) {
-        $wk = $pdo->query("SELECT week_id FROM weeks WHERE status='active' ORDER BY week_id DESC LIMIT 1")->fetch();
+        $stmt = $pdo->prepare("SELECT week_id FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt->execute([':term_id' => $termId]);
+        $wk = $stmt->fetch();
         if (!$wk) {
             $pdo->rollBack();
-            bad_request('No active week. Start a week first.');
+            bad_request('No active week for this term. Start a week first.');
         }
         $weekId = (int)$wk['week_id'];
     }
@@ -394,7 +399,7 @@ try {
     }
 
     $pdo->commit();
-    echo json_encode(['success' => true, 'data' => ['saved' => true]]);
+    echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);
 } catch (PDOException $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();

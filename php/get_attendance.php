@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -73,12 +74,14 @@ try {
     $students = $studentsStmt->fetchAll();
 
     // Attendance status for schedule
+    $termId = dmportal_get_term_id_for_week($pdo, (int)$sched['week_id']);
+
     $attStmt = $pdo->prepare(
         'SELECT student_id, status
          FROM attendance_records
-         WHERE schedule_id = :sid'
+         WHERE schedule_id = :sid AND term_id = :term_id'
     );
-    $attStmt->execute([':sid' => $scheduleId]);
+    $attStmt->execute([':sid' => $scheduleId, ':term_id' => $termId]);
     $map = [];
     foreach ($attStmt->fetchAll() as $r) {
         $map[(string)$r['student_id']] = (string)$r['status'];
@@ -103,6 +106,7 @@ try {
             'schedule' => [
                 'schedule_id' => (int)$sched['schedule_id'],
                 'week_id' => (int)$sched['week_id'],
+                'term_id' => $termId,
                 'day_of_week' => (string)$sched['day_of_week'],
                 'slot_number' => (int)$sched['slot_number'],
                 'room_code' => (string)($sched['room_code'] ?? ''),

@@ -24,12 +24,14 @@ function dmportal_ensure_evaluation_tables(PDO $pdo): void
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS evaluation_configs (\n"
         ."  config_id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,\n"
+        ."  term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 1,\n"
         ."  course_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  doctor_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
         ."  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
         ."  PRIMARY KEY (config_id),\n"
-        ."  UNIQUE KEY uq_eval_config (course_id, doctor_id),\n"
+        ."  UNIQUE KEY uq_eval_config (term_id, course_id, doctor_id),\n"
+        ."  KEY idx_eval_config_term (term_id),\n"
         ."  KEY idx_eval_config_course (course_id),\n"
         ."  KEY idx_eval_config_doctor (doctor_id)\n"
         .") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
@@ -52,6 +54,7 @@ function dmportal_ensure_evaluation_tables(PDO $pdo): void
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS evaluation_grades (\n"
         ."  grade_id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,\n"
+        ."  term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 1,\n"
         ."  course_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  doctor_id BIGINT(20) UNSIGNED NOT NULL,\n"
         ."  student_id BIGINT(20) UNSIGNED NOT NULL,\n"
@@ -60,7 +63,8 @@ function dmportal_ensure_evaluation_tables(PDO $pdo): void
         ."  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
         ."  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
         ."  PRIMARY KEY (grade_id),\n"
-        ."  UNIQUE KEY uq_eval_grade (course_id, doctor_id, student_id),\n"
+        ."  UNIQUE KEY uq_eval_grade (term_id, course_id, doctor_id, student_id),\n"
+        ."  KEY idx_eval_grade_term (term_id),\n"
         ."  KEY idx_eval_grade_course (course_id),\n"
         ."  KEY idx_eval_grade_doctor (doctor_id),\n"
         ."  KEY idx_eval_grade_student (student_id)\n"
@@ -175,25 +179,40 @@ function dmportal_eval_get_attendance_weight(array $items, float $default = 20.0
     return $default;
 }
 
-function dmportal_eval_compute_attendance(PDO $pdo, int $courseId, int $studentId, float $maxScore = 20.0): array
+function dmportal_eval_compute_attendance(PDO $pdo, int $courseId, int $studentId, float $maxScore = 20.0, ?int $termId = null): array
 {
+    $params = [':course_id' => $courseId];
+    $termClause = '';
+    if ($termId !== null && $termId > 0) {
+        $termClause = ' AND w.term_id = :term_id';
+        $params[':term_id'] = $termId;
+    }
+
     $totalStmt = $pdo->prepare(
         "SELECT COUNT(DISTINCT s.schedule_id)
          FROM doctor_schedules s
-         WHERE s.course_id = :course_id"
+         JOIN weeks w ON w.week_id = s.week_id
+         WHERE s.course_id = :course_id{$termClause}"
     );
-    $totalStmt->execute([':course_id' => $courseId]);
+    $totalStmt->execute($params);
     $total = (int)$totalStmt->fetchColumn();
+
+    $presentParams = [':course_id' => $courseId, ':student_id' => $studentId];
+    if ($termId !== null && $termId > 0) {
+        $presentParams[':term_id'] = $termId;
+    }
 
     $presentStmt = $pdo->prepare(
         "SELECT COUNT(*)
          FROM attendance_records ar
          JOIN doctor_schedules s ON s.schedule_id = ar.schedule_id
+         JOIN weeks w ON w.week_id = s.week_id
          WHERE s.course_id = :course_id
            AND ar.student_id = :student_id
            AND UPPER(ar.status) = 'PRESENT'"
+           . ($termId !== null && $termId > 0 ? ' AND ar.term_id = :term_id' : '')
     );
-    $presentStmt->execute([':course_id' => $courseId, ':student_id' => $studentId]);
+    $presentStmt->execute($presentParams);
     $present = (int)$presentStmt->fetchColumn();
 
     $score = $total > 0 ? round(($present / $total) * $maxScore, 2) : 0.0;
@@ -267,14 +286,22 @@ function dmportal_eval_load_course(PDO $pdo, int $courseId): ?array
     return $row ?: null;
 }
 
-function dmportal_eval_fetch_config(PDO $pdo, int $courseId, int $doctorId): ?array
+function dmportal_eval_fetch_config(PDO $pdo, int $courseId, int $doctorId, ?int $termId = null): ?array
 {
-    $stmt = $pdo->prepare('SELECT config_id FROM evaluation_configs WHERE course_id = :course_id AND doctor_id = :doctor_id LIMIT 1');
-    $stmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+    $params = [':course_id' => $courseId, ':doctor_id' => $doctorId];
+    $termClause = '';
+    if ($termId !== null && $termId > 0) {
+        $termClause = ' AND term_id = :term_id';
+        $params[':term_id'] = $termId;
+    }
+
+    $stmt = $pdo->prepare('SELECT config_id FROM evaluation_configs WHERE course_id = :course_id AND doctor_id = :doctor_id' . $termClause . ' LIMIT 1');
+    $stmt->execute($params);
     $row = $stmt->fetch();
 
     if (!$row && $doctorId !== 0) {
-        $stmt->execute([':course_id' => $courseId, ':doctor_id' => 0]);
+        $params[':doctor_id'] = 0;
+        $stmt->execute($params);
         $row = $stmt->fetch();
     }
 

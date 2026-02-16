@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_evaluation_schema_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
 
@@ -54,8 +55,10 @@ try {
         }
     }
 
+    $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
     $configDoctorId = $role === 'teacher' ? 0 : $doctorId;
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId);
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     if (!$config) {
         bad_request('Evaluation config is required before grading.');
     }
@@ -84,18 +87,19 @@ try {
     }
 
     $attendanceMax = dmportal_eval_get_attendance_weight($items);
-    $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $studentId, $attendanceMax);
+    $attendance = dmportal_eval_compute_attendance($pdo, $courseId, $studentId, $attendanceMax, $termId);
     $attendanceScore = $attendance['score'];
     $finalScore = dmportal_eval_compute_final($items, $scores, $attendanceScore);
 
     $pdo->beginTransaction();
 
     $stmt = $pdo->prepare(
-        'INSERT INTO evaluation_grades (course_id, doctor_id, student_id, attendance_score, final_score)'
-        . ' VALUES (:course_id, :doctor_id, :student_id, :attendance_score, :final_score)'
+        'INSERT INTO evaluation_grades (term_id, course_id, doctor_id, student_id, attendance_score, final_score)'
+        . ' VALUES (:term_id, :course_id, :doctor_id, :student_id, :attendance_score, :final_score)'
         . ' ON DUPLICATE KEY UPDATE attendance_score = VALUES(attendance_score), final_score = VALUES(final_score), updated_at = CURRENT_TIMESTAMP'
     );
     $stmt->execute([
+        ':term_id' => $termId,
         ':course_id' => $courseId,
         ':doctor_id' => $doctorId,
         ':student_id' => $studentId,
@@ -105,8 +109,8 @@ try {
 
     $gradeId = (int)$pdo->lastInsertId();
     if ($gradeId === 0) {
-        $stmt2 = $pdo->prepare('SELECT grade_id FROM evaluation_grades WHERE course_id = :course_id AND doctor_id = :doctor_id AND student_id = :student_id LIMIT 1');
-        $stmt2->execute([':course_id' => $courseId, ':doctor_id' => $doctorId, ':student_id' => $studentId]);
+        $stmt2 = $pdo->prepare('SELECT grade_id FROM evaluation_grades WHERE term_id = :term_id AND course_id = :course_id AND doctor_id = :doctor_id AND student_id = :student_id LIMIT 1');
+        $stmt2->execute([':term_id' => $termId, ':course_id' => $courseId, ':doctor_id' => $doctorId, ':student_id' => $studentId]);
         $gradeId = (int)$stmt2->fetchColumn();
     }
 
@@ -128,7 +132,7 @@ try {
 
     $pdo->commit();
 
-    echo json_encode(['success' => true, 'data' => ['saved' => true, 'final_score' => $finalScore, 'attendance_score' => $attendanceScore]]);
+    echo json_encode(['success' => true, 'data' => ['saved' => true, 'final_score' => $finalScore, 'attendance_score' => $attendanceScore, 'term_id' => $termId]]);
 } catch (Throwable $e) {
     if ($pdo && $pdo->inTransaction()) {
         $pdo->rollBack();
