@@ -24,6 +24,8 @@
   5: "2:50 PM–4:20 PM",
   };
 
+  const STUDENT_SCHEDULE_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
+
   function slotLabel(slot) {
   const t = SLOT_TIMES[slot] || "";
   // Cleaner label than "#1 (...)" (also looks better in exports/screenshots).
@@ -635,6 +637,203 @@
   }
   }
 
+  function renderStudentMiniGrid(grid = {}) {
+    const body = document.getElementById("studentScheduleBody");
+    if (!body) return;
+
+    body.innerHTML = "";
+    for (const slot of SLOTS) {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.innerHTML = `<div class="slot-hdr"><div class="slot-hdr-num">Slot ${slot}</div><div class="slot-hdr-time">${escapeHtml(SLOT_TIMES[slot] || "")}</div></div>`;
+      tr.appendChild(th);
+
+      for (const day of STUDENT_SCHEDULE_DAYS) {
+        const td = document.createElement("td");
+        const cell = document.createElement("div");
+        cell.className = "slot";
+
+        const assigned = grid?.[day]?.[String(slot)];
+        if (assigned) {
+          cell.classList.add("filled");
+          if (assigned.doctor_color) {
+            cell.style.background = assigned.doctor_color + "22";
+            cell.style.borderColor = assigned.doctor_color + "88";
+          }
+          const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
+          cell.innerHTML = `
+            <div class="slot-title">${escapeHtml(assigned.course_name || "")}</div>
+            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.doctor_name || "")}</div>
+          `;
+        } else {
+          cell.innerHTML = `
+            <div class="slot-title">Empty</div>
+          `;
+        }
+
+        td.appendChild(cell);
+        tr.appendChild(td);
+      }
+
+      body.appendChild(tr);
+    }
+  }
+
+  function updateStudentScheduleMeta(program, year, semester) {
+    const meta = document.getElementById("studentScheduleMeta");
+    if (!meta) return;
+    if (!program || !year || !semester) {
+      meta.textContent = "Select program/year/semester";
+      return;
+    }
+    meta.textContent = `${program} • Year ${year} • Sem ${semester}`;
+  }
+
+  function renderStudentProgramOptions() {
+    const select = document.getElementById("studentProgramSelect");
+    if (!select) return;
+    const programs = Array.from(
+      new Set((state.courses || []).map((c) => String(c.program || "").trim()).filter(Boolean))
+    ).sort();
+
+    const current = select.value;
+    select.innerHTML = '<option value="">Select program</option>';
+    programs.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p;
+      opt.textContent = p;
+      select.appendChild(opt);
+    });
+    if (current) select.value = current;
+  }
+
+  function getStudentScheduleFilters() {
+    const program = document.getElementById("studentProgramSelect")?.value || "";
+    const year = Number(document.getElementById("studentYearSelect")?.value || 0);
+    const semester = Number(document.getElementById("studentSemesterSelect")?.value || 0);
+    return { program, year, semester };
+  }
+
+  async function refreshStudentScheduleMini() {
+    const { program, year, semester } = getStudentScheduleFilters();
+    const status = document.getElementById("studentScheduleStatus");
+
+    updateStudentScheduleMeta(program, year, semester);
+
+    if (!program || !year || !semester) {
+      renderStudentMiniGrid({});
+      if (status) status.textContent = "Select program/year/semester to load.";
+      return;
+    }
+
+    if (status) {
+      status.textContent = "Loading…";
+      status.className = "status";
+    }
+
+    try {
+      const qs = new URLSearchParams({
+        program,
+        year_level: String(year),
+        semester: String(semester),
+      });
+      if (state.activeWeekId) qs.set("week_id", String(state.activeWeekId));
+
+      const payload = await fetchJson(`php/get_student_schedule.php?${qs.toString()}`);
+      if (!payload?.success) throw new Error(payload?.error || "Failed to load student schedule.");
+      renderStudentMiniGrid(payload?.data?.grid || {});
+      if (status) status.textContent = "";
+    } catch (err) {
+      renderStudentMiniGrid({});
+      if (status) {
+        status.textContent = err.message || "Failed to load student schedule.";
+        status.className = "status error";
+      }
+    }
+  }
+
+  function setStudentMiniOpen(isOpen) {
+    const panel = document.getElementById("studentScheduleMini");
+    if (!panel) return;
+    panel.classList.toggle("open", isOpen);
+    panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  }
+
+  function initStudentScheduleMini() {
+    const panel = document.getElementById("studentScheduleMini");
+    if (!panel) return;
+
+    renderStudentProgramOptions();
+    renderStudentMiniGrid({});
+
+    const toggleBtn = document.getElementById("toggleStudentSchedule");
+    toggleBtn?.addEventListener("click", () => {
+      const isOpen = panel.classList.contains("open");
+      setStudentMiniOpen(!isOpen);
+      if (!isOpen) refreshStudentScheduleMini();
+    });
+
+    document.getElementById("closeStudentSchedule")?.addEventListener("click", () => {
+      setStudentMiniOpen(false);
+    });
+
+    document.getElementById("refreshStudentSchedule")?.addEventListener("click", () => {
+      refreshStudentScheduleMini();
+    });
+
+    ["studentProgramSelect", "studentYearSelect", "studentSemesterSelect"].forEach((id) => {
+      document.getElementById(id)?.addEventListener("change", () => {
+        refreshStudentScheduleMini();
+      });
+    });
+
+    const header = panel.querySelector(".floating-schedule-header");
+    let dragState = null;
+
+    const stored = localStorage.getItem("dmportal_student_schedule_pos");
+    if (stored) {
+      try {
+        const pos = JSON.parse(stored);
+        if (typeof pos?.left === "number" && typeof pos?.top === "number") {
+          panel.style.left = `${pos.left}px`;
+          panel.style.top = `${pos.top}px`;
+          panel.style.right = "auto";
+          panel.style.bottom = "auto";
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    header?.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      const rect = panel.getBoundingClientRect();
+      dragState = {
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+      };
+      panel.classList.add("dragging");
+      e.preventDefault();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!dragState) return;
+      const left = Math.max(8, e.clientX - dragState.offsetX);
+      const top = Math.max(8, e.clientY - dragState.offsetY);
+      panel.style.left = `${left}px`;
+      panel.style.top = `${top}px`;
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      localStorage.setItem("dmportal_student_schedule_pos", JSON.stringify({ left, top }));
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (!dragState) return;
+      dragState = null;
+      panel.classList.remove("dragging");
+    });
+  }
+
   function openModal() {
     const modal = document.getElementById("slotModal");
     if (!modal) return;
@@ -1123,6 +1322,7 @@
     renderDoctorsSelect();
     renderCoursesSidebar();
     await loadHoursRemainingPanel();
+    initStudentScheduleMini();
 
     window.addEventListener("dmportal:globalFiltersChanged", () => {
       // Filters affect:
@@ -1174,6 +1374,9 @@
         renderScheduleMetaHint();
         renderScheduleGrid();
         updateDoctorExportShareLinks();
+      }
+      if (document.getElementById("studentScheduleMini")?.classList.contains("open")) {
+        refreshStudentScheduleMini();
       }
     });
 

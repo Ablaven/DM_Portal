@@ -157,6 +157,30 @@ auth_require_roles(['admin','management']);
         <div class="schedule-header">
           <div id="scheduleMetaHint" class="muted">Week starts Sunday • Each slot = 1 hour 30 minutes</div>
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <div class="field" style="margin:0; min-width:180px;">
+              <label class="muted" style="font-size:0.85rem;" for="studentProgramSelect">Student Program</label>
+              <select id="studentProgramSelect" class="navlink" style="padding:7px 10px;">
+                <option value="">Select program</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0; min-width:140px;">
+              <label class="muted" style="font-size:0.85rem;" for="studentYearSelect">Student Year</label>
+              <select id="studentYearSelect" class="navlink" style="padding:7px 10px;">
+                <option value="">Year</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0; min-width:140px;">
+              <label class="muted" style="font-size:0.85rem;" for="studentSemesterSelect">Student Sem</label>
+              <select id="studentSemesterSelect" class="navlink" style="padding:7px 10px;">
+                <option value="">Sem</option>
+                <option value="1">Sem 1</option>
+                <option value="2">Sem 2</option>
+              </select>
+            </div>
+            <button id="toggleStudentSchedule" class="btn btn-secondary btn-small" type="button">Show Student Schedule</button>
             <div id="scheduleStatus" class="status" role="status" aria-live="polite"></div>
           </div>
         </div>
@@ -184,6 +208,37 @@ auth_require_roles(['admin','management']);
   </div>
 
   <!-- Simple modal for slot assignment -->
+  <div id="studentScheduleMini" class="floating-schedule" aria-hidden="true">
+    <div class="floating-schedule-header">
+      <div>
+        <div class="floating-schedule-title">Student Schedule</div>
+        <div id="studentScheduleMeta" class="floating-schedule-subtitle">Select program/year/semester</div>
+      </div>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button id="refreshStudentSchedule" class="btn btn-secondary btn-small" type="button">Refresh</button>
+        <button id="closeStudentSchedule" class="btn btn-secondary btn-small" type="button">Close</button>
+      </div>
+    </div>
+    <div id="studentScheduleStatus" class="status" role="status" aria-live="polite"></div>
+    <div class="floating-schedule-body">
+      <div class="schedule-wrap mini">
+        <table class="schedule-grid mini" aria-label="Student schedule mini grid">
+          <thead>
+            <tr>
+              <th class="corner">Time</th>
+              <th>Sun</th>
+              <th>Mon</th>
+              <th>Tue</th>
+              <th>Wed</th>
+              <th>Thu</th>
+            </tr>
+          </thead>
+          <tbody id="studentScheduleBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="slotModal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" data-close="1"></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="slotModalTitle">

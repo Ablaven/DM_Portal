@@ -1761,6 +1761,83 @@ html[data-theme="light"] .course-item:hover {
 }
 
 
+/* Floating mini schedule */
+.floating-schedule {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: min(520px, 90vw);
+  background: rgba(20, 20, 26, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  padding: 12px 12px 10px;
+  z-index: 1200;
+  display: none;
+}
+
+.floating-schedule.open {
+  display: block;
+}
+
+.floating-schedule-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  cursor: move;
+}
+
+.floating-schedule-title {
+  font-weight: 600;
+}
+
+.floating-schedule-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.floating-schedule-body {
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.schedule-grid.mini th,
+.schedule-grid.mini td {
+  padding: 0;
+}
+
+.schedule-grid.mini .slot {
+  padding: 6px 6px;
+  min-height: 46px;
+}
+
+.schedule-grid.mini .slot-title {
+  font-size: 0.72rem;
+}
+
+.schedule-grid.mini .slot-sub {
+  font-size: 0.62rem;
+}
+
+.schedule-grid.mini .slot-hdr {
+  gap: 4px;
+}
+
+.schedule-grid.mini .slot-hdr-num {
+  font-size: 0.65rem;
+}
+
+.schedule-grid.mini .slot-hdr-time {
+  font-size: 0.6rem;
+}
+
+.schedule-wrap.mini {
+  overflow: auto;
+}
+
 /* Schedule grid */
 .schedule-header {
   display: flex;
