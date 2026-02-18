@@ -145,6 +145,14 @@
       window.location.href = `php/export_evaluation_grades_xls.php?course_id=${courseId}`;
     });
 
+    document.getElementById("exportEvaluationReportSummaryAll")?.addEventListener("click", () => {
+      const filters = getEffectivePageFilters?.() || { year_level: 0, semester: 0 };
+      const qs = new URLSearchParams();
+      if (filters.year_level) qs.set("year_level", String(filters.year_level));
+      if (filters.semester) qs.set("semester", String(filters.semester));
+      window.location.href = `php/export_evaluation_summary_all_xls.php?${qs.toString()}`;
+    });
+
     loadSummary();
   }
 

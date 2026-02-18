@@ -689,15 +689,24 @@
     meta.textContent = `${program} • Year ${year} • Sem ${semester}`;
   }
 
-  function renderStudentProgramOptions() {
+  function renderStudentProgramOptions(coursesOverride = null) {
     const select = document.getElementById("studentProgramSelect");
     if (!select) return;
+    const source = coursesOverride || state.courses || [];
     const programs = Array.from(
-      new Set((state.courses || []).map((c) => String(c.program || "").trim()).filter(Boolean))
+      new Set(source.map((c) => String(c.program || "").trim()).filter(Boolean))
     ).sort();
 
     const current = select.value;
     select.innerHTML = '<option value="">Select program</option>';
+    if (!programs.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No programs found";
+      opt.disabled = true;
+      select.appendChild(opt);
+      return;
+    }
     programs.forEach((p) => {
       const opt = document.createElement("option");
       opt.value = p;
@@ -705,6 +714,17 @@
       select.appendChild(opt);
     });
     if (current) select.value = current;
+  }
+
+  async function refreshStudentProgramOptions() {
+    try {
+      if (!state.courses?.length) {
+        await loadCourses();
+      }
+      renderStudentProgramOptions();
+    } catch {
+      renderStudentProgramOptions([]);
+    }
   }
 
   function getStudentScheduleFilters() {
@@ -767,10 +787,13 @@
     renderStudentMiniGrid({});
 
     const toggleBtn = document.getElementById("toggleStudentSchedule");
-    toggleBtn?.addEventListener("click", () => {
+    toggleBtn?.addEventListener("click", async () => {
       const isOpen = panel.classList.contains("open");
       setStudentMiniOpen(!isOpen);
-      if (!isOpen) refreshStudentScheduleMini();
+      if (!isOpen) {
+        await refreshStudentProgramOptions();
+        refreshStudentScheduleMini();
+      }
     });
 
     document.getElementById("closeStudentSchedule")?.addEventListener("click", () => {
@@ -1323,6 +1346,7 @@
     renderCoursesSidebar();
     await loadHoursRemainingPanel();
     initStudentScheduleMini();
+    refreshStudentProgramOptions();
 
     window.addEventListener("dmportal:globalFiltersChanged", () => {
       // Filters affect:

@@ -69,6 +69,9 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
           <button id="evaluationRefresh" class="btn btn-secondary btn-small" type="button">Refresh</button>
           <button id="exportEvaluationSummary" class="btn btn-secondary btn-small" type="button">Export Final Grades</button>
+          <?php if ($role === 'admin') { ?>
+            <button id="exportEvaluationSummaryAll" class="btn btn-secondary btn-small" type="button">Export Final Grades (All Subjects)</button>
+          <?php } ?>
           <button id="exportEvaluationGrades" class="btn btn-secondary btn-small" type="button">Export Detailed Grades</button>
           <div id="evaluationStatus" class="status" role="status" aria-live="polite"></div>
         </div>

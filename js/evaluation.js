@@ -644,6 +644,15 @@
       window.location.href = url;
     });
 
+    const exportSummaryAllBtn = document.getElementById("exportEvaluationSummaryAll");
+    exportSummaryAllBtn?.addEventListener("click", () => {
+      const filters = getGlobalFilters?.() || {};
+      const qs = new URLSearchParams();
+      if (filters.year_level) qs.set("year_level", String(filters.year_level));
+      if (filters.semester) qs.set("semester", String(filters.semester));
+      window.location.href = `php/export_evaluation_summary_all_xls.php?${qs.toString()}`;
+    });
+
     studentSearch?.addEventListener("input", filterStudents);
 
     initPageFiltersUI?.({ yearSelectId: "evaluationYearFilter", semesterSelectId: "evaluationSemesterFilter" });

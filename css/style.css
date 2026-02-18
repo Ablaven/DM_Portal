@@ -1106,6 +1106,8 @@ html[data-theme="light"] .report-metric {
 
 .report-actions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: flex-end;
 }
 
@@ -1766,18 +1768,44 @@ html[data-theme="light"] .course-item:hover {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  width: min(520px, 90vw);
-  background: rgba(20, 20, 26, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  padding: 12px 12px 10px;
+  width: min(680px, 94vw);
+  background: linear-gradient(140deg, rgba(24, 26, 34, 0.98), rgba(18, 18, 24, 0.96));
+  color: #f4f6ff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.45);
+  padding: 14px 14px 12px;
   z-index: 1200;
   display: none;
+  transform: translateY(10px) scale(0.98);
+  opacity: 0;
+  transition: opacity 200ms ease, transform 220ms ease, box-shadow 220ms ease;
 }
 
 .floating-schedule.open {
   display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.floating-schedule.dragging {
+  transition: none;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="light"] .floating-schedule {
+  background: linear-gradient(140deg, rgba(250, 251, 255, 0.98), rgba(240, 243, 250, 0.98));
+  color: #1b1f2a;
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.18);
+}
+
+html[data-theme="light"] .floating-schedule .floating-schedule-subtitle {
+  color: rgba(27, 31, 42, 0.6);
+}
+
+html[data-theme="light"] .floating-schedule .status {
+  color: rgba(27, 31, 42, 0.75);
 }
 
 .floating-schedule-header {
@@ -1787,6 +1815,11 @@ html[data-theme="light"] .course-item:hover {
   gap: 12px;
   margin-bottom: 8px;
   cursor: move;
+  padding: 6px 6px 2px;
+}
+
+.floating-schedule.open .floating-schedule-header {
+  animation: floatInHeader 260ms ease;
 }
 
 .floating-schedule-title {
@@ -1820,6 +1853,11 @@ html[data-theme="light"] .course-item:hover {
 
 .schedule-grid.mini .slot-sub {
   font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
+  color: rgba(27, 31, 42, 0.6);
 }
 
 .schedule-grid.mini .slot-hdr {
@@ -1836,6 +1874,17 @@ html[data-theme="light"] .course-item:hover {
 
 .schedule-wrap.mini {
   overflow: auto;
+}
+
+@keyframes floatInHeader {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Schedule grid */

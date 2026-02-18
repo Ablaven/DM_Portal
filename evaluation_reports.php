@@ -64,6 +64,9 @@ $isTeacher = $role === 'teacher';
         <div class="report-actions">
           <button id="evaluationReportsRefresh" class="btn btn-secondary" type="button">Refresh</button>
           <button id="exportEvaluationReportSummary" class="btn btn-secondary" type="button">Export Final Grades</button>
+          <?php if (!$isTeacher) { ?>
+            <button id="exportEvaluationReportSummaryAll" class="btn btn-secondary" type="button">Export Final Grades (All Subjects)</button>
+          <?php } ?>
           <button id="exportEvaluationReportGrades" class="btn btn-secondary" type="button">Export Detailed Grades</button>
         </div>
       </div>
