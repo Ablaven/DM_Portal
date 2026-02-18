@@ -17,6 +17,12 @@ function bad_request(string $message): void {
     exit;
 }
 
+function safe_rollback(?PDO $pdo): void {
+    if ($pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed. Use POST.']);
@@ -69,9 +75,9 @@ try {
     // Ensure schema exists for upgraded DBs (DDL must be outside transaction).
     dmportal_ensure_schedule_extra_minutes_column($pdo);
 
-    $pdo->beginTransaction();
-
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
+    $pdo->beginTransaction();
 
     // Default to active week if week_id not provided
     if ($weekId <= 0) {
@@ -79,7 +85,7 @@ try {
         $stmt->execute([':term_id' => $termId]);
         $wk = $stmt->fetch();
         if (!$wk) {
-            $pdo->rollBack();
+            safe_rollback($pdo);
             bad_request('No active week for this term. Start a week first.');
         }
         $weekId = (int)$wk['week_id'];
@@ -89,7 +95,7 @@ try {
     $cchk = $pdo->prepare('SELECT cancellation_id FROM doctor_week_cancellations WHERE week_id = :week_id AND doctor_id = :doctor_id AND day_of_week = :day');
     $cchk->execute([':week_id' => $weekId, ':doctor_id' => $doctorId, ':day' => $day]);
     if ($cchk->fetch()) {
-        $pdo->rollBack();
+        safe_rollback($pdo);
         bad_request('This day is cancelled for the selected doctor.');
     }
 
@@ -98,7 +104,7 @@ try {
         $scchk = $pdo->prepare('SELECT slot_cancellation_id FROM doctor_slot_cancellations WHERE week_id = :week_id AND doctor_id = :doctor_id AND day_of_week = :day AND slot_number = :slot');
         $scchk->execute([':week_id' => $weekId, ':doctor_id' => $doctorId, ':day' => $day, ':slot' => $slot]);
         if ($scchk->fetch()) {
-            $pdo->rollBack();
+            safe_rollback($pdo);
             bad_request('This slot is cancelled for the selected doctor.');
         }
     } catch (PDOException $e) {
@@ -158,7 +164,7 @@ try {
                     ':slot_end' => $slotEnd,
                 ]);
                 if ($uChk->fetch()) {
-                    $pdo->rollBack();
+                    safe_rollback($pdo);
                     bad_request('Doctor is unavailable during this slot.');
                 }
             } catch (PDOException $e) {
@@ -206,7 +212,7 @@ try {
     $chkD = $pdo->prepare('SELECT doctor_id FROM doctors WHERE doctor_id = :id');
     $chkD->execute([':id' => $doctorId]);
     if (!$chkD->fetch()) {
-        $pdo->rollBack();
+        safe_rollback($pdo);
         bad_request('Doctor not found.');
     }
 
@@ -215,7 +221,7 @@ try {
     $chkC->execute([':id' => $courseId]);
     $courseRow = $chkC->fetch();
     if (!$courseRow) {
-        $pdo->rollBack();
+        safe_rollback($pdo);
         bad_request('Course not found.');
     }
 
@@ -241,7 +247,7 @@ try {
     }
 
     if (!$belongsOk) {
-        $pdo->rollBack();
+        safe_rollback($pdo);
         bad_request('This course is not assigned to the selected doctor.');
     }
 
@@ -285,7 +291,7 @@ try {
             ]);
         }
         if ($roomChk->fetch()) {
-            $pdo->rollBack();
+            safe_rollback($pdo);
             bad_request('Room conflict: this room is already used in this slot.');
         }
     }
@@ -320,7 +326,7 @@ try {
 
     $conflict = $conflictCheck->fetch();
     if ($conflict) {
-        $pdo->rollBack();
+        safe_rollback($pdo);
         bad_request('Student timetable conflict: another lecture for the same Program/Year/Semester already exists in this slot.');
     }
 
@@ -373,7 +379,7 @@ try {
         // Remaining must cover the amount this save will deduct.
         $remaining = $total - ($scheduledSlots * $slotHours);
         if ($remaining < $deductHours) {
-            $pdo->rollBack();
+            safe_rollback($pdo);
             bad_request('Not enough remaining hours for this course (including extra minutes).');
         }
     }
@@ -401,9 +407,7 @@ try {
     $pdo->commit();
     echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);
 } catch (PDOException $e) {
-    if (isset($pdo) && $pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
+    safe_rollback($pdo ?? null);
 
     // Duplicate slot (shouldn't happen due to FOR UPDATE, but handle anyway)
     if ((int)($e->errorInfo[1] ?? 0) === 1062) {
@@ -417,9 +421,7 @@ try {
         'details' => $e->getMessage(),
     ]);
 } catch (Throwable $e) {
-    if (isset($pdo) && $pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
+    safe_rollback($pdo ?? null);
 
     http_response_code(500);
     echo json_encode([
