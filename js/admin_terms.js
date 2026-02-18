@@ -59,7 +59,9 @@
     const res = await fetchJson("php/get_academic_years.php");
     state.years = res.data || [];
     state.activeYearId = res.active_academic_year_id || null;
-    if (!state.selectedYearId) state.selectedYearId = state.activeYearId;
+    if (!state.selectedYearId) {
+      state.selectedYearId = state.activeYearId || (state.years[0] ? Number(state.years[0].academic_year_id) : null);
+    }
     renderAcademicYearSelect();
   }
 
@@ -67,6 +69,16 @@
     const select = document.getElementById("academicYearSelect");
     if (!select) return;
     select.innerHTML = "";
+
+    if (!state.years.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No academic years";
+      opt.disabled = true;
+      opt.selected = true;
+      select.appendChild(opt);
+      return;
+    }
 
     for (const year of state.years) {
       const opt = document.createElement("option");
@@ -89,12 +101,25 @@
       ? state.terms.filter((term) => Number(term.academic_year_id) === Number(state.selectedYearId))
       : state.terms;
 
+    if (!filtered.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No terms";
+      opt.disabled = true;
+      opt.selected = true;
+      select.appendChild(opt);
+      return;
+    }
+
     for (const term of filtered) {
       const opt = document.createElement("option");
       opt.value = String(term.term_id);
       const statusTag = term.status === "active" ? " (active)" : "";
       const yearTag = term.academic_year_label ? ` — ${term.academic_year_label}` : "";
       opt.textContent = `${term.label}${yearTag}${statusTag}`;
+      if (term.status === "active") {
+        opt.selected = true;
+      }
       select.appendChild(opt);
     }
   }
