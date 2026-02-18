@@ -50,7 +50,7 @@ try {
     $whereSql = $courseWhere ? ('WHERE ' . implode(' AND ', $courseWhere)) : '';
 
     $coursesStmt = $pdo->prepare(
-        "SELECT course_id, course_name, year_level, semester
+        "SELECT course_id, course_name, subject_code, year_level, semester
          FROM courses
          $whereSql
          ORDER BY year_level ASC, semester ASC, course_name ASC"
@@ -102,11 +102,13 @@ try {
         bad_request('No students found for the selected filters.');
     }
 
-    $header = ['Student Code', 'Student'];
+    $headerCodes = ['Student Code', 'Student'];
+    $headerNames = ['', ''];
     foreach ($courses as $course) {
-        $header[] = (string)$course['course_name'];
+        $headerCodes[] = (string)($course['subject_code'] ?? '');
+        $headerNames[] = (string)($course['course_name'] ?? '');
     }
-    $totalCols = count($header);
+    $totalCols = count($headerCodes);
 
     $padRow = static function (array $row, int $cols): array {
         return count($row) < $cols ? array_pad($row, $cols, '') : $row;
@@ -132,17 +134,23 @@ try {
     $styleMap[] = array_fill(0, $totalCols, $xlsx->styleCellSmallBold());
     $rowHeights[] = 18;
 
-    $rows[] = $header;
-    $rowHeights[] = 24;
-    $styleMap[] = array_fill(0, count($header), $xlsx->styleHeaderSmall());
+    $rows[] = $headerCodes;
+    $rowHeights[] = 22;
+    $styleMap[] = array_fill(0, count($headerCodes), $xlsx->styleHeaderSmall());
+
+    $rows[] = $headerNames;
+    $rowHeights[] = 28;
+    $styleMap[] = array_fill(0, count($headerNames), $xlsx->styleHeaderSmall());
 
     $colWidths = array_fill(0, $totalCols, 14);
     $colWidths[0] = 16;
     $colWidths[1] = 40;
 
     foreach ($courses as $index => $course) {
-        $labelLen = mb_strlen((string)($course['course_name'] ?? ''));
-        $colWidths[2 + $index] = $labelLen >= 18 ? 20 : 14;
+        $nameLen = mb_strlen((string)($course['course_name'] ?? ''));
+        $codeLen = mb_strlen((string)($course['subject_code'] ?? ''));
+        $maxLen = max($nameLen, $codeLen);
+        $colWidths[2 + $index] = $maxLen >= 18 ? 20 : 14;
     }
 
     $courseIds = array_keys($courseIdMap);
@@ -203,7 +211,7 @@ try {
             'colWidths' => $colWidths,
             'rowHeights' => $rowHeights,
             'styleMap' => $styleMap,
-            'freezeTopRows' => 6,
+            'freezeTopRows' => 7,
         ]
     );
 

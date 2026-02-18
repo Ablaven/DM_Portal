@@ -7,6 +7,7 @@
     escapeHtml,
     getGlobalFilters,
     setGlobalFilters,
+    getEffectivePageFilters,
     initPageFiltersUI,
     applyPageFiltersToCourses,
     doesItemMatchPageFilters,
@@ -646,11 +647,16 @@
 
     const exportSummaryAllBtn = document.getElementById("exportEvaluationSummaryAll");
     exportSummaryAllBtn?.addEventListener("click", () => {
-      const filters = getGlobalFilters?.() || {};
+      const fallbackFilters = {
+        year_level: Number(document.getElementById("evaluationYearFilter")?.value || 0),
+        semester: Number(document.getElementById("evaluationSemesterFilter")?.value || 0),
+      };
+      const filters = getEffectivePageFilters?.() || getGlobalFilters?.() || fallbackFilters;
       const qs = new URLSearchParams();
       if (filters.year_level) qs.set("year_level", String(filters.year_level));
       if (filters.semester) qs.set("semester", String(filters.semester));
-      window.location.href = `php/export_evaluation_summary_all_xls.php?${qs.toString()}`;
+      const suffix = qs.toString();
+      window.location.href = "php/export_evaluation_summary_all_xls.php" + (suffix ? `?${suffix}` : "");
     });
 
     studentSearch?.addEventListener("input", filterStudents);
