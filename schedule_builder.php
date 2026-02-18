@@ -47,6 +47,7 @@ auth_require_roles(['admin','management']);
             <select id="weekTypeSelect" class="navlink" style="padding:8px 10px;">
               <option value="ACTIVE">Active Week</option>
               <option value="PREP">Prep Week</option>
+              <option value="RAMADAN">Ramadan Week</option>
             </select>
             <button id="startWeekBtn" class="btn btn-secondary btn-small" type="button">Start</button>
             <button id="stopWeekBtn" class="btn btn-secondary btn-small" type="button">Stop</button>
@@ -55,6 +56,7 @@ auth_require_roles(['admin','management']);
                 <option value="">Set selected week...</option>
                 <option value="ACTIVE">Make Active</option>
                 <option value="PREP">Make Prep</option>
+                <option value="RAMADAN">Make Ramadan</option>
               </select>
               <button id="updateWeekTypeBtn" class="btn btn-secondary btn-small" type="button">Apply</button>
             </div>

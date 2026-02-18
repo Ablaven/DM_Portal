@@ -24,16 +24,18 @@ if ($startDate === '') bad_request('start_date is required (YYYY-MM-DD).');
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) bad_request('Invalid start_date format.');
 
 $weekType = strtoupper(trim((string)($_POST['week_type'] ?? 'ACTIVE')));
-if (!in_array($weekType, ['ACTIVE', 'PREP'], true)) {
-    bad_request('week_type must be ACTIVE or PREP.');
+if (!in_array($weekType, ['ACTIVE', 'PREP', 'RAMADAN'], true)) {
+    bad_request('week_type must be ACTIVE, PREP, or RAMADAN.');
 }
 $isPrep = $weekType === 'PREP' ? 1 : 0;
+$isRamadan = $weekType === 'RAMADAN' ? 1 : 0;
 
 try {
     $pdo = get_pdo();
     $pdo->beginTransaction();
 
     dmportal_ensure_weeks_prep_column($pdo);
+    dmportal_ensure_weeks_ramadan_column($pdo);
 
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
@@ -48,21 +50,39 @@ try {
     $stmt->execute([':term_id' => $termId]);
     $max = $stmt->fetch();
     $next = ((int)$max['max_id']) + 1;
-    $label = ($isPrep === 1 ? 'Prep Week ' : 'Week ') . $next;
+    if ($isRamadan === 1) {
+        $label = 'Ramadan Week ' . $next;
+    } else {
+        $label = ($isPrep === 1 ? 'Prep Week ' : 'Week ') . $next;
+    }
 
     $status = $isPrep === 1 ? 'closed' : 'active';
 
-    $stmt = $pdo->prepare("INSERT INTO weeks (term_id, label, start_date, status, is_prep) VALUES (:term_id, :label, :start_date, :status, :is_prep)");
-    $stmt->execute([':term_id' => $termId, ':label'=>$label, ':start_date'=>$startDate, ':status'=>$status, ':is_prep'=>$isPrep]);
+    $stmt = $pdo->prepare("INSERT INTO weeks (term_id, label, start_date, status, is_prep, is_ramadan) VALUES (:term_id, :label, :start_date, :status, :is_prep, :is_ramadan)");
+    $stmt->execute([
+        ':term_id' => $termId,
+        ':label' => $label,
+        ':start_date' => $startDate,
+        ':status' => $status,
+        ':is_prep' => $isPrep,
+        ':is_ramadan' => $isRamadan,
+    ]);
+    $newWeekId = (int)$pdo->lastInsertId();
+
+    if ($isRamadan === 1) {
+        $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
+        $stmt->execute([':term_id' => $termId, ':week_id' => $newWeekId]);
+    }
 
     $pdo->commit();
     echo json_encode([
         'success' => true,
         'data' => [
-            'week_id' => (int)$pdo->lastInsertId(),
+            'week_id' => $newWeekId,
             'label' => $label,
             'status' => $status,
             'is_prep' => $isPrep,
+            'is_ramadan' => $isRamadan,
         ],
     ]);
 } catch (Throwable $e) {

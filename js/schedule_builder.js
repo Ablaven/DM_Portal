@@ -1099,7 +1099,8 @@
       const opt = document.createElement("option");
       opt.value = w.week_id;
       const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-      opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
+      const ramadanTag = Number(w.is_ramadan || 0) === 1 ? " (ramadan)" : "";
+      opt.textContent = `${w.label}${prepTag}${ramadanTag}${w.status === "active" ? " (active)" : ""}`;
       sel.appendChild(opt);
     }
 

@@ -33,7 +33,7 @@ try {
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     if ($weekId <= 0) {
-        $stmt = $pdo->prepare("SELECT week_id, label FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt = $pdo->prepare("SELECT week_id, label, is_ramadan FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
         $stmt->execute([':term_id' => $termId]);
         $wk = $stmt->fetch();
         if (!$wk) {
@@ -44,15 +44,18 @@ try {
         }
         $weekId = (int)$wk['week_id'];
         $weekLabel = (string)$wk['label'];
+        $isRamadanWeek = (int)($wk['is_ramadan'] ?? 0) === 1;
     } else {
-        $wkStmt = $pdo->prepare('SELECT week_id, label FROM weeks WHERE week_id = :id');
+        $wkStmt = $pdo->prepare('SELECT week_id, label, is_ramadan FROM weeks WHERE week_id = :id');
         $wkStmt->execute([':id' => $weekId]);
         $wk = $wkStmt->fetch();
         $weekLabel = $wk ? (string)$wk['label'] : ('Week ' . $weekId);
+        $isRamadanWeek = ($wk && (int)($wk['is_ramadan'] ?? 0) === 1);
     }
 
     $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
     $slots = [1, 2, 3, 4, 5];
+    $isRamadanWeek = $isRamadanWeek ?? false;
 
     $stmt = $pdo->prepare(
         "SELECT s.day_of_week, s.slot_number, s.room_code, COALESCE(s.extra_minutes,0) AS extra_minutes,
@@ -120,14 +123,23 @@ try {
 
     foreach ($slots as $slot) {
         // Show time only (no "Slot" prefix)
-        $slotLabel = match ($slot) {
-            1 => '8:30 AM–10:00 AM',
-            2 => '10:10 AM–11:30 AM',
-            3 => '11:40 AM–1:00 PM',
-            4 => '1:10 PM–2:40 PM',
-            5 => '2:50 PM–4:20 PM',
-            default => 'Time',
-        };
+        $slotLabel = $isRamadanWeek
+            ? match ($slot) {
+                1 => '8:30 AM–9:40 AM',
+                2 => '9:40 AM–10:50 AM',
+                3 => '11:00 AM–12:10 PM',
+                4 => '12:10 PM–1:20 PM',
+                5 => '1:20 PM–2:30 PM',
+                default => 'Time',
+            }
+            : match ($slot) {
+                1 => '8:30 AM–10:00 AM',
+                2 => '10:10 AM–11:30 AM',
+                3 => '11:40 AM–1:00 PM',
+                4 => '1:10 PM–2:40 PM',
+                5 => '2:50 PM–4:20 PM',
+                default => 'Time',
+            };
 
         $row = [$slotLabel];
         $rowStyles = [0 => $xlsx->styleSlot()];

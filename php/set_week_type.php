@@ -29,13 +29,14 @@ $weekType = strtoupper(trim((string)($_POST['week_type'] ?? '')));
 if ($weekId <= 0) {
     bad_request('week_id is required.');
 }
-if (!in_array($weekType, ['ACTIVE', 'PREP'], true)) {
-    bad_request('week_type must be ACTIVE or PREP.');
+if (!in_array($weekType, ['ACTIVE', 'PREP', 'RAMADAN'], true)) {
+    bad_request('week_type must be ACTIVE, PREP, or RAMADAN.');
 }
 
 try {
     $pdo = get_pdo();
     dmportal_ensure_weeks_prep_column($pdo);
+    dmportal_ensure_weeks_ramadan_column($pdo);
 
     $pdo->beginTransaction();
 
@@ -55,6 +56,7 @@ try {
     }
 
     $isPrep = $weekType === 'PREP' ? 1 : 0;
+    $isRamadan = $weekType === 'RAMADAN' ? 1 : 0;
     $newStatus = $weekType === 'ACTIVE' ? 'active' : 'closed';
 
     if ($weekType === 'ACTIVE') {
@@ -62,9 +64,15 @@ try {
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
 
-    $update = $pdo->prepare('UPDATE weeks SET is_prep = :is_prep, status = :status WHERE week_id = :week_id');
+    if ($weekType === 'RAMADAN') {
+        $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
+        $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
+    }
+
+    $update = $pdo->prepare('UPDATE weeks SET is_prep = :is_prep, is_ramadan = :is_ramadan, status = :status WHERE week_id = :week_id');
     $update->execute([
         ':is_prep' => $isPrep,
+        ':is_ramadan' => $isRamadan,
         ':status' => $newStatus,
         ':week_id' => $weekId,
     ]);
@@ -77,6 +85,7 @@ try {
             'week_id' => $weekId,
             'term_id' => $termId,
             'is_prep' => $isPrep,
+            'is_ramadan' => $isRamadan,
             'status' => $newStatus,
         ],
     ]);

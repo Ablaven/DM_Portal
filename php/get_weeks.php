@@ -13,6 +13,7 @@ auth_require_login(true);
 try {
     $pdo = get_pdo();
     dmportal_ensure_weeks_prep_column($pdo);
+    dmportal_ensure_weeks_ramadan_column($pdo);
 
     $user = auth_current_user() ?: [];
     $role = strtolower((string)($user['role'] ?? ''));
@@ -26,7 +27,7 @@ try {
     $activeWeekId = (int)($activeStmt->fetchColumn() ?: 0);
 
     if ($isAdmin) {
-        $stmt = $pdo->prepare("SELECT week_id, label, start_date, end_date, status, created_at, is_prep FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC");
+        $stmt = $pdo->prepare("SELECT week_id, label, start_date, end_date, status, created_at, is_prep, is_ramadan FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC");
         $stmt->execute([':term_id' => $termId]);
         echo json_encode(['success' => true, 'data' => $stmt->fetchAll(), 'active_week_id' => $activeWeekId, 'term_id' => $termId]);
         return;
@@ -37,7 +38,7 @@ try {
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT week_id, label, start_date, end_date, status, created_at, is_prep FROM weeks WHERE term_id = :term_id AND week_id <= :active_week_id ORDER BY week_id DESC");
+    $stmt = $pdo->prepare("SELECT week_id, label, start_date, end_date, status, created_at, is_prep, is_ramadan FROM weeks WHERE term_id = :term_id AND week_id <= :active_week_id ORDER BY week_id DESC");
     $stmt->execute([':term_id' => $termId, ':active_week_id' => $activeWeekId]);
     echo json_encode(['success' => true, 'data' => $stmt->fetchAll(), 'active_week_id' => $activeWeekId, 'term_id' => $termId]);
 } catch (Throwable $e) {

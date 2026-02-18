@@ -13,3 +13,12 @@ function dmportal_ensure_weeks_prep_column(PDO $pdo): void
         $pdo->exec("ALTER TABLE weeks ADD COLUMN is_prep TINYINT(1) NOT NULL DEFAULT 0");
     }
 }
+
+function dmportal_ensure_weeks_ramadan_column(PDO $pdo): void
+{
+    dmportal_ensure_schema_version($pdo);
+    dmportal_ensure_terms_table($pdo);
+    if (!dmportal_schema_column_exists($pdo, 'weeks', 'is_ramadan')) {
+        $pdo->exec("ALTER TABLE weeks ADD COLUMN is_ramadan TINYINT(1) NOT NULL DEFAULT 0");
+    }
+}
