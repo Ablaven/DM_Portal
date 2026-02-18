@@ -126,7 +126,7 @@ try {
         $slotLabel = $isRamadanWeek
             ? match ($slot) {
                 1 => '8:30 AM–9:40 AM',
-                2 => '9:40 AM–10:50 AM',
+                2 => '9:45 AM–10:55 AM',
                 3 => '11:00 AM–12:10 PM',
                 4 => '12:10 PM–1:20 PM',
                 5 => '1:20 PM–2:30 PM',
