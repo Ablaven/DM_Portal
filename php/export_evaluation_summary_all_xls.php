@@ -50,7 +50,7 @@ try {
     $whereSql = $courseWhere ? ('WHERE ' . implode(' AND ', $courseWhere)) : '';
 
     $coursesStmt = $pdo->prepare(
-        "SELECT course_id, course_name, subject_code, year_level, semester
+        "SELECT course_id, course_name, subject_code, course_type, year_level, semester
          FROM courses
          $whereSql
          ORDER BY year_level ASC, semester ASC, course_name ASC"
@@ -105,7 +105,9 @@ try {
     $headerCodes = ['Student Code', 'Student'];
     $headerNames = ['', ''];
     foreach ($courses as $course) {
-        $headerCodes[] = (string)($course['subject_code'] ?? '');
+        $type = trim((string)($course['course_type'] ?? ''));
+        $code = trim((string)($course['subject_code'] ?? ''));
+        $headerCodes[] = trim($type . ' ' . $code);
         $headerNames[] = (string)($course['course_name'] ?? '');
     }
     $totalCols = count($headerCodes);
