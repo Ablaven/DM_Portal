@@ -164,9 +164,18 @@ function dmportal_reset_weeks_for_term(PDO $pdo, int $termId, ?string $startDate
     $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE term_id = :term_id AND status='active'")
         ->execute([':term_id' => $termId]);
 
-    $maxStmt = $pdo->prepare('SELECT MAX(week_id) FROM weeks WHERE term_id = :term_id');
-    $maxStmt->execute([':term_id' => $termId]);
-    $next = (int)$maxStmt->fetchColumn() + 1;
+    $labelStmt = $pdo->prepare('SELECT label FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC');
+    $labelStmt->execute([':term_id' => $termId]);
+    $labels = $labelStmt->fetchAll(PDO::FETCH_COLUMN);
+    $next = 1;
+    foreach ($labels as $existingLabel) {
+        if (preg_match('/(\d+)/', (string)$existingLabel, $m)) {
+            $num = (int)$m[1];
+            if ($num >= $next) {
+                $next = $num + 1;
+            }
+        }
+    }
 
     $label = 'Week ' . $next;
 

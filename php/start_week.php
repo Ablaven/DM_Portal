@@ -45,11 +45,19 @@ try {
         $stmt->execute([':term_id' => $termId]);
     }
 
-    // Compute next label per term
-    $stmt = $pdo->prepare("SELECT COALESCE(MAX(week_id),0) AS max_id FROM weeks WHERE term_id = :term_id");
+    // Compute next label per term using the existing label numbers
+    $stmt = $pdo->prepare("SELECT label FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC");
     $stmt->execute([':term_id' => $termId]);
-    $max = $stmt->fetch();
-    $next = ((int)$max['max_id']) + 1;
+    $labels = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $next = 1;
+    foreach ($labels as $existingLabel) {
+        if (preg_match('/(\d+)/', (string)$existingLabel, $m)) {
+            $num = (int)$m[1];
+            if ($num >= $next) {
+                $next = $num + 1;
+            }
+        }
+    }
     if ($isRamadan === 1) {
         $label = 'Ramadan Week ' . $next;
     } else {
