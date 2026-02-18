@@ -84,7 +84,7 @@ try {
 
     $sql =
         "SELECT g.grade_id, g.student_id, g.attendance_score, g.final_score,
-                c.course_id, c.course_name, c.year_level, c.semester,
+                c.course_id, c.course_name, c.subject_code, c.year_level, c.semester,
                 s.full_name AS student_name, s.student_code
          FROM evaluation_grades g
          JOIN courses c ON c.course_id = g.course_id
@@ -135,6 +135,7 @@ try {
             'grade_id' => $gid,
             'course_id' => (int)$r['course_id'],
             'course_name' => (string)$r['course_name'],
+            'subject_code' => (string)($r['subject_code'] ?? ''),
             'year_level' => (int)$r['year_level'],
             'semester' => (int)$r['semester'],
             'student_id' => (int)$r['student_id'],

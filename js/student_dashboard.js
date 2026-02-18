@@ -297,42 +297,34 @@
         return;
       }
 
-      const groups = new Map();
-      items.forEach((item) => {
-        const key = `${item.year_level}-${item.semester}`;
-        if (!groups.has(key)) {
-          groups.set(key, { year: item.year_level, semester: item.semester, items: [] });
-        }
-        groups.get(key).items.push(item);
+      const sorted = [...items].sort(
+        (a, b) => Number(a.year_level) - Number(b.year_level) || Number(a.semester) - Number(b.semester)
+      );
+
+      sorted.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "dashboard-card";
+        const score = item.final_score !== null ? Number(item.final_score).toFixed(2) : "--";
+        const attendance =
+          item.attendance_score !== null && item.attendance_score !== undefined
+            ? Number(item.attendance_score).toFixed(2)
+            : "--";
+        const subjectCode = item.subject_code ? escapeHtml(item.subject_code) : "--";
+
+        card.innerHTML = `
+          <div class="dashboard-card-title">${escapeHtml(item.course_name)}</div>
+          <div class="dashboard-card-subtitle">${subjectCode} · Year ${escapeHtml(item.year_level)} · Sem ${escapeHtml(item.semester)}</div>
+          <div class="student-insight-row" style="margin-top:8px;">
+            <div class="dashboard-metric student-insight-value">${score}</div>
+            <span class="student-dashboard-badge">/ 20</span>
+          </div>
+          <div class="student-insight-row" style="margin-top:10px;">
+            <div class="student-insight-note">Attendance</div>
+            <span class="student-dashboard-badge">${attendance} / 20</span>
+          </div>
+        `;
+        cardsWrap.appendChild(card);
       });
-
-      Array.from(groups.values())
-        .sort((a, b) => Number(a.year) - Number(b.year) || Number(a.semester) - Number(b.semester))
-        .forEach((group) => {
-          const card = document.createElement("div");
-          card.className = "dashboard-card";
-          const title = `Year ${group.year} · Sem ${group.semester}`;
-          const listItems = group.items
-            .map((item) => {
-              const score = item.final_score !== null ? Number(item.final_score).toFixed(2) : "";
-              return `
-                <div class="student-grade-item">
-                  <div class="student-grade-course">${escapeHtml(item.course_name)}</div>
-                  <div class="student-grade-score">${score}</div>
-                </div>
-              `;
-            })
-            .join("");
-
-          card.innerHTML = `
-            <div class="dashboard-card-title">${title}</div>
-            <div class="dashboard-card-subtitle">${group.items.length} course${group.items.length === 1 ? "" : "s"}</div>
-            <div class="student-grade-list">
-              ${listItems}
-            </div>
-          `;
-          cardsWrap.appendChild(card);
-        });
 
       cardsWrap.style.display = "grid";
     }

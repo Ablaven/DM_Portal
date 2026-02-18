@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$pdo = null;
 try {
     $courseId = (int)($_POST['course_id'] ?? 0);
     if ($courseId <= 0) bad_request('course_id is required.');
@@ -73,9 +74,9 @@ try {
         bad_request('Only one Participation item is allowed.');
     }
 
-    $pdo->beginTransaction();
-
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
+
+    $pdo->beginTransaction();
 
     $stmt = $pdo->prepare(
         'INSERT INTO evaluation_configs (term_id, course_id, doctor_id) VALUES (:term_id, :course_id, :doctor_id)'
@@ -117,9 +118,13 @@ try {
 
     echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);
 } catch (Throwable $e) {
-    if ($pdo && $pdo->inTransaction()) {
+    if ($pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Failed to save evaluation config.']);
+    $message = $e->getMessage();
+    echo json_encode([
+        'success' => false,
+        'error' => $message ? ('Failed to save evaluation config: ' . $message) : 'Failed to save evaluation config.',
+    ]);
 }
