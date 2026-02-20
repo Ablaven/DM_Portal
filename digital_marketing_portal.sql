@@ -1,9 +1,30 @@
 -- Digital Marketing Portal SQL Export
 -- Database: digital_marketing_portal
--- Generated: 2026-02-16 12:34:43 UTC
+-- Generated: 2026-02-20 11:59:46 UTC
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------------------
+-- Table structure for `academic_years`
+-- ----------------------------------------
+
+DROP TABLE IF EXISTS `academic_years`;
+CREATE TABLE `academic_years` (
+  `academic_year_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `label` varchar(50) NOT NULL,
+  `status` enum('active','closed') NOT NULL DEFAULT 'closed',
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`academic_year_id`),
+  UNIQUE KEY `uq_academic_year_label` (`label`),
+  KEY `idx_academic_year_status` (`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for `academic_years`
+INSERT INTO `academic_years` (`academic_year_id`, `label`, `status`, `start_date`, `end_date`, `created_at`) VALUES
+(1, '2025-2026', 'active', NULL, NULL, '2026-02-16 12:34:43');
 
 -- ----------------------------------------
 -- Table structure for `admins`
@@ -30,13 +51,13 @@ INSERT INTO `admins` (`admin_id`, `full_name`, `email`, `role`, `created_at`) VA
 
 DROP TABLE IF EXISTS `attendance_records`;
 CREATE TABLE `attendance_records` (
-  `attendance_id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `term_id` bigint unsigned NOT NULL DEFAULT 1,
-  `schedule_id` bigint unsigned NOT NULL,
-  `student_id` bigint unsigned NOT NULL,
-  `status` enum('PRESENT','ABSENT') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `attendance_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `term_id` bigint(20) unsigned NOT NULL DEFAULT 1,
+  `schedule_id` bigint(20) unsigned NOT NULL,
+  `student_id` bigint(20) unsigned NOT NULL,
+  `status` enum('PRESENT','ABSENT') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`attendance_id`),
   UNIQUE KEY `uq_attendance_schedule_student` (`schedule_id`,`student_id`),
   KEY `idx_attendance_term` (`term_id`,`schedule_id`),
@@ -44,7 +65,7 @@ CREATE TABLE `attendance_records` (
   KEY `idx_attendance_schedule` (`schedule_id`),
   CONSTRAINT `fk_attendance_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `doctor_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_attendance_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1697 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1941 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `attendance_records`
 INSERT INTO `attendance_records` (`attendance_id`, `term_id`, `schedule_id`, `student_id`, `status`, `created_at`, `updated_at`) VALUES
@@ -1302,7 +1323,186 @@ INSERT INTO `attendance_records` (`attendance_id`, `term_id`, `schedule_id`, `st
 (1693, 1, 181, 26, 'ABSENT', '2026-02-12 11:45:21', '2026-02-12 11:45:21'),
 (1694, 1, 181, 27, 'ABSENT', '2026-02-12 11:45:21', '2026-02-12 11:45:21'),
 (1695, 1, 181, 28, 'ABSENT', '2026-02-12 11:45:21', '2026-02-12 11:45:21'),
-(1696, 1, 181, 29, 'ABSENT', '2026-02-12 11:45:21', '2026-02-12 11:45:21');
+(1696, 1, 181, 29, 'ABSENT', '2026-02-12 11:45:21', '2026-02-12 11:45:21'),
+(1697, 2, 226, 38, 'PRESENT', '2026-02-18 11:46:47', '2026-02-18 11:46:47'),
+(1698, 2, 226, 40, 'PRESENT', '2026-02-18 11:46:48', '2026-02-18 11:46:48'),
+(1699, 2, 226, 34, 'PRESENT', '2026-02-18 11:46:48', '2026-02-18 11:46:48'),
+(1700, 2, 226, 35, 'PRESENT', '2026-02-18 11:46:48', '2026-02-18 11:46:48'),
+(1701, 2, 226, 33, 'PRESENT', '2026-02-18 11:46:48', '2026-02-18 11:46:48'),
+(1702, 2, 227, 38, 'PRESENT', '2026-02-18 11:47:20', '2026-02-18 11:47:20'),
+(1703, 2, 227, 40, 'PRESENT', '2026-02-18 11:47:20', '2026-02-18 11:47:20'),
+(1704, 2, 227, 34, 'PRESENT', '2026-02-18 11:47:21', '2026-02-18 11:47:21'),
+(1705, 2, 227, 42, 'ABSENT', '2026-02-18 11:47:21', '2026-02-18 11:47:21'),
+(1706, 2, 227, 35, 'PRESENT', '2026-02-18 11:47:21', '2026-02-18 11:47:21'),
+(1707, 2, 227, 33, 'PRESENT', '2026-02-18 11:47:21', '2026-02-18 11:47:21'),
+(1708, 2, 210, 1, 'PRESENT', '2026-02-18 12:13:12', '2026-02-18 12:13:12'),
+(1709, 2, 210, 2, 'ABSENT', '2026-02-18 12:13:13', '2026-02-18 12:13:13'),
+(1710, 2, 210, 3, 'ABSENT', '2026-02-18 12:13:14', '2026-02-18 12:13:14'),
+(1711, 2, 210, 4, 'ABSENT', '2026-02-18 12:13:14', '2026-02-18 12:13:14'),
+(1712, 2, 210, 5, 'ABSENT', '2026-02-18 12:13:14', '2026-02-18 12:13:14'),
+(1713, 2, 210, 6, 'PRESENT', '2026-02-18 12:13:15', '2026-02-18 12:13:15'),
+(1714, 2, 210, 7, 'PRESENT', '2026-02-18 12:13:15', '2026-02-18 12:13:15'),
+(1715, 2, 210, 8, 'PRESENT', '2026-02-18 12:13:15', '2026-02-18 12:13:15'),
+(1716, 2, 210, 9, 'PRESENT', '2026-02-18 12:13:17', '2026-02-18 12:13:17'),
+(1717, 2, 210, 10, 'PRESENT', '2026-02-18 12:13:17', '2026-02-18 12:13:17'),
+(1718, 2, 210, 11, 'ABSENT', '2026-02-18 12:13:18', '2026-02-18 12:13:18'),
+(1719, 2, 210, 12, 'PRESENT', '2026-02-18 12:13:18', '2026-02-18 12:13:18'),
+(1720, 2, 210, 13, 'PRESENT', '2026-02-18 12:13:19', '2026-02-18 12:13:19'),
+(1721, 2, 210, 14, 'PRESENT', '2026-02-18 12:13:19', '2026-02-18 12:13:19'),
+(1722, 2, 210, 15, 'PRESENT', '2026-02-18 12:13:20', '2026-02-18 12:13:20'),
+(1723, 2, 210, 16, 'PRESENT', '2026-02-18 12:13:21', '2026-02-18 12:13:21'),
+(1724, 2, 210, 17, 'PRESENT', '2026-02-18 12:13:22', '2026-02-18 12:13:22'),
+(1725, 2, 210, 18, 'PRESENT', '2026-02-18 12:13:22', '2026-02-18 12:13:22'),
+(1726, 2, 210, 19, 'PRESENT', '2026-02-18 12:13:23', '2026-02-18 12:13:23'),
+(1727, 2, 210, 20, 'PRESENT', '2026-02-18 12:13:24', '2026-02-18 12:13:24'),
+(1728, 2, 210, 21, 'PRESENT', '2026-02-18 12:13:26', '2026-02-18 12:13:26'),
+(1729, 2, 210, 22, 'PRESENT', '2026-02-18 12:13:26', '2026-02-18 12:13:26'),
+(1730, 2, 210, 23, 'ABSENT', '2026-02-18 12:13:28', '2026-02-18 12:13:28'),
+(1731, 2, 210, 24, 'PRESENT', '2026-02-18 12:13:29', '2026-02-18 12:13:29'),
+(1732, 2, 210, 25, 'PRESENT', '2026-02-18 12:13:30', '2026-02-18 12:13:30'),
+(1733, 2, 210, 26, 'PRESENT', '2026-02-18 12:13:30', '2026-02-18 12:13:30'),
+(1734, 2, 210, 27, 'PRESENT', '2026-02-18 12:13:30', '2026-02-18 12:13:30'),
+(1735, 2, 210, 28, 'PRESENT', '2026-02-18 12:13:31', '2026-02-18 12:13:31'),
+(1736, 2, 210, 29, 'ABSENT', '2026-02-18 12:13:31', '2026-02-18 12:13:31'),
+(1737, 2, 228, 36, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1738, 2, 228, 38, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1739, 2, 228, 39, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1740, 2, 228, 40, 'PRESENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1741, 2, 228, 34, 'PRESENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1742, 2, 228, 41, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1743, 2, 228, 42, 'PRESENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1744, 2, 228, 35, 'PRESENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1745, 2, 228, 31, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1746, 2, 228, 30, 'ABSENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1747, 2, 228, 33, 'PRESENT', '2026-02-18 13:38:15', '2026-02-18 13:38:15'),
+(1748, 2, 229, 36, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1749, 2, 229, 38, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1750, 2, 229, 39, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1751, 2, 229, 40, 'PRESENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1752, 2, 229, 34, 'PRESENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1753, 2, 229, 41, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1754, 2, 229, 42, 'PRESENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1755, 2, 229, 35, 'PRESENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1756, 2, 229, 31, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1757, 2, 229, 30, 'ABSENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1758, 2, 229, 33, 'PRESENT', '2026-02-18 13:38:46', '2026-02-18 13:38:46'),
+(1759, 2, 202, 1, 'ABSENT', '2026-02-18 14:02:45', '2026-02-18 14:02:46'),
+(1760, 2, 202, 2, 'ABSENT', '2026-02-18 14:02:45', '2026-02-18 14:02:46'),
+(1761, 2, 202, 3, 'ABSENT', '2026-02-18 14:02:45', '2026-02-18 14:02:46'),
+(1762, 2, 202, 4, 'ABSENT', '2026-02-18 14:02:45', '2026-02-18 14:02:47'),
+(1763, 2, 202, 5, 'ABSENT', '2026-02-18 14:02:46', '2026-02-18 14:02:47'),
+(1765, 2, 202, 6, 'PRESENT', '2026-02-18 14:02:46', '2026-02-18 14:02:47'),
+(1767, 2, 202, 7, 'ABSENT', '2026-02-18 14:02:46', '2026-02-18 14:02:48'),
+(1769, 2, 202, 8, 'ABSENT', '2026-02-18 14:02:46', '2026-02-18 14:02:48'),
+(1771, 2, 202, 9, 'ABSENT', '2026-02-18 14:02:47', '2026-02-18 14:02:48'),
+(1773, 2, 202, 10, 'ABSENT', '2026-02-18 14:02:47', '2026-02-18 14:02:49'),
+(1775, 2, 202, 11, 'ABSENT', '2026-02-18 14:02:47', '2026-02-18 14:02:49'),
+(1777, 2, 202, 12, 'ABSENT', '2026-02-18 14:02:48', '2026-02-18 14:02:49'),
+(1779, 2, 202, 13, 'PRESENT', '2026-02-18 14:02:48', '2026-02-18 14:02:50'),
+(1781, 2, 202, 14, 'ABSENT', '2026-02-18 14:02:48', '2026-02-18 14:02:50'),
+(1783, 2, 202, 15, 'ABSENT', '2026-02-18 14:02:49', '2026-02-18 14:02:50'),
+(1785, 2, 202, 16, 'PRESENT', '2026-02-18 14:02:49', '2026-02-18 14:02:50'),
+(1787, 2, 202, 17, 'ABSENT', '2026-02-18 14:02:49', '2026-02-18 14:02:51'),
+(1789, 2, 202, 18, 'PRESENT', '2026-02-18 14:02:50', '2026-02-18 14:02:51'),
+(1790, 2, 202, 19, 'ABSENT', '2026-02-18 14:02:50', '2026-02-18 14:02:51'),
+(1792, 2, 202, 20, 'PRESENT', '2026-02-18 14:02:50', '2026-02-18 14:02:52'),
+(1795, 2, 202, 21, 'PRESENT', '2026-02-18 14:02:50', '2026-02-18 14:02:52'),
+(1797, 2, 202, 22, 'ABSENT', '2026-02-18 14:02:51', '2026-02-18 14:02:53'),
+(1799, 2, 202, 23, 'ABSENT', '2026-02-18 14:02:51', '2026-02-18 14:02:53'),
+(1801, 2, 202, 24, 'ABSENT', '2026-02-18 14:02:52', '2026-02-18 14:02:53'),
+(1803, 2, 202, 25, 'ABSENT', '2026-02-18 14:02:52', '2026-02-18 14:02:53'),
+(1805, 2, 202, 26, 'ABSENT', '2026-02-18 14:02:53', '2026-02-18 14:02:54'),
+(1807, 2, 202, 27, 'ABSENT', '2026-02-18 14:02:53', '2026-02-18 14:02:54'),
+(1809, 2, 202, 28, 'ABSENT', '2026-02-18 14:02:53', '2026-02-18 14:02:54'),
+(1811, 2, 202, 29, 'ABSENT', '2026-02-18 14:02:53', '2026-02-18 14:02:54'),
+(1817, 2, 203, 1, 'ABSENT', '2026-02-18 15:10:34', '2026-02-18 15:10:41'),
+(1818, 2, 203, 2, 'ABSENT', '2026-02-18 15:10:34', '2026-02-18 15:10:43'),
+(1819, 2, 203, 3, 'ABSENT', '2026-02-18 15:10:35', '2026-02-18 15:10:44'),
+(1820, 2, 203, 4, 'ABSENT', '2026-02-18 15:10:36', '2026-02-18 15:10:44'),
+(1821, 2, 203, 5, 'ABSENT', '2026-02-18 15:10:37', '2026-02-18 15:10:45'),
+(1822, 2, 203, 6, 'ABSENT', '2026-02-18 15:10:39', '2026-02-18 15:10:46'),
+(1823, 2, 203, 7, 'ABSENT', '2026-02-18 15:10:40', '2026-02-18 15:10:47'),
+(1824, 2, 203, 8, 'ABSENT', '2026-02-18 15:10:40', '2026-02-18 15:10:48'),
+(1825, 2, 203, 9, 'ABSENT', '2026-02-18 15:10:41', '2026-02-18 15:10:49'),
+(1827, 2, 203, 10, 'ABSENT', '2026-02-18 15:10:42', '2026-02-18 15:13:58'),
+(1829, 2, 203, 11, 'ABSENT', '2026-02-18 15:10:43', '2026-02-18 15:13:59'),
+(1831, 2, 203, 12, 'ABSENT', '2026-02-18 15:10:44', '2026-02-18 15:14:00'),
+(1833, 2, 203, 13, 'PRESENT', '2026-02-18 15:10:44', '2026-02-18 15:14:00'),
+(1836, 2, 203, 14, 'ABSENT', '2026-02-18 15:10:46', '2026-02-18 15:14:01'),
+(1838, 2, 203, 15, 'ABSENT', '2026-02-18 15:10:47', '2026-02-18 15:14:02'),
+(1840, 2, 203, 16, 'PRESENT', '2026-02-18 15:10:48', '2026-02-18 15:14:02'),
+(1842, 2, 203, 17, 'ABSENT', '2026-02-18 15:10:49', '2026-02-18 15:14:03'),
+(1844, 2, 203, 18, 'PRESENT', '2026-02-18 15:13:58', '2026-02-18 15:14:04'),
+(1846, 2, 203, 19, 'ABSENT', '2026-02-18 15:13:59', '2026-02-18 15:14:04'),
+(1848, 2, 203, 20, 'ABSENT', '2026-02-18 15:14:00', '2026-02-18 15:14:05'),
+(1850, 2, 203, 21, 'PRESENT', '2026-02-18 15:14:01', '2026-02-18 15:14:05'),
+(1852, 2, 203, 22, 'ABSENT', '2026-02-18 15:14:02', '2026-02-18 15:14:06'),
+(1854, 2, 203, 23, 'ABSENT', '2026-02-18 15:14:02', '2026-02-18 15:14:06'),
+(1856, 2, 203, 24, 'ABSENT', '2026-02-18 15:14:03', '2026-02-18 15:14:07'),
+(1858, 2, 203, 25, 'ABSENT', '2026-02-18 15:14:03', '2026-02-18 15:14:08'),
+(1861, 2, 203, 26, 'ABSENT', '2026-02-18 15:14:04', '2026-02-18 15:14:08'),
+(1863, 2, 203, 27, 'PRESENT', '2026-02-18 15:14:05', '2026-02-18 15:16:18'),
+(1865, 2, 203, 28, 'ABSENT', '2026-02-18 15:14:05', '2026-02-18 15:14:10'),
+(1867, 2, 203, 29, 'ABSENT', '2026-02-18 15:14:06', '2026-02-18 15:16:18'),
+(1877, 2, 204, 1, 'ABSENT', '2026-02-19 12:09:04', '2026-02-19 12:09:04'),
+(1878, 2, 204, 2, 'ABSENT', '2026-02-19 12:09:04', '2026-02-19 12:09:04'),
+(1879, 2, 204, 3, 'PRESENT', '2026-02-19 12:09:04', '2026-02-19 12:09:04'),
+(1880, 2, 204, 4, 'ABSENT', '2026-02-19 12:09:05', '2026-02-19 12:09:05'),
+(1881, 2, 204, 5, 'ABSENT', '2026-02-19 12:09:05', '2026-02-19 12:09:05'),
+(1882, 2, 204, 6, 'ABSENT', '2026-02-19 12:09:05', '2026-02-19 12:09:05'),
+(1883, 2, 204, 7, 'PRESENT', '2026-02-19 12:09:05', '2026-02-19 12:09:05'),
+(1884, 2, 204, 8, 'ABSENT', '2026-02-19 12:09:06', '2026-02-19 12:09:06'),
+(1885, 2, 204, 9, 'PRESENT', '2026-02-19 12:09:06', '2026-02-19 12:09:06'),
+(1886, 2, 204, 10, 'PRESENT', '2026-02-19 12:09:07', '2026-02-19 12:09:07'),
+(1887, 2, 204, 11, 'ABSENT', '2026-02-19 12:09:07', '2026-02-19 12:09:07'),
+(1888, 2, 204, 12, 'ABSENT', '2026-02-19 12:09:07', '2026-02-19 12:09:07'),
+(1889, 2, 204, 13, 'ABSENT', '2026-02-19 12:09:08', '2026-02-19 12:09:08'),
+(1890, 2, 204, 14, 'ABSENT', '2026-02-19 12:09:08', '2026-02-19 12:09:08'),
+(1891, 2, 204, 15, 'PRESENT', '2026-02-19 12:09:08', '2026-02-19 12:09:08'),
+(1892, 2, 204, 16, 'PRESENT', '2026-02-19 12:09:09', '2026-02-19 12:09:09'),
+(1893, 2, 204, 17, 'ABSENT', '2026-02-19 12:09:09', '2026-02-19 12:09:09'),
+(1894, 2, 205, 18, 'ABSENT', '2026-02-19 12:09:09', '2026-02-19 12:09:09'),
+(1895, 2, 205, 19, 'PRESENT', '2026-02-19 12:09:10', '2026-02-19 12:16:21'),
+(1896, 2, 205, 20, 'ABSENT', '2026-02-19 12:09:10', '2026-02-19 12:09:10'),
+(1897, 2, 205, 21, 'PRESENT', '2026-02-19 12:09:10', '2026-02-19 12:16:21'),
+(1898, 2, 205, 22, 'PRESENT', '2026-02-19 12:09:11', '2026-02-19 12:16:21'),
+(1899, 2, 205, 23, 'ABSENT', '2026-02-19 12:09:11', '2026-02-19 12:09:11'),
+(1900, 2, 205, 24, 'ABSENT', '2026-02-19 12:09:11', '2026-02-19 12:09:11'),
+(1901, 2, 205, 25, 'ABSENT', '2026-02-19 12:09:12', '2026-02-19 12:09:12'),
+(1902, 2, 205, 26, 'ABSENT', '2026-02-19 12:09:12', '2026-02-19 12:09:12'),
+(1903, 2, 205, 27, 'ABSENT', '2026-02-19 12:09:13', '2026-02-19 12:09:13'),
+(1904, 2, 205, 28, 'ABSENT', '2026-02-19 12:09:13', '2026-02-19 12:09:13'),
+(1905, 2, 205, 29, 'ABSENT', '2026-02-19 12:09:13', '2026-02-19 12:09:13'),
+(1906, 2, 205, 3, 'PRESENT', '2026-02-19 12:16:19', '2026-02-19 12:16:19'),
+(1907, 2, 205, 7, 'PRESENT', '2026-02-19 12:16:20', '2026-02-19 12:16:20'),
+(1908, 2, 205, 9, 'PRESENT', '2026-02-19 12:16:20', '2026-02-19 12:16:20'),
+(1909, 2, 205, 10, 'PRESENT', '2026-02-19 12:16:20', '2026-02-19 12:16:20'),
+(1910, 2, 205, 15, 'PRESENT', '2026-02-19 12:16:20', '2026-02-19 12:16:20'),
+(1911, 2, 205, 16, 'PRESENT', '2026-02-19 12:16:21', '2026-02-19 12:16:21'),
+(1915, 2, 224, 36, 'ABSENT', '2026-02-19 12:25:49', '2026-02-19 12:25:49'),
+(1916, 2, 224, 38, 'ABSENT', '2026-02-19 12:25:49', '2026-02-19 12:25:49');
+
+INSERT INTO `attendance_records` (`attendance_id`, `term_id`, `schedule_id`, `student_id`, `status`, `created_at`, `updated_at`) VALUES
+(1917, 2, 224, 39, 'ABSENT', '2026-02-19 12:25:50', '2026-02-19 12:25:50'),
+(1918, 2, 224, 40, 'ABSENT', '2026-02-19 12:25:50', '2026-02-19 12:25:50'),
+(1919, 2, 224, 34, 'PRESENT', '2026-02-19 12:25:50', '2026-02-19 12:25:50'),
+(1920, 2, 224, 41, 'ABSENT', '2026-02-19 12:25:50', '2026-02-19 12:25:50'),
+(1921, 2, 224, 42, 'ABSENT', '2026-02-19 12:25:50', '2026-02-19 12:25:50'),
+(1922, 2, 224, 35, 'ABSENT', '2026-02-19 12:25:51', '2026-02-19 13:01:02'),
+(1923, 2, 224, 31, 'ABSENT', '2026-02-19 12:25:51', '2026-02-19 12:25:51'),
+(1924, 2, 224, 30, 'ABSENT', '2026-02-19 12:25:51', '2026-02-19 12:25:51'),
+(1925, 2, 224, 33, 'ABSENT', '2026-02-19 12:25:52', '2026-02-19 12:25:52'),
+(1926, 2, 225, 36, 'ABSENT', '2026-02-19 12:25:59', '2026-02-19 12:25:59'),
+(1927, 2, 225, 38, 'ABSENT', '2026-02-19 12:25:59', '2026-02-19 12:25:59'),
+(1928, 2, 225, 39, 'ABSENT', '2026-02-19 12:26:00', '2026-02-19 12:26:00'),
+(1929, 2, 225, 40, 'ABSENT', '2026-02-19 12:26:00', '2026-02-19 12:26:00'),
+(1930, 2, 225, 34, 'PRESENT', '2026-02-19 12:26:00', '2026-02-19 12:26:00'),
+(1931, 2, 225, 41, 'ABSENT', '2026-02-19 12:26:00', '2026-02-19 12:26:00'),
+(1932, 2, 225, 42, 'ABSENT', '2026-02-19 12:26:00', '2026-02-19 12:26:00'),
+(1933, 2, 225, 35, 'ABSENT', '2026-02-19 12:26:01', '2026-02-19 13:00:56'),
+(1934, 2, 225, 31, 'ABSENT', '2026-02-19 12:26:01', '2026-02-19 12:26:01'),
+(1935, 2, 225, 30, 'ABSENT', '2026-02-19 12:26:01', '2026-02-19 12:26:01'),
+(1936, 2, 225, 33, 'ABSENT', '2026-02-19 12:26:01', '2026-02-19 12:26:01');
 
 -- ----------------------------------------
 -- Table structure for `audit_log`
@@ -1677,7 +1877,7 @@ CREATE TABLE `doctor_schedules` (
   CONSTRAINT `fk_doctor_schedules_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_week` FOREIGN KEY (`week_id`) REFERENCES `weeks` (`week_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=240 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=266 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `doctor_schedules`
 INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_id`, `day_of_week`, `slot_number`, `room_code`, `counts_towards_hours`, `extra_minutes`, `created_at`) VALUES
@@ -1849,7 +2049,33 @@ INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_i
 (235, 5, 9, 41, 'Tue', 4, '127', 1, 0, '2026-02-15 12:40:47'),
 (236, 5, 9, 41, 'Tue', 5, '127', 1, 0, '2026-02-15 12:43:45'),
 (237, 5, 9, 41, 'Wed', 1, '127', 1, 0, '2026-02-15 12:43:50'),
-(238, 5, 9, 41, 'Wed', 2, '127', 1, 0, '2026-02-15 12:43:54');
+(238, 5, 9, 41, 'Wed', 2, '127', 1, 0, '2026-02-15 12:43:54'),
+(240, 6, 1, 45, 'Mon', 1, '127', 1, 0, '2026-02-18 13:42:40'),
+(241, 6, 1, 45, 'Mon', 2, '127', 1, 0, '2026-02-18 13:52:35'),
+(242, 6, 1, 45, 'Mon', 3, '127', 1, 0, '2026-02-18 14:03:39'),
+(243, 6, 1, 49, 'Mon', 4, '127', 1, 0, '2026-02-18 14:03:53'),
+(244, 6, 1, 49, 'Mon', 5, '127', 1, 0, '2026-02-18 14:04:07'),
+(245, 6, 1, 49, 'Tue', 1, '127', 1, 0, '2026-02-18 14:04:31'),
+(246, 6, 1, 49, 'Tue', 2, '127', 1, 0, '2026-02-18 14:04:39'),
+(247, 6, 1, 49, 'Tue', 3, '127', 1, 0, '2026-02-18 14:04:48'),
+(248, 6, 1, 45, 'Wed', 1, '127', 1, 0, '2026-02-18 14:05:06'),
+(249, 6, 1, 45, 'Wed', 2, '127', 1, 0, '2026-02-18 14:05:15'),
+(250, 6, 1, 45, 'Wed', 3, '127', 1, 0, '2026-02-18 14:05:26'),
+(251, 6, 4, 38, 'Sun', 1, '127', 1, 0, '2026-02-18 14:07:01'),
+(252, 6, 4, 38, 'Sun', 2, '127', 1, 0, '2026-02-18 14:07:13'),
+(253, 6, 4, 38, 'Thu', 4, '127', 1, 0, '2026-02-18 14:07:29'),
+(254, 6, 4, 38, 'Thu', 5, '127', 1, 0, '2026-02-18 14:07:48'),
+(255, 6, 7, 34, 'Wed', 4, '127', 1, 0, '2026-02-18 14:08:37'),
+(256, 6, 7, 34, 'Wed', 5, '127', 1, 0, '2026-02-18 14:08:49'),
+(257, 6, 5, 36, 'Tue', 4, '127', 1, 0, '2026-02-18 14:10:11'),
+(258, 6, 5, 54, 'Tue', 5, '127', 1, 0, '2026-02-18 14:13:11'),
+(259, 6, 4, 84, 'Thu', 1, '129', 1, 0, '2026-02-18 14:19:10'),
+(260, 6, 4, 84, 'Thu', 2, '129', 1, 0, '2026-02-18 14:19:19'),
+(261, 6, 2, 92, 'Thu', 4, '129', 1, 0, '2026-02-18 14:19:54'),
+(262, 6, 2, 92, 'Thu', 5, '129', 1, 0, '2026-02-18 14:20:01'),
+(263, 6, 3, 52, 'Sun', 3, '127', 1, 0, '2026-02-18 20:13:09'),
+(264, 6, 12, 42, 'Thu', 1, '127', 1, 0, '2026-02-18 20:29:43'),
+(265, 6, 12, 42, 'Thu', 3, '127', 1, 0, '2026-02-18 20:29:50');
 
 -- ----------------------------------------
 -- Table structure for `doctor_slot_cancellations`
@@ -1993,9 +2219,8 @@ INSERT INTO `doctors` (`doctor_id`, `full_name`, `email`, `phone_number`, `color
 (7, 'Dr.Manal El Shafii', 'mchafei.manalchafei@gmail.com', '+201114666522', '#58748D', 'Egyptian', '2025-12-30 23:29:14'),
 (8, 'Dr.Reem', 'ream@gmail.com', '+201033515666', '#A3009E', 'Egyptian', '2025-12-31 14:35:28'),
 (9, 'chrsitophe lohou', 'Missionnaire@gmail.com', NULL, '#A31000', 'French', '2026-01-01 16:56:51'),
-(10, 'Aya Younes', 'Aya@gmail.com', NULL, '#00A388', 'Egyptian', '2026-01-01 17:11:46'),
 (11, 'Dr. Khaled', 'Khaled@gmail.com', NULL, '#A34F00', 'Egyptian', '2026-01-01 17:44:35'),
-(12, 'Mutasim', 'mont@gmail.com', '+201023319036', '#D742BB', 'Egyptian', '2026-02-04 17:38:54');
+(12, 'Mutasim', 'Mutasimufe@gmail.com', '+201023319036', '#D742BB', 'Egyptian', '2026-02-04 17:38:54');
 
 -- ----------------------------------------
 -- Table structure for `evaluation_categories`
@@ -2035,7 +2260,7 @@ CREATE TABLE `evaluation_config_items` (
   PRIMARY KEY (`item_id`),
   KEY `idx_eval_item_config` (`config_id`),
   KEY `idx_eval_item_category` (`category_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `evaluation_config_items`
 INSERT INTO `evaluation_config_items` (`item_id`, `config_id`, `category_key`, `item_label`, `weight`, `sort_order`) VALUES
@@ -2066,7 +2291,11 @@ INSERT INTO `evaluation_config_items` (`item_id`, `config_id`, `category_key`, `
 (37, 4, 'web_page_container', 'Using Git-Hub and Git', '10.00', 2),
 (38, 4, 'presentations', 'To-Do Presentation', '10.00', 3),
 (39, 4, 'presentations', 'Personal Presentation - Self Project', '40.00', 4),
-(40, 4, 'presentations', 'Final Presentation sicussion', '20.00', 5);
+(40, 4, 'presentations', 'Final Presentation sicussion', '20.00', 5),
+(65, 7, 'assignments', 'Test111_1', '25.00', 0),
+(66, 7, 'assignments', 'Test111_2', '25.00', 1),
+(67, 7, 'assignments', 'Test111_3', '25.00', 2),
+(68, 7, 'assignments', 'Test111_4', '25.00', 3);
 
 -- ----------------------------------------
 -- Table structure for `evaluation_configs`
@@ -2085,14 +2314,15 @@ CREATE TABLE `evaluation_configs` (
   KEY `idx_eval_config_term` (`term_id`),
   KEY `idx_eval_config_course` (`course_id`),
   KEY `idx_eval_config_doctor` (`doctor_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `evaluation_configs`
 INSERT INTO `evaluation_configs` (`config_id`, `term_id`, `course_id`, `doctor_id`, `created_at`, `updated_at`) VALUES
 (1, 1, 42, 0, '2026-01-27 11:39:41', '2026-01-27 11:39:41'),
 (2, 1, 49, 1, '2026-01-29 11:55:31', '2026-01-29 11:55:31'),
 (3, 1, 45, 1, '2026-01-29 12:09:45', '2026-01-29 12:09:45'),
-(4, 1, 45, 0, '2026-02-11 12:47:52', '2026-02-11 12:49:54');
+(4, 1, 45, 0, '2026-02-11 12:47:52', '2026-02-11 12:49:54'),
+(7, 2, 87, 0, '2026-02-18 11:51:41', '2026-02-18 11:58:38');
 
 -- ----------------------------------------
 -- Table structure for `evaluation_grade_items`
@@ -2108,7 +2338,7 @@ CREATE TABLE `evaluation_grade_items` (
   UNIQUE KEY `uq_eval_grade_item` (`grade_id`,`item_id`),
   KEY `idx_eval_grade_item_grade` (`grade_id`),
   KEY `idx_eval_grade_item_item` (`item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=409 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=413 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `evaluation_grade_items`
 INSERT INTO `evaluation_grade_items` (`grade_item_id`, `grade_id`, `item_id`, `score`) VALUES
@@ -2214,7 +2444,11 @@ INSERT INTO `evaluation_grade_items` (`grade_item_id`, `grade_id`, `item_id`, `s
 (405, 169, 38, '0.00'),
 (406, 170, 38, '10.00'),
 (407, 171, 38, '0.00'),
-(408, 172, 38, '0.00');
+(408, 172, 38, '0.00'),
+(409, 646, 65, '5.00'),
+(410, 646, 66, '5.00'),
+(411, 646, 67, '5.00'),
+(412, 646, 68, '5.00');
 
 -- ----------------------------------------
 -- Table structure for `evaluation_grades`
@@ -2237,7 +2471,7 @@ CREATE TABLE `evaluation_grades` (
   KEY `idx_eval_grade_course` (`course_id`),
   KEY `idx_eval_grade_doctor` (`doctor_id`),
   KEY `idx_eval_grade_student` (`student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=639 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=650 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `evaluation_grades`
 INSERT INTO `evaluation_grades` (`grade_id`, `term_id`, `course_id`, `doctor_id`, `student_id`, `attendance_score`, `final_score`, `created_at`, `updated_at`) VALUES
@@ -2356,7 +2590,18 @@ INSERT INTO `evaluation_grades` (`grade_id`, `term_id`, `course_id`, `doctor_id`
 (171, 1, 45, 0, 26, '5.56', '1.11', '2026-02-11 13:39:48', '2026-02-12 09:44:43'),
 (172, 1, 45, 0, 27, '3.33', '0.67', '2026-02-11 13:39:48', '2026-02-12 09:44:43'),
 (173, 1, 45, 0, 28, '2.22', '0.44', '2026-02-11 13:39:48', '2026-02-12 09:44:43'),
-(174, 1, 45, 0, 29, '0.00', '0.00', '2026-02-11 13:39:48', '2026-02-12 09:44:43');
+(174, 1, 45, 0, 29, '0.00', '0.00', '2026-02-11 13:39:48', '2026-02-12 09:44:43'),
+(639, 2, 87, 0, 36, '0.00', '0.00', '2026-02-18 14:36:27', '2026-02-18 14:36:27'),
+(640, 2, 87, 0, 38, '0.00', '0.00', '2026-02-18 14:36:27', '2026-02-18 14:36:27'),
+(641, 2, 87, 0, 39, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(642, 2, 87, 0, 40, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(643, 2, 87, 0, 34, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(644, 2, 87, 0, 41, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(645, 2, 87, 0, 42, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(646, 2, 87, 0, 35, '0.00', '4.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(647, 2, 87, 0, 31, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(648, 2, 87, 0, 30, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28'),
+(649, 2, 87, 0, 33, '0.00', '0.00', '2026-02-18 14:36:28', '2026-02-18 14:36:28');
 
 -- ----------------------------------------
 -- Table structure for `events`
@@ -2422,7 +2667,7 @@ CREATE TABLE `portal_users` (
   KEY `idx_role` (`role`),
   KEY `idx_doctor_id` (`doctor_id`),
   KEY `idx_student_id` (`student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `portal_users`
 INSERT INTO `portal_users` (`user_id`, `username`, `password_hash`, `role`, `doctor_id`, `student_id`, `allowed_pages_json`, `is_active`, `created_at`, `updated_at`) VALUES
@@ -2435,7 +2680,10 @@ INSERT INTO `portal_users` (`user_id`, `username`, `password_hash`, `role`, `doc
 (8, 'Assma abd El Maguid', '$2y$10$4INKm6cnF72510ljMdHVneqqbtCZ6XAgomNMD2OQx6ef/z.qYd4Hy', 'teacher', 6, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 12:14:06', '2026-02-10 10:55:21'),
 (9, 'Reem', '$2y$10$3NfunhMseaD/f9AxaobPQ.5TahaYqTHIxKdC8fKBrVSqSYIjmj3ia', 'teacher', 8, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 12:14:54', '2026-02-10 10:54:55'),
 (10, 'Assma El Sharif', '$2y$10$O00VO0IghvMV/hwRJJOeT.f/EYAPQsbqTvGsgUYOAhRwx64agXtre', 'teacher', 2, NULL, '[\"index.php\",\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-05 14:59:57', '2026-02-10 10:54:51'),
-(11, 'Mutasim', '$2y$10$rVf7PumL13E5uJF0ZzW4mOG7QN.PmnQjVOiXUVHDz/FXl.3COgalS', 'teacher', 12, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-06 09:54:09', '2026-02-14 13:06:25');
+(11, 'Mutasim', '$2y$10$rVf7PumL13E5uJF0ZzW4mOG7QN.PmnQjVOiXUVHDz/FXl.3COgalS', 'teacher', 12, NULL, '[\"doctor.php\",\"attendance.php\",\"evaluation.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-02-06 09:54:09', '2026-02-14 13:06:25'),
+(12, 'Christophe', '$2y$10$ll5eXUfb19m7wW5w4YoOyub/VH5N7HYMBrjkRPfg.01Eipdj41pYy', 'teacher', 9, NULL, NULL, 1, '2026-02-18 11:42:33', '2026-02-18 11:42:33'),
+(13, 'Marwan', '$2y$10$jSNUIRhPuvau1dWr.rrNoORx9m97KzQz0oQ0Cxz351CQIsncbuE2G', 'student', NULL, 42, NULL, 1, '2026-02-18 11:42:58', '2026-02-18 11:42:58'),
+(14, 'Lena11', '$2y$10$aBcAvXfA6w5pO4lY4hkOv.rmxE/n7.5mZ7eq81NjzT4N/T853b9ga', 'management', NULL, NULL, NULL, 1, '2026-02-18 13:34:54', '2026-02-18 13:34:54');
 
 -- ----------------------------------------
 -- Table structure for `rooms`
@@ -2472,7 +2720,7 @@ CREATE TABLE `schema_versions` (
 
 -- Dumping data for `schema_versions`
 INSERT INTO `schema_versions` (`schema_name`, `version`, `updated_at`) VALUES
-('dmportal', 2, '2026-01-26 22:40:29');
+('dmportal', 4, '2026-02-18 11:37:55');
 
 -- ----------------------------------------
 -- Table structure for `student_schedules`
@@ -2563,23 +2811,6 @@ INSERT INTO `students` (`student_id`, `full_name`, `email`, `student_code`, `pro
 -- Table structure for `terms`
 -- ----------------------------------------
 
-DROP TABLE IF EXISTS `academic_years`;
-CREATE TABLE `academic_years` (
-  `academic_year_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `label` varchar(50) NOT NULL,
-  `status` enum('active','closed') NOT NULL DEFAULT 'closed',
-  `start_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`academic_year_id`),
-  UNIQUE KEY `uq_academic_year_label` (`label`),
-  KEY `idx_academic_year_status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ----------------------------------------
--- Table structure for `terms`
--- ----------------------------------------
-
 DROP TABLE IF EXISTS `terms`;
 CREATE TABLE `terms` (
   `term_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -2595,11 +2826,6 @@ CREATE TABLE `terms` (
   KEY `idx_terms_semester` (`semester`),
   KEY `idx_terms_status` (`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Dumping data for `terms`
--- Dumping data for `academic_years`
-INSERT INTO `academic_years` (`academic_year_id`, `label`, `status`, `start_date`, `end_date`, `created_at`) VALUES
-(1, '2025-2026', 'active', NULL, NULL, '2026-02-16 12:34:43');
 
 -- Dumping data for `terms`
 INSERT INTO `terms` (`term_id`, `academic_year_id`, `label`, `semester`, `status`, `start_date`, `end_date`, `created_at`) VALUES
@@ -2620,38 +2846,19 @@ CREATE TABLE `weeks` (
   `status` enum('active','closed') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `is_prep` tinyint(1) NOT NULL DEFAULT 0,
+  `is_ramadan` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`week_id`),
   UNIQUE KEY `uq_weeks_label` (`label`),
   KEY `idx_weeks_term_id` (`term_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `weeks`
-INSERT INTO `weeks` (`week_id`, `term_id`, `label`, `start_date`, `end_date`, `status`, `created_at`, `is_prep`) VALUES
-(1, 2, 'Week 1', '2026-01-04', '2025-12-31', 'closed', '2025-12-29 15:57:47', 0),
-(2, 2, 'Week 2', '2026-01-11', '2026-01-16', 'closed', '2026-01-11 10:55:34', 0),
-(3, 2, 'Week 3', '2026-01-18', '2026-02-04', 'closed', '2026-01-16 19:23:14', 0),
-(4, 2, 'Week 4', '2026-02-08', '2026-02-11', 'closed', '2026-02-04 17:46:29', 0),
-(5, 2, 'Week 5', '2026-02-15', '2026-02-18', 'active', '2026-02-11 19:37:49', 0);
+INSERT INTO `weeks` (`week_id`, `term_id`, `label`, `start_date`, `end_date`, `status`, `created_at`, `is_prep`, `is_ramadan`) VALUES
+(1, 2, 'Week 1', '2026-01-04', '2025-12-31', 'closed', '2025-12-29 15:57:47', 0, 0),
+(2, 2, 'Week 2', '2026-01-11', '2026-01-16', 'closed', '2026-01-11 10:55:34', 0, 0),
+(3, 2, 'Week 3', '2026-01-18', '2026-02-04', 'closed', '2026-01-16 19:23:14', 0, 0),
+(4, 2, 'Week 4', '2026-02-08', '2026-02-11', 'closed', '2026-02-04 17:46:29', 0, 0),
+(5, 2, 'Week 5', '2026-02-15', '2026-02-18', 'closed', '2026-02-11 19:37:49', 0, 0),
+(6, 2, 'Prep Week 6', '2026-02-22', NULL, 'closed', '2026-02-18 13:40:30', 0, 1);
 
 SET FOREIGN_KEY_CHECKS=1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

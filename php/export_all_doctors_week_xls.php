@@ -23,7 +23,7 @@ try {
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     if ($weekId <= 0) {
-        $stmt = $pdo->prepare("SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt = $pdo->prepare("SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
         $stmt->execute([':term_id' => $termId]);
         $wk = $stmt->fetch();
         if (!$wk) {

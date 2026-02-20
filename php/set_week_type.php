@@ -57,14 +57,17 @@ try {
 
     $isPrep = $weekType === 'PREP' ? 1 : 0;
     $isRamadan = $weekType === 'RAMADAN' ? 1 : 0;
-    $newStatus = $weekType === 'ACTIVE' ? 'active' : 'closed';
+    // RAMADAN weeks behave like ACTIVE weeks (same scheduling behaviour, only timing differs in exports).
+    $newStatus = ($weekType === 'ACTIVE' || $weekType === 'RAMADAN') ? 'active' : 'closed';
 
-    if ($weekType === 'ACTIVE') {
+    if ($weekType === 'ACTIVE' || $weekType === 'RAMADAN') {
+        // Close any other active week in this term when making a week active/ramadan.
         $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id AND week_id <> :week_id");
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
 
     if ($weekType === 'RAMADAN') {
+        // Only one Ramadan week per term.
         $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }

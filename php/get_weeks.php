@@ -22,7 +22,9 @@ try {
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
     $activeWeekId = null;
-    $activeStmt = $pdo->prepare("SELECT week_id FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+    // A week is considered "active" if its status is 'active' OR it is flagged as a Ramadan week
+    // (Ramadan weeks behave identically to active weeks; only export timings differ).
+    $activeStmt = $pdo->prepare("SELECT week_id FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
     $activeStmt->execute([':term_id' => $termId]);
     $activeWeekId = (int)($activeStmt->fetchColumn() ?: 0);
 
