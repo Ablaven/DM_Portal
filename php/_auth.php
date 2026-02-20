@@ -305,6 +305,11 @@ function auth_require_page_access(string $pageBasename, bool $json = false): voi
     auth_render_forbidden_page('Forbidden (page not allowed).');
 }
 
+function auth_require_api_access(): void
+{
+    auth_require_login(true);
+}
+
 function auth_require_teacher_own_doctor(int $doctorId, bool $json = false): void
 {
     auth_require_login($json);

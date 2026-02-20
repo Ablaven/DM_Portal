@@ -3953,3 +3953,29 @@ body.dashboard .schedule-grid {
     flex-wrap: wrap;
   }
 }
+
+/* ============================================================
+   Utility classes referenced by JS but not previously defined
+   ============================================================ */
+
+/* .course-title — student name/title inside a course-item card */
+.course-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #e8eefc);
+  line-height: 1.3;
+}
+
+/* .builder-popup — differentiates the schedule-builder availability popup
+   from other availability-popup instances; inherits base styles from
+   .availability-popup, this selector allows targeted overrides. */
+.availability-popup.builder-popup {
+  z-index: 1100;
+}
+
+/* .is-loading — applied to buttons during async operations */
+.is-loading {
+  opacity: 0.65;
+  cursor: wait;
+  pointer-events: none;
+}

@@ -5,6 +5,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_term_helpers.php';
 
+function bad_request(string $m): void
+{
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $m]);
+    exit;
+}
+
 try {
     auth_require_api_access();
     auth_require_roles(['admin']);

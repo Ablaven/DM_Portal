@@ -92,22 +92,34 @@ function dmportal_get_term_id_for_week(PDO $pdo, int $weekId): int
 function dmportal_set_active_term(PDO $pdo, int $termId): void
 {
     dmportal_ensure_terms_table($pdo);
-    $pdo->beginTransaction();
-    $row = $pdo->prepare('SELECT semester, academic_year_id FROM terms WHERE term_id = :term_id LIMIT 1');
-    $row->execute([':term_id' => $termId]);
-    $rowData = $row->fetch();
-    $semester = (int)($rowData['semester'] ?? 0);
-    $academicYearId = (int)($rowData['academic_year_id'] ?? 0);
-    if ($semester > 0) {
-        $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE semester = :semester AND academic_year_id = :academic_year_id");
-        $stmt->execute([':semester' => $semester, ':academic_year_id' => $academicYearId]);
-    } else {
-        $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE academic_year_id = :academic_year_id");
-        $stmt->execute([':academic_year_id' => $academicYearId]);
+    $ownTransaction = !$pdo->inTransaction();
+    if ($ownTransaction) {
+        $pdo->beginTransaction();
     }
-    $stmt = $pdo->prepare("UPDATE terms SET status='active' WHERE term_id = :term_id");
-    $stmt->execute([':term_id' => $termId]);
-    $pdo->commit();
+    try {
+        $row = $pdo->prepare('SELECT semester, academic_year_id FROM terms WHERE term_id = :term_id LIMIT 1');
+        $row->execute([':term_id' => $termId]);
+        $rowData = $row->fetch();
+        $semester = (int)($rowData['semester'] ?? 0);
+        $academicYearId = (int)($rowData['academic_year_id'] ?? 0);
+        if ($semester > 0) {
+            $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE semester = :semester AND academic_year_id = :academic_year_id");
+            $stmt->execute([':semester' => $semester, ':academic_year_id' => $academicYearId]);
+        } else {
+            $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE academic_year_id = :academic_year_id");
+            $stmt->execute([':academic_year_id' => $academicYearId]);
+        }
+        $stmt = $pdo->prepare("UPDATE terms SET status='active' WHERE term_id = :term_id");
+        $stmt->execute([':term_id' => $termId]);
+        if ($ownTransaction) {
+            $pdo->commit();
+        }
+    } catch (Throwable $e) {
+        if ($ownTransaction && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $e;
+    }
 }
 
 function dmportal_get_term_id_from_request(PDO $pdo, array $source): int
@@ -164,20 +176,8 @@ function dmportal_reset_weeks_for_term(PDO $pdo, int $termId, ?string $startDate
     $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE term_id = :term_id AND status='active'")
         ->execute([':term_id' => $termId]);
 
-    $labelStmt = $pdo->prepare('SELECT label FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC');
-    $labelStmt->execute([':term_id' => $termId]);
-    $labels = $labelStmt->fetchAll(PDO::FETCH_COLUMN);
-    $next = 1;
-    foreach ($labels as $existingLabel) {
-        if (preg_match('/(\d+)/', (string)$existingLabel, $m)) {
-            $num = (int)$m[1];
-            if ($num >= $next) {
-                $next = $num + 1;
-            }
-        }
-    }
-
-    $label = 'Week ' . $next;
+    // Always start at Week 1 on reset — existing weeks are closed and a fresh week 1 begins.
+    $label = 'Week 1';
 
     $stmt = $pdo->prepare('INSERT INTO weeks (term_id, label, start_date, status, is_prep) VALUES (:term_id, :label, :start_date, :status, :is_prep)');
     $stmt->execute([
@@ -248,7 +248,7 @@ function dmportal_create_next_academic_year(PDO $pdo, int $currentYearId): int
 
 function dmportal_increment_academic_year_label(string $label): string
 {
-    if (preg_match('/(\d{4})\s*[-/]\s*(\d{4})/', $label, $m)) {
+    if (preg_match('/(\d{4})\s*[-\/]\s*(\d{4})/', $label, $m)) {
         $start = (int)$m[1] + 1;
         $end = (int)$m[2] + 1;
         return sprintf('%d-%d', $start, $end);

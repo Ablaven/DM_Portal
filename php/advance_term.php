@@ -75,6 +75,7 @@ try {
         bad_request('Custom advance mode requires student_actions payload.');
     }
 
+    $pdo->beginTransaction();
     if ($advanceMode === 'custom') {
         dmportal_apply_student_actions($pdo, $studentActions);
     } else {
@@ -87,6 +88,7 @@ try {
     $term2Id = dmportal_get_or_create_term($pdo, $newYearId, 2, 'Semester 2', false);
     dmportal_set_active_term($pdo, $term1Id);
     $weekId = dmportal_reset_weeks_for_term($pdo, $term1Id, $startDate !== '' ? $startDate : null, false);
+    $pdo->commit();
 
     echo json_encode([
         'success' => true,

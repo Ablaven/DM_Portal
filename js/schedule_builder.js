@@ -47,6 +47,37 @@
   availabilityMap: {},
   };
 
+  // Auto-filter note: tracks the last time filters were auto-switched for a doctor.
+  // Set this when auto-switching Year/Sem filters based on a doctor's assigned courses.
+  let lastBuilderAutoFilterNote = null;
+
+  // Auto-set builder filters based on the selected doctor's courses.
+  // Currently a no-op placeholder — can be implemented to auto-switch Year/Sem.
+  function maybeAutoSetBuilderFiltersForDoctor(doctorId) {
+    // Find the doctor's most common Year/Sem from their assigned courses and auto-switch filters.
+    const did = Number(doctorId || 0);
+    if (!did || !state.courses?.length) return;
+    const doctorCourses = state.courses.filter((c) => {
+      const ids = parseDoctorIdsCsv(c?.doctor_ids);
+      if (ids.length) return ids.includes(did);
+      return Number(c?.doctor_id || 0) === did;
+    });
+    if (!doctorCourses.length) return;
+    // Tally year/sem combinations
+    const tally = {};
+    for (const c of doctorCourses) {
+      const key = `${c.year_level}:${c.semester}`;
+      tally[key] = (tally[key] || 0) + 1;
+    }
+    const best = Object.entries(tally).sort((a, b) => b[1] - a[1])[0];
+    if (!best) return;
+    const [year_level, semester] = best[0].split(':').map(Number);
+    const current = getGlobalFilters ? getGlobalFilters() : {};
+    if (current.year_level === year_level && current.semester === semester) return;
+    if (setGlobalFilters) setGlobalFilters({ year_level, semester });
+    lastBuilderAutoFilterNote = { doctor_id: did, year_level, semester, at: Date.now() };
+  }
+
   function formatHours(n) {
   const num = Number(n);
   if (Number.isNaN(num)) return "0.00";

@@ -59,6 +59,7 @@ $ok = true;
     </div>
   </main>
 
+  <script src="js/core.js?v=20260121"></script>
   <script src="js/ablaven.js?v=20260102"></script>
 </body>
 </html>
