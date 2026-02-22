@@ -289,13 +289,7 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
         }
     }
 
-    foreach ($repeat as $studentId) {
-        $studentId = (int)$studentId;
-        if ($studentId > 0) {
-            $stmt = $pdo->prepare('UPDATE students SET year_level = year_level WHERE student_id = :student_id');
-            $stmt->execute([':student_id' => $studentId]);
-        }
-    }
+    // "repeat" students stay at their current year_level — no DB change needed
 
     foreach ($graduate as $studentId) {
         $studentId = (int)$studentId;

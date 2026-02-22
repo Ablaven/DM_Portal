@@ -50,177 +50,185 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
     </section>
 
-    <section class="card" style="margin-top:20px;">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+    <!-- ── Semester Wizard ─────────────────────────────────────────────────── -->
+    <section class="card" id="semesterWizard" style="margin-top:20px;">
+
+      <!-- Header: always visible, shows where you are -->
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:22px;">
         <div>
-          <h2 style="margin:0;">Semester Management</h2>
-          <div class="muted" style="margin-top:4px;">Create semesters, activate the current semester, and reset weeks (this does not advance students yet).</div>
+          <div class="muted" style="font-size:0.78rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:3px;">Semester Management</div>
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <strong id="wizardCurrentLabel" style="font-size:1.1rem;">Loading…</strong>
+            <span id="wizardNextHint" class="muted" style="font-size:0.88rem;"></span>
+          </div>
         </div>
+        <button id="wizManualBtn" class="btn btn-small btn-secondary" type="button" style="white-space:nowrap;">⚙ Manual</button>
       </div>
 
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
-        <label style="display:flex; flex-direction:column; gap:6px; min-width:200px;">
-          <span class="muted" style="font-size:0.85rem;">Academic Year</span>
-          <select id="academicYearSelect" class="navlink" style="padding:8px 10px;"></select>
-        </label>
-        <label style="display:flex; flex-direction:column; gap:6px; min-width:200px;">
-          <span class="muted" style="font-size:0.85rem;">Quick Activate Term</span>
-          <select id="termSelect" class="navlink" style="padding:8px 10px;"></select>
-        </label>
-        <button id="activateSelectedTerm" class="btn btn-secondary" type="button">Activate Selected Term</button>
+      <!-- Step panels -->
+
+      <!-- STEP 0: Idle -->
+      <div id="wizStep0" class="wiz-step">
+        <p id="wizStep0Hint" class="muted" style="margin:0 0 18px; font-size:0.95rem; max-width:520px;"></p>
+        <button id="wizPrimaryBtn" class="btn" type="button" style="font-size:1rem; padding:11px 28px; min-width:220px;"></button>
+        <div id="wizStep0Status" class="status" role="status" style="margin-top:14px;"></div>
       </div>
 
-      <form id="termCreateForm" class="field" style="margin-bottom:16px;">
-        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-          <label style="display:flex; flex-direction:column; gap:6px;">
-            <span class="muted" style="font-size:0.85rem;">Label</span>
-            <input name="label" type="text" placeholder="Semester 1 (2026)" required />
-          </label>
-          <label style="display:flex; flex-direction:column; gap:6px;">
-            <span class="muted" style="font-size:0.85rem;">Semester #</span>
-            <select name="semester" required>
-              <option value="1">Semester 1</option>
-              <option value="2">Semester 2</option>
+      <!-- STEP 1: Pick date -->
+      <div id="wizStep1" class="wiz-step" style="display:none;">
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;" id="wizStep1Heading">When does the new Week 1 start?</p>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="field" style="margin:0;">
+            <label for="wizStartDate" style="font-size:0.83rem; margin-bottom:4px;">Start date</label>
+            <input id="wizStartDate" type="date" style="padding:9px 11px;" />
+          </div>
+          <button id="wizStep1Next" class="btn" type="button">Continue</button>
+          <button id="wizStep1Cancel" class="btn btn-secondary" type="button">Cancel</button>
+        </div>
+        <div id="wizStep1Status" class="status" role="status" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- STEP 2a: Sem 1→2 confirm -->
+      <div id="wizStep2a" class="wiz-step" style="display:none;">
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance — here's what will happen:</p>
+        <div id="wizStep2aSummary" style="background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px; padding:16px 18px; margin-bottom:18px; line-height:2;"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="wizStep2aConfirm" class="btn" type="button">Advance to Semester 2</button>
+          <button id="wizStep2aBack" class="btn btn-secondary" type="button">← Back</button>
+        </div>
+        <div id="wizStep2aStatus" class="status" role="status" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- STEP 2b: Sem 2→Year — student rule -->
+      <div id="wizStep2b" class="wiz-step" style="display:none;">
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">What should happen to students?</p>
+        <div class="field" style="margin:0 0 16px; max-width:360px;">
+          <label for="wizStudentPreset" style="font-size:0.83rem; margin-bottom:4px;">Student advancement rule</label>
+          <select id="wizStudentPreset" class="navlink" style="padding:9px 11px; width:100%;">
+            <option value="advance_except_final">Advance all · graduate final year (recommended)</option>
+            <option value="advance_all">Advance everyone by one year</option>
+            <option value="repeat_all">Keep everyone in their current year</option>
+            <option value="custom">Set each student individually…</option>
+          </select>
+        </div>
+
+        <!-- Per-student table, shown only for custom -->
+        <div id="wizCustomStudentPanel" style="display:none; margin-bottom:16px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+            <input id="wizStudentSearch" type="text" placeholder="Search by name or code…" style="padding:7px 10px; flex:1; min-width:160px;" />
+            <select id="wizStudentFilterYear" class="navlink" style="padding:7px 10px;">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
             </select>
-          </label>
-          <label style="display:flex; flex-direction:column; gap:6px;">
-            <span class="muted" style="font-size:0.85rem;">Start Date</span>
-            <input name="start_date" type="date" />
-          </label>
-          <label style="display:flex; flex-direction:column; gap:6px;">
-            <span class="muted" style="font-size:0.85rem;">End Date</span>
-            <input name="end_date" type="date" />
-          </label>
-          <button class="btn btn-secondary" type="submit">Create Semester</button>
+          </div>
+          <div class="table-wrap" style="max-height:280px; overflow:auto; border:1px solid var(--card-border); border-radius:8px;">
+            <table class="data-table" id="wizStudentTable">
+              <thead><tr><th>Student</th><th>Current Year</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
-      </form>
 
-      <div id="termStatus" class="status" role="status" style="margin-bottom:12px;"></div>
-
-      <div class="table-wrap">
-        <table id="termsTable" class="data-table">
-          <thead>
-            <tr>
-              <th>Label</th>
-              <th>Semester</th>
-              <th>Status</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="wizStep2bNext" class="btn" type="button">Continue</button>
+          <button id="wizStep2bBack" class="btn btn-secondary" type="button">← Back</button>
+          <button id="wizStep2bCancel" class="btn btn-secondary" type="button">Cancel</button>
+        </div>
+        <div id="wizStep2bStatus" class="status" role="status" style="margin-top:10px;"></div>
       </div>
+
+      <!-- STEP 3b: Year advance confirm -->
+      <div id="wizStep3b" class="wiz-step" style="display:none;">
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance — here's what will happen:</p>
+        <div id="wizStep3bSummary" style="background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px; padding:16px 18px; margin-bottom:18px; line-height:2;"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="wizStep3bConfirm" class="btn" type="button">Start New Academic Year</button>
+          <button id="wizStep3bBack" class="btn btn-secondary" type="button">← Back</button>
+        </div>
+        <div id="wizStep3bStatus" class="status" role="status" style="margin-top:10px;"></div>
+      </div>
+
     </section>
 
-    <section class="card" style="margin-top:20px;">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
-        <div>
-          <h2 style="margin:0;">Advance Semester / Year</h2>
-          <div class="muted" style="margin-top:4px;">One-click advance: semester 1 → semester 2 (weeks reset). Semester 2 → new academic year + student advancement + weeks reset.</div>
+    <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
+    <details id="manualOptionsPanel" style="margin-top:14px;">
+      <summary style="cursor:pointer; font-weight:600; padding:10px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
+        ⚙ Manual Options
+        <span class="muted" style="font-weight:400; font-size:0.83rem;">(activate, create, or reset semesters)</span>
+      </summary>
+
+      <div class="card" style="margin-top:10px;">
+
+        <!-- Activate -->
+        <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">Activate a Semester</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:6px;">
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+            Academic Year
+            <select id="academicYearSelect" class="navlink" style="padding:8px 10px; min-width:170px;"></select>
+          </label>
+          <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+            Semester
+            <select id="termSelect" class="navlink" style="padding:8px 10px; min-width:170px;"></select>
+          </label>
+          <button id="activateSelectedTerm" class="btn btn-secondary" type="button">Activate</button>
         </div>
-      </div>
+        <div id="termStatus" class="status" role="status" style="margin-bottom:18px;"></div>
 
-      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-        <div class="field" style="margin:0;">
-          <label for="advanceStartDate" class="muted" style="font-size:0.85rem;">Start date for new Week 1</label>
-          <div style="display:flex; gap:6px; align-items:center;">
-            <input id="advanceStartDate" class="navlink" style="padding:8px 10px;" type="date" />
-          </div>
+        <!-- Create -->
+        <div style="border-top:1px solid var(--card-border); padding-top:16px; margin-bottom:6px;">
+          <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">Create a New Semester</h3>
+          <form id="termCreateForm">
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+                Label
+                <input name="label" type="text" placeholder="e.g. Semester 1 (2026)" style="padding:8px 10px;" required />
+              </label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+                Semester #
+                <select name="semester" style="padding:8px 10px;" required>
+                  <option value="1">Semester 1</option>
+                  <option value="2">Semester 2</option>
+                </select>
+              </label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+                Start Date <span class="muted">(optional)</span>
+                <input name="start_date" type="date" style="padding:8px 10px;" />
+              </label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
+                End Date <span class="muted">(optional)</span>
+                <input name="end_date" type="date" style="padding:8px 10px;" />
+              </label>
+              <button class="btn btn-secondary" type="submit">Create</button>
+            </div>
+          </form>
+          <div id="createTermStatus" class="status" role="status" style="margin-top:8px; margin-bottom:18px;"></div>
         </div>
-        <button id="advanceTermButton" class="btn" type="button">Advance to Next Semester / Year</button>
-        <button id="customAdvanceButton" class="btn btn-secondary" type="button">Custom Student Advance…</button>
-        <div id="advanceStatus" class="status" role="status"></div>
-      </div>
-    </section>
 
-    <div id="customAdvanceModal" class="modal" aria-hidden="true">
-      <div class="modal-backdrop" data-close="1"></div>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="customAdvanceTitle">
-        <div class="modal-header">
-          <h3 id="customAdvanceTitle">Custom Student Advance</h3>
-          <button class="btn btn-small btn-secondary" type="button" data-close="1">Close</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="field" style="margin-bottom:12px;">
-            <label for="customAdvanceStartDate">Start date for new Week 1</label>
-            <input id="customAdvanceStartDate" type="date" />
-          </div>
-
-          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
-            <div class="field" style="margin:0; min-width:200px;">
-              <label for="customAdvanceProgram">Program</label>
-              <select id="customAdvanceProgram" class="navlink" style="padding:8px 10px;">
-                <option value="">All Programs</option>
-              </select>
-            </div>
-            <div class="field" style="margin:0; min-width:160px;">
-              <label for="customAdvanceYear">Year Level</label>
-              <select id="customAdvanceYear" class="navlink" style="padding:8px 10px;">
-                <option value="">All Years</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field" style="margin-bottom:12px;">
-            <label for="customAdvanceSearch">Search Students</label>
-            <input id="customAdvanceSearch" type="text" placeholder="Search by name/email/code…" />
-          </div>
-
-          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px;">
-            <div class="field" style="margin:0; min-width:220px;">
-              <label for="customAdvancePreset">Rule Preset</label>
-              <select id="customAdvancePreset" class="navlink" style="padding:8px 10px;">
-                <option value="">Select preset…</option>
-                <option value="advance_all">Advance all (year +1)</option>
-                <option value="repeat_all">Repeat all</option>
-                <option value="graduate_final">Graduate final year only</option>
-                <option value="advance_except_final">Advance all, graduate final year</option>
-              </select>
-            </div>
-            <button id="applyAdvancePreset" class="btn btn-secondary" type="button">Apply Preset</button>
-          </div>
-
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-            <button id="bulkAdvanceAll" class="btn btn-secondary" type="button">Set All to Advance</button>
-            <button id="bulkRepeatAll" class="btn btn-secondary" type="button">Set All to Repeat</button>
-            <button id="bulkGraduateAll" class="btn btn-secondary" type="button">Set All to Graduate</button>
-          </div>
-
-          <div class="table-wrap" style="max-height:360px; overflow:auto;">
-            <table class="data-table" id="customAdvanceTable">
+        <!-- All semesters -->
+        <div style="border-top:1px solid var(--card-border); padding-top:16px;">
+          <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">All Semesters</h3>
+          <div class="table-wrap">
+            <table id="termsTable" class="data-table">
               <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Year</th>
-                  <th>Action</th>
-                  <th>New Year</th>
-                </tr>
+                <tr><th>Label</th><th>Sem</th><th>Year</th><th>Status</th><th>Actions</th></tr>
               </thead>
               <tbody></tbody>
             </table>
           </div>
-
-          <div id="customAdvanceStatus" class="status" role="status" style="margin-top:10px;"></div>
         </div>
 
-        <div class="modal-actions">
-          <button id="customAdvanceSubmit" class="btn" type="button">Run Custom Advance</button>
-          <button class="btn btn-secondary" type="button" data-close="1">Cancel</button>
-        </div>
       </div>
-    </div>
+    </details>
+
+    <!-- Reset Weeks modal (built by JS) -->
   </main>
 
   <script src="js/core.js?v=20260121"></script>
   <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/admin_terms.js?v=20260213"></script>
-  <script src="js/admin_advance.js?v=20260213"></script>
+  <script src="js/admin_terms.js?v=20260222c"></script>
+  <script src="js/admin_advance.js?v=20260222c"></script>
   <script>
     window.dmportal?.initNavbar?.({});
   </script>
