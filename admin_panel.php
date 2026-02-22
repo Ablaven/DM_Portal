@@ -16,7 +16,7 @@ $importStatus = $_GET['import_status'] ?? '';
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('admin_panel.php'); ?>

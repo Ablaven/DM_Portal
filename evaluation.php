@@ -19,7 +19,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Evaluation</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('evaluation.php'); ?>
@@ -33,9 +33,9 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
     <div id="evaluationAlert" class="alert" role="alert" hidden></div>
 
     <section class="card">
-      <div class="schedule-header" style="align-items:flex-end;">
-        <div class="controls" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="min-width:180px;">
+      <div class="schedule-header">
+        <div class="filter-bar">
+          <div class="field">
             <label for="evaluationYearFilter">Year</label>
             <select id="evaluationYearFilter">
               <option value="">All</option>
@@ -44,7 +44,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
               <option value="3">Year 3</option>
             </select>
           </div>
-          <div class="field" style="min-width:160px;">
+          <div class="field">
             <label for="evaluationSemesterFilter">Semester</label>
             <select id="evaluationSemesterFilter">
               <option value="">All</option>
@@ -52,13 +52,13 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
               <option value="2">Sem 2</option>
             </select>
           </div>
-          <div class="field" style="min-width:220px;">
+          <div class="field">
             <label for="evaluationDoctorFilter">Doctor</label>
             <select id="evaluationDoctorFilter">
               <option value="">All</option>
             </select>
           </div>
-          <div class="field" style="min-width:280px;">
+          <div class="field">
             <label for="evaluationCourseSelect">Course</label>
             <select id="evaluationCourseSelect">
               <option value="">Loading…</option>
@@ -66,7 +66,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <button id="evaluationRefresh" class="btn btn-secondary btn-small" type="button">Refresh</button>
           <button id="exportEvaluationSummary" class="btn btn-secondary btn-small" type="button">Export Final Grades</button>
           <?php if ($role === 'admin') { ?>
@@ -77,7 +77,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
         </div>
       </div>
 
-      <nav class="tabs" aria-label="Evaluation tabs" style="margin-top:10px;">
+      <nav class="tabs mt-12" aria-label="Evaluation tabs">
         <?php if ($canConfigure) { ?>
           <button class="tab active" type="button" data-tab="config">Configuration</button>
           <button class="tab" type="button" data-tab="grading">Grading</button>
@@ -89,15 +89,15 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
       <div class="tab-panels">
         <?php if ($canConfigure) { ?>
           <section class="tab-panel" data-tab-panel="config">
-            <div class="panel-title-row" style="margin:14px 0 8px;">
-              <h2 style="margin:0;">Parameters</h2>
+            <div class="card-header mt-12">
+              <h2>Parameters</h2>
               <button id="saveEvaluationConfig" class="btn btn-small" type="button">Save Configuration</button>
             </div>
 
-            <div class="muted" style="margin-bottom:10px;">Add items per category. Total marks across all items must equal 100.</div>
-            <div id="evaluationConfigTotal" class="muted" style="margin-bottom:10px;"></div>
+            <p class="muted mb-8">Add items per category. Total marks across all items must equal 100.</p>
+            <div id="evaluationConfigTotal" class="muted mb-8"></div>
 
-            <div class="schedule-wrap" style="overflow:auto;">
+            <div class="schedule-wrap table-wrap">
               <table class="schedule-grid" aria-label="Evaluation parameters">
                 <thead>
                   <tr>
@@ -111,9 +111,9 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
               </table>
             </div>
 
-            <div class="legend" style="margin-top:10px;">
+            <div class="legend mt-12">
               <button id="addEvaluationItem" class="btn btn-secondary btn-small" type="button">Add Item</button>
-              <span class="muted" style="margin-left:12px;">Attendance can be included to auto-calculate from attendance records.</span>
+              <span class="muted" style="margin-left:8px;">Attendance can be included to auto-calculate from attendance records.</span>
             </div>
 
             <div id="evaluationConfigStatus" class="status" role="status" aria-live="polite"></div>
@@ -121,19 +121,19 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
         <?php } ?>
 
         <section class="tab-panel" data-tab-panel="grading" <?php echo $canConfigure ? 'hidden' : ''; ?>>
-          <div class="panel-title-row" style="margin:14px 0 8px;">
-            <h2 style="margin:0;">Student Grades</h2>
+          <div class="card-header mt-12">
+            <h2>Student Grades</h2>
             <button id="saveEvaluationGrades" class="btn btn-small" type="button">Save Grades</button>
           </div>
 
-          <div class="muted" style="margin-bottom:10px;">Attendance is calculated automatically from the Attendance page. Each grade must be between 0 and the assigned mark.</div>
+          <p class="muted mb-8">Attendance is calculated automatically from the Attendance page. Each grade must be between 0 and the assigned mark.</p>
 
-          <div class="field" style="max-width:320px; margin-bottom:12px;">
+          <div class="field mb-12" style="max-width:320px;">
             <label for="evaluationStudentSearch">Search</label>
             <input id="evaluationStudentSearch" type="text" placeholder="Type a student name…" />
           </div>
 
-          <div class="schedule-wrap" style="max-height:60vh; overflow:auto;">
+          <div class="schedule-wrap table-wrap" style="max-height:60vh;">
             <table class="schedule-grid eval-grades-table" aria-label="Evaluation grades list">
               <thead id="evaluationGradesHead"></thead>
               <tbody id="evaluationGradesBody"></tbody>
@@ -154,7 +154,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
         </div>
         <div class="modal-body">
           <div class="muted">Enter a new category name.</div>
-          <div class="field" style="margin-top:12px;">
+          <div class="field mt-12">
             <label for="evaluationCategoryName">Category Name</label>
             <input id="evaluationCategoryName" type="text" placeholder="e.g. Practical" />
           </div>
@@ -174,7 +174,7 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
         </div>
         <div class="modal-body">
           <div class="muted" id="evaluationSplitMeta">Choose how many items to split into.</div>
-          <div class="field" style="margin-top:12px;">
+          <div class="field mt-12">
             <label for="evaluationSplitCount">Number of splits</label>
             <input id="evaluationSplitCount" type="number" min="2" max="10" step="1" value="2" />
           </div>

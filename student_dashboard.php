@@ -16,7 +16,7 @@ auth_require_roles(['admin','management','student']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Dashboard</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('student_dashboard.php'); ?>
@@ -82,9 +82,9 @@ auth_require_roles(['admin','management','student']);
     </section>
 
     <section class="card" id="studentDashboardTable">
-      <div class="schedule-header" style="align-items:flex-end;">
-        <div class="controls" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="min-width:180px;">
+      <div class="schedule-header">
+        <div class="filter-bar">
+          <div class="field">
             <label for="studentGradesYear">Year</label>
             <select id="studentGradesYear">
               <option value="">All</option>
@@ -93,7 +93,7 @@ auth_require_roles(['admin','management','student']);
               <option value="3">Year 3</option>
             </select>
           </div>
-          <div class="field" style="min-width:160px;">
+          <div class="field">
             <label for="studentGradesSemester">Semester</label>
             <select id="studentGradesSemester">
               <option value="">All</option>
@@ -101,13 +101,13 @@ auth_require_roles(['admin','management','student']);
               <option value="2">Sem 2</option>
             </select>
           </div>
-          <div class="field" id="studentGradesAdminSelect" style="min-width:280px; display:none;">
+          <div class="field" id="studentGradesAdminSelect" style="display:none;">
             <label for="studentGradesStudentSelect">Student</label>
             <select id="studentGradesStudentSelect">
               <option value="">All students</option>
             </select>
           </div>
-          <div class="field" id="studentGradesCourseSelectWrap" style="min-width:280px; display:none;">
+          <div class="field" id="studentGradesCourseSelectWrap" style="display:none;">
             <label for="studentGradesCourseSelect">Course</label>
             <select id="studentGradesCourseSelect">
               <option value="">All courses</option>
@@ -115,7 +115,7 @@ auth_require_roles(['admin','management','student']);
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <button id="studentGradesRefresh" class="btn btn-secondary btn-small" type="button">Refresh</button>
           <div id="studentGradesStatus" class="status" role="status" aria-live="polite"></div>
         </div>

@@ -15,7 +15,7 @@ $u = auth_current_user();
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Profile</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php
@@ -30,7 +30,7 @@ $u = auth_current_user();
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+      <div class="card-header">
         <div>
           <h2 style="margin:0;">Change Password</h2>
           <div class="muted" style="margin-top:4px;">Signed in as <strong><?php echo htmlspecialchars($u['username'] ?? '', ENT_QUOTES); ?></strong> (<?php echo htmlspecialchars($u['role'] ?? '', ENT_QUOTES); ?>)</div>

@@ -24,7 +24,7 @@ if ($role === 'teacher') {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Availability</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="availability-view">
   <?php render_portal_navbar('availability.php'); ?>
@@ -36,16 +36,16 @@ if ($role === 'teacher') {
     </header>
 
     <section class="card">
-      <div class="schedule-header" style="align-items:flex-end;">
-        <div class="controls" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="min-width:220px;">
+      <div class="schedule-header">
+        <div class="filter-bar">
+          <div class="field">
             <label for="availabilityWeekSelect">Week</label>
             <select id="availabilityWeekSelect">
               <option value="">Loading…</option>
             </select>
           </div>
 
-          <div class="field" style="min-width:220px;">
+          <div class="field">
             <label for="availabilityDoctorSelect">Doctor</label>
             <select id="availabilityDoctorSelect">
               <option value="">Loading…</option>
@@ -53,7 +53,7 @@ if ($role === 'teacher') {
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <div id="availabilityStatus" class="status" role="status" aria-live="polite"></div>
         </div>
       </div>

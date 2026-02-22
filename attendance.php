@@ -19,7 +19,7 @@ auth_require_login();
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Attendance</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('attendance.php'); ?>
@@ -31,16 +31,16 @@ auth_require_login();
     </header>
 
     <section class="card">
-      <div class="schedule-header" style="align-items:flex-end;">
-        <div class="controls" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="min-width:200px;">
+      <div class="schedule-header">
+        <div class="filter-bar">
+          <div class="field">
             <label for="attendanceWeekSelect">Start Week</label>
             <select id="attendanceWeekSelect">
               <option value="">Loading…</option>
             </select>
           </div>
 
-          <div class="field" style="min-width:260px;">
+          <div class="field">
             <label for="attendanceCourseSelect">Course (for export)</label>
             <select id="attendanceCourseSelect">
               <option value="">Loading…</option>
@@ -48,7 +48,7 @@ auth_require_login();
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <button id="exportAttendanceXls" class="btn btn-secondary btn-small" type="button">Export Excel</button>
           <button id="refreshAttendanceGrid" class="btn btn-secondary btn-small" type="button">Refresh</button>
           <div id="attendanceStatus" class="status" role="status" aria-live="polite"></div>
@@ -126,7 +126,7 @@ auth_require_login();
 
   <script src="js/core.js?v=20260121"></script>
   <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/attendance.js?v=20260121"></script>
+  <script src="js/attendance.js?v=20260222"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAttendancePage?.();

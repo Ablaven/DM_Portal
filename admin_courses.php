@@ -15,7 +15,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Course Management</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('admin_courses.php'); ?>
@@ -27,8 +27,10 @@ auth_require_roles(['admin','management']);
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom: 10px;">
-        <h2 style="margin:0;">Add New Course</h2>
+      <div class="card-header">
+        <div>
+          <h2>Add New Course</h2>
+        </div>
         <button id="refreshCoursesAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
       </div>
 
@@ -126,33 +128,35 @@ auth_require_roles(['admin','management']);
       </form>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="panel-title-row" style="margin-bottom: 10px;">
+    <section class="card mt-16">
+      <div class="card-header">
         <div>
-          <h2 style="margin:0;">All Courses</h2>
-          <div class="muted" style="margin-top:4px;">Edit, reassign doctors, or delete courses (cannot delete if used in schedules).</div>
+          <h2>All Courses</h2>
+          <p class="card-subtitle">Edit, reassign doctors, or delete courses (cannot delete if used in schedules).</p>
         </div>
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="field" style="margin:0; min-width:140px;">
-            <label for="coursesYearFilter" class="muted" style="font-size:0.85rem;">Academic Year</label>
-            <select id="coursesYearFilter" class="navlink" style="padding:7px 10px;">
-              <option value="">All</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-            </select>
-          </div>
-          <div class="field" style="margin:0; min-width:140px;">
-            <label for="coursesSemesterFilter" class="muted" style="font-size:0.85rem;">Semester</label>
-            <select id="coursesSemesterFilter" class="navlink" style="padding:7px 10px;">
-              <option value="">All</option>
-              <option value="1">Sem 1</option>
-              <option value="2">Sem 2</option>
-            </select>
-          </div>
-          <div class="field" style="margin:0; min-width: 260px;">
-            <label for="courseSearch" class="muted" style="font-size:0.85rem;">Search</label>
-            <input id="courseSearch" type="text" placeholder="Search by name/program…" />
+        <div class="page-actions">
+          <div class="filter-bar">
+            <div class="field">
+              <label for="coursesYearFilter">Academic Year</label>
+              <select id="coursesYearFilter" class="navlink">
+                <option value="">All</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="coursesSemesterFilter">Semester</label>
+              <select id="coursesSemesterFilter" class="navlink">
+                <option value="">All</option>
+                <option value="1">Sem 1</option>
+                <option value="2">Sem 2</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="courseSearch">Search</label>
+              <input id="courseSearch" type="text" placeholder="Search by name/program…" />
+            </div>
           </div>
         </div>
       </div>
@@ -170,16 +174,16 @@ auth_require_roles(['admin','management']);
     <div class="modal-backdrop" data-close="1"></div>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="hoursSplitTitle">
       <div class="modal-header">
-        <h3 id="hoursSplitTitle" style="margin:0;">Split Course Hours</h3>
+        <h3 id="hoursSplitTitle">Split Course Hours</h3>
         <button class="icon-btn" type="button" data-close="1" aria-label="Close">×</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="hoursSplitCourseId" value="" />
-        <div class="muted" id="hoursSplitCourseMeta" style="margin-bottom:10px;"></div>
+        <div class="muted mb-12" id="hoursSplitCourseMeta"></div>
         <div id="hoursSplitRows" class="grid-2" style="gap:10px;"></div>
         <div id="hoursSplitStatus" class="status" role="status" aria-live="polite"></div>
       </div>
-      <div class="modal-actions" style="display:flex; justify-content:flex-end; gap:10px;">
+      <div class="modal-actions">
         <button class="btn btn-secondary" type="button" data-close="1">Cancel</button>
         <button class="btn" id="hoursSplitSave" type="button">Save Split</button>
       </div>

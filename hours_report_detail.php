@@ -18,7 +18,7 @@ $isTeacher = $role === 'teacher';
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hours Report</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('hours_report.php'); ?>
@@ -30,23 +30,23 @@ $isTeacher = $role === 'teacher';
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+      <div class="card-header" style="margin-bottom:12px;">
         <div>
-          <h2 style="margin:0;">Details</h2>
+          <h2>Details</h2>
         </div>
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="field" style="margin:0; min-width:140px;">
-            <label class="muted" style="font-size:0.85rem;" for="hoursReportYearFilter">Academic Year</label>
-            <select id="hoursReportYearFilter" class="navlink" style="padding:7px 10px;">
+        <div class="filter-bar">
+          <div class="field">
+            <label for="hoursReportYearFilter">Academic Year</label>
+            <select id="hoursReportYearFilter" class="navlink">
               <option value="">All</option>
               <option value="1">Year 1</option>
               <option value="2">Year 2</option>
               <option value="3">Year 3</option>
             </select>
           </div>
-          <div class="field" style="margin:0; min-width:140px;">
-            <label class="muted" style="font-size:0.85rem;" for="hoursReportSemesterFilter">Semester</label>
-            <select id="hoursReportSemesterFilter" class="navlink" style="padding:7px 10px;">
+          <div class="field">
+            <label for="hoursReportSemesterFilter">Semester</label>
+            <select id="hoursReportSemesterFilter" class="navlink">
               <option value="">All</option>
               <option value="1">Sem 1</option>
               <option value="2">Sem 2</option>

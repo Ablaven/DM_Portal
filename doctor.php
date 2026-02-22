@@ -26,7 +26,7 @@ if ($doctorId > 0) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Doctor</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="doctor-view">
   <?php render_portal_navbar('doctor.php'); ?>
@@ -40,19 +40,19 @@ if ($doctorId > 0) {
     <section class="card">
       <div class="schedule-header">
         <div class="muted">Week starts Sunday • Each slot = 1 hour 30 minutes</div>
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-          <select id="doctorYearFilter" class="navlink" style="padding:7px 10px;">
+        <div class="page-actions">
+          <select id="doctorYearFilter" class="navlink">
             <option value="">All Years</option>
             <option value="1">Year 1</option>
             <option value="2">Year 2</option>
             <option value="3">Year 3</option>
           </select>
-          <select id="doctorSemesterFilter" class="navlink" style="padding:7px 10px;">
+          <select id="doctorSemesterFilter" class="navlink">
             <option value="">All Sem</option>
             <option value="1">Sem 1</option>
             <option value="2">Sem 2</option>
           </select>
-          <select id="doctorWeekSelect" class="navlink" style="padding:7px 10px;">
+          <select id="doctorWeekSelect" class="navlink">
             <option value="">Loading…</option>
           </select>
           <button id="exportDoctorXls" class="btn btn-secondary btn-small" type="button">Export Excel (.xlsx)</button>
@@ -88,8 +88,8 @@ if ($doctorId > 0) {
       </div>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="panel-title-row" style="margin-bottom:8px;">
+    <section class="card mt-16">
+      <div class="card-header">
         <h2 style="margin:0;">Doctor Courses</h2>
         <div id="doctorCoursesStatus" class="status" role="status" aria-live="polite"></div>
       </div>

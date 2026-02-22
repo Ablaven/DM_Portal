@@ -15,7 +15,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Doctor Management</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('admin_doctors.php'); ?>
@@ -27,8 +27,10 @@ auth_require_roles(['admin','management']);
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom: 10px;">
-        <h2 style="margin:0;">Add Doctor</h2>
+      <div class="card-header">
+        <div>
+          <h2>Add Doctor</h2>
+        </div>
         <button id="refreshDoctorsAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
       </div>
 
@@ -92,24 +94,24 @@ auth_require_roles(['admin','management']);
       </form>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="panel-title-row" style="margin-bottom:10px; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+    <section class="card mt-16">
+      <div class="card-header">
         <div>
-          <h2 style="margin:0;">All Doctors</h2>
-          <div class="muted" style="margin-top:4px;">Edit details or delete a doctor (deletion may be blocked if scheduled).</div>
+          <h2>All Doctors</h2>
+          <p class="card-subtitle">Edit details or delete a doctor (deletion may be blocked if scheduled).</p>
         </div>
-
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="field" style="margin:0; min-width:220px;">
-            <label for="doctorsWeekSelect" class="muted" style="font-size:0.85rem;">Week for export</label>
-            <select id="doctorsWeekSelect" class="navlink" style="padding:8px 10px;">
-              <option value="">Loading…</option>
-            </select>
-          </div>
-
-          <div class="field" style="margin:0; min-width:260px;">
-            <label for="doctorSearch" class="muted" style="font-size:0.85rem;">Search</label>
-            <input id="doctorSearch" type="text" placeholder="Search by name/email…" />
+        <div class="page-actions">
+          <div class="filter-bar">
+            <div class="field">
+              <label for="doctorsWeekSelect">Week for export</label>
+              <select id="doctorsWeekSelect" class="navlink">
+                <option value="">Loading…</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="doctorSearch">Search</label>
+              <input id="doctorSearch" type="text" placeholder="Search by name/email…" />
+            </div>
           </div>
         </div>
       </div>

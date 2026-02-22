@@ -18,7 +18,7 @@ $isTeacher = $role === 'teacher';
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Attendance Report</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('hours_report.php'); ?>
@@ -30,14 +30,14 @@ $isTeacher = $role === 'teacher';
     </header>
 
     <section class="card report-detail-card">
-      <div class="report-detail-header">
+      <div class="card-header">
         <div>
           <h2>Overview</h2>
           <p class="muted"><?php echo $isTeacher ? 'Scoped to my courses.' : 'All courses and years.'; ?></p>
         </div>
       </div>
 
-      <div class="report-filters report-filters-grid">
+      <div class="report-filters report-filters-grid filter-bar" style="margin-top:12px;">
         <div class="field">
           <label for="attendanceReportsYear">Year</label>
           <select id="attendanceReportsYear">
@@ -53,7 +53,7 @@ $isTeacher = $role === 'teacher';
             <option value="">All courses</option>
           </select>
         </div>
-        <div class="report-actions">
+        <div class="page-actions">
           <button id="attendanceReportsRefresh" class="btn btn-secondary" type="button">Refresh</button>
           <button id="exportAttendanceReportXls" class="btn btn-secondary" type="button">Export Excel</button>
         </div>

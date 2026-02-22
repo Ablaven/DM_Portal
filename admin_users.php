@@ -14,8 +14,8 @@ auth_require_roles(['admin']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>User Accounts</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
-  <link rel="stylesheet" href="css/admin_users.css?v=20260105" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/admin_users.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('admin_users.php'); ?>
@@ -27,8 +27,10 @@ auth_require_roles(['admin']);
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom:10px;">
-        <h2 style="margin:0;">Create User</h2>
+      <div class="card-header">
+        <div>
+          <h2>Create User</h2>
+        </div>
         <button id="refreshUsers" class="btn btn-small btn-secondary" type="button">Refresh</button>
       </div>
 
@@ -99,22 +101,22 @@ auth_require_roles(['admin']);
       </form>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="panel-title-row" style="margin-bottom:10px; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+    <section class="card mt-16">
+      <div class="card-header">
         <div>
-          <h2 style="margin:0;">Existing Users</h2>
-          <div class="muted" style="margin-top:4px;">Search by username, role, doctor_id, student_id.</div>
+          <h2>Existing Users</h2>
+          <p class="card-subtitle">Search by username, role, doctor_id, student_id.</p>
         </div>
-
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
-          <div class="field" style="margin:0; min-width:260px;">
-            <label for="userSearch" class="muted" style="font-size:0.85rem;">Search</label>
-            <input id="userSearch" type="text" placeholder="Search users…" />
+        <div class="page-actions">
+          <div class="filter-bar">
+            <div class="field">
+              <label for="userSearch">Search</label>
+              <input id="userSearch" type="text" placeholder="Search users…" />
+            </div>
           </div>
         </div>
-
-        <div id="usersStatus" class="status" role="status" aria-live="polite"></div>
       </div>
+      <div id="usersStatus" class="status" role="status" aria-live="polite"></div>
       <div id="usersList" class="courses-list"><div class="muted">Loading…</div></div>
     </section>
 

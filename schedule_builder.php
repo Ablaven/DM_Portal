@@ -16,7 +16,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Doctor Schedule Builder</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="dashboard">
   <?php render_portal_navbar('schedule_builder.php'); ?>
@@ -40,19 +40,19 @@ auth_require_roles(['admin','management']);
         <div class="main-actions">
           <div class="weekbar">
             <label class="muted" for="weekSelect" style="font-size:0.9rem;">Week</label>
-            <select id="weekSelect" class="navlink" style="padding:8px 10px;">
+            <select id="weekSelect" class="navlink">
               <option value="">Loading…</option>
             </select>
-            <input id="weekStartDate" class="navlink" style="padding:8px 10px;" type="date" />
-            <select id="weekTypeSelect" class="navlink" style="padding:8px 10px;">
+            <input id="weekStartDate" class="navlink" type="date" />
+            <select id="weekTypeSelect" class="navlink">
               <option value="ACTIVE">Active Week</option>
               <option value="PREP">Prep Week</option>
               <option value="RAMADAN">Ramadan Week</option>
             </select>
             <button id="startWeekBtn" class="btn btn-secondary btn-small" type="button">Start</button>
             <button id="stopWeekBtn" class="btn btn-secondary btn-small" type="button">Stop</button>
-            <div style="display:flex; gap:8px; align-items:center;">
-              <select id="weekTypeUpdate" class="navlink" style="padding:8px 10px;">
+            <div class="weekbar-type-update">
+              <select id="weekTypeUpdate" class="navlink">
                 <option value="">Set selected week...</option>
                 <option value="ACTIVE">Make Active</option>
                 <option value="PREP">Make Prep</option>
@@ -61,7 +61,7 @@ auth_require_roles(['admin','management']);
               <button id="updateWeekTypeBtn" class="btn btn-secondary btn-small" type="button">Apply</button>
             </div>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div class="page-actions">
             <button id="exportDoctorXls" class="btn btn-secondary" type="button">Export Doctor (.xlsx)</button>
             <button id="exportDoctorEmail" class="icon-btn" type="button" title="Email doctor schedule" aria-label="Email doctor schedule" aria-disabled="true">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
@@ -75,26 +75,26 @@ auth_require_roles(['admin','management']);
         </div>
       </header>
 
-      <div class="panel" style="margin-bottom:12px; padding:12px 16px;">
-        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="margin:0; min-width:220px;">
+      <div class="panel" style="margin-bottom:12px;">
+        <div class="filter-bar">
+          <div class="field">
             <label class="muted" for="doctorSelect" style="font-size:0.85rem;">Doctor</label>
-            <select id="doctorSelect" class="navlink" style="padding:8px 10px;">
+            <select id="doctorSelect" class="navlink">
               <option value="">Loading doctors…</option>
             </select>
           </div>
-          <div class="field" style="margin:0; min-width:140px;">
+          <div class="field">
             <label class="muted" style="font-size:0.85rem;" for="builderYearFilterMain">Academic Year</label>
-            <select id="builderYearFilterMain" class="navlink" style="padding:7px 10px;">
+            <select id="builderYearFilterMain" class="navlink">
               <option value="">All Years</option>
               <option value="1">Year 1</option>
               <option value="2">Year 2</option>
               <option value="3">Year 3</option>
             </select>
           </div>
-          <div class="field" style="margin:0; min-width:140px;">
+          <div class="field">
             <label class="muted" style="font-size:0.85rem;" for="builderSemesterFilterMain">Semester</label>
-            <select id="builderSemesterFilterMain" class="navlink" style="padding:7px 10px;">
+            <select id="builderSemesterFilterMain" class="navlink">
               <option value="">All Sem</option>
               <option value="1">Sem 1</option>
               <option value="2">Sem 2</option>
@@ -105,24 +105,15 @@ auth_require_roles(['admin','management']);
       </div>
 
       <section class="panel">
-        <div class="schedule-header" style="margin-bottom: 12px;">
+        <div class="card-header" style="margin-bottom:12px; align-items:flex-start;">
           <div>
             <div class="muted">Doctor unavailability (blocks specific dates/times):</div>
             <div class="muted" style="font-size:0.85rem; margin-top:4px;">Use this for sick leave / conferences. It will prevent scheduling into blocked slots.</div>
           </div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; justify-content:flex-end;">
-            <div class="field" style="margin:0;">
-              <label class="muted" style="font-size:0.85rem;" for="unavailStart">Start</label>
-              <input id="unavailStart" class="navlink" style="padding:8px 10px;" type="datetime-local" />
-            </div>
-            <div class="field" style="margin:0;">
-              <label class="muted" style="font-size:0.85rem;" for="unavailEnd">End</label>
-              <input id="unavailEnd" class="navlink" style="padding:8px 10px;" type="datetime-local" />
-            </div>
-            <div class="field" style="margin:0;">
-              <label class="muted" style="font-size:0.85rem;" for="unavailReason">Reason</label>
-              <input id="unavailReason" class="navlink" style="padding:8px 10px;" type="text" placeholder="optional" />
-            </div>
+          <div class="filter-bar" style="justify-content:flex-end;">
+            <div class="field"><label class="muted" style="font-size:0.85rem;" for="unavailStart">Start</label><input id="unavailStart" class="navlink" type="datetime-local" /></div>
+            <div class="field"><label class="muted" style="font-size:0.85rem;" for="unavailEnd">End</label><input id="unavailEnd" class="navlink" type="datetime-local" /></div>
+            <div class="field"><label class="muted" style="font-size:0.85rem;" for="unavailReason">Reason</label><input id="unavailReason" class="navlink" type="text" placeholder="optional" /></div>
             <button id="addUnavailBtn" class="btn btn-secondary btn-small" type="button">Add</button>
           </div>
         </div>
@@ -134,17 +125,17 @@ auth_require_roles(['admin','management']);
       </section>
 
       <section class="panel">
-        <div class="schedule-header" style="margin-bottom: 12px;">
+        <div class="card-header" style="margin-bottom:12px;">
           <div class="muted">Cancel a day for the selected doctor (this week):</div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;">
-            <select id="cancelDaySelect" class="navlink" style="padding:8px 10px;">
+          <div class="page-actions">
+            <select id="cancelDaySelect" class="navlink">
               <option value="Sun">Sunday</option>
               <option value="Mon">Monday</option>
               <option value="Tue">Tuesday</option>
               <option value="Wed">Wednesday</option>
               <option value="Thu">Thursday</option>
             </select>
-            <input id="cancelReason" class="navlink" style="padding:8px 10px;" type="text" placeholder="Reason (optional)" />
+            <input id="cancelReason" class="navlink" type="text" placeholder="Reason (optional)" />
             <button id="cancelDayBtn" class="btn btn-secondary btn-small" type="button">Cancel Day</button>
             <button id="uncancelDayBtn" class="btn btn-secondary btn-small" type="button">Undo</button>
           </div>
@@ -156,30 +147,10 @@ auth_require_roles(['admin','management']);
       <section class="panel">
         <div class="schedule-header">
           <div id="scheduleMetaHint" class="muted">Week starts Sunday • Each slot = 1 hour 30 minutes</div>
-          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <div class="field" style="margin:0; min-width:180px;">
-              <label class="muted" style="font-size:0.85rem;" for="studentProgramSelect">Student Program</label>
-              <select id="studentProgramSelect" class="navlink" style="padding:7px 10px;">
-                <option value="">Select program</option>
-              </select>
-            </div>
-            <div class="field" style="margin:0; min-width:140px;">
-              <label class="muted" style="font-size:0.85rem;" for="studentYearSelect">Student Year</label>
-              <select id="studentYearSelect" class="navlink" style="padding:7px 10px;">
-                <option value="">Year</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-              </select>
-            </div>
-            <div class="field" style="margin:0; min-width:140px;">
-              <label class="muted" style="font-size:0.85rem;" for="studentSemesterSelect">Student Sem</label>
-              <select id="studentSemesterSelect" class="navlink" style="padding:7px 10px;">
-                <option value="">Sem</option>
-                <option value="1">Sem 1</option>
-                <option value="2">Sem 2</option>
-              </select>
-            </div>
+          <div class="page-actions">
+            <div class="field" style="margin:0;"><label class="muted" style="font-size:0.85rem;" for="studentProgramSelect">Student Program</label><select id="studentProgramSelect" class="navlink"><option value="">Select program</option></select></div>
+            <div class="field" style="margin:0;"><label class="muted" style="font-size:0.85rem;" for="studentYearSelect">Student Year</label><select id="studentYearSelect" class="navlink"><option value="">Year</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option></select></div>
+            <div class="field" style="margin:0;"><label class="muted" style="font-size:0.85rem;" for="studentSemesterSelect">Student Sem</label><select id="studentSemesterSelect" class="navlink"><option value="">Sem</option><option value="1">Sem 1</option><option value="2">Sem 2</option></select></div>
             <button id="toggleStudentSchedule" class="btn btn-secondary btn-small" type="button">Show Student Schedule</button>
             <div id="scheduleStatus" class="status" role="status" aria-live="polite"></div>
           </div>
@@ -294,7 +265,7 @@ auth_require_roles(['admin','management']);
           <small class="hint">Adds extra minutes to the deducted course hours (slot base stays 1h 30m).</small>
         </div>
 
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin:12px 0;" />
+        <hr class="section-divider" />
 
         <div class="field">
           <label for="modal_slot_cancel_reason">Slot cancellation reason (optional)</label>
@@ -306,7 +277,7 @@ auth_require_roles(['admin','management']);
         <div id="modalStatus" class="status" role="status" aria-live="polite"></div>
       </div>
 
-      <div class="modal-actions" style="flex-wrap:wrap;">
+      <div class="modal-actions">
         <button id="modalSave" class="btn" type="button">Save</button>
         <button id="modalRemove" class="btn btn-secondary" type="button">Remove</button>
         <button id="modalCancelSlot" class="btn btn-secondary" type="button">Cancel Slot</button>

@@ -28,23 +28,17 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="course-dashboard">
   <?php render_portal_brand_header('index.php'); ?>
 
-  <main class="container container-top container-auth">
-    <header class="page-header">
-      <h1>Login</h1>
-      <p class="subtitle">Sign in to access your pages.</p>
-    </header>
-
+  <main>
     <?php if ($usersCount === 0): ?>
-      <section class="card">
-        <header class="page-header" style="margin-top:0;">
-          <h2 style="margin:0;">Create First Admin</h2>
-          <p class="subtitle">This appears only once when there are no users.</p>
-        </header>
+    <div class="auth-wrap" style="flex-direction:column; gap:16px;">
+      <div class="auth-card">
+        <h1>Create First Admin</h1>
+        <p class="subtitle">This appears only once when there are no users.</p>
 
         <form id="firstAdminForm" class="form" autocomplete="off">
           <div class="grid-2">
@@ -75,29 +69,59 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
 
           <div id="firstAdminStatus" class="status" role="status" aria-live="polite"></div>
         </form>
-      </section>
+      </div>
+
+      <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="subtitle">Sign in to the Digital Marketing Portal.</p>
+
+        <form id="loginForm" class="form" autocomplete="off">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required autocomplete="current-password" />
+          </div>
+
+          <input type="hidden" id="next" value="<?php echo htmlspecialchars($next, ENT_QUOTES); ?>" />
+
+          <div class="actions">
+            <button class="btn" type="submit">Login</button>
+          </div>
+
+          <div id="loginStatus" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+    <?php else: ?>
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="subtitle">Sign in to the Digital Marketing Portal.</p>
+
+        <form id="loginForm" class="form" autocomplete="off">
+          <div class="field">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required autocomplete="current-password" />
+          </div>
+
+          <input type="hidden" id="next" value="<?php echo htmlspecialchars($next, ENT_QUOTES); ?>" />
+
+          <div class="actions">
+            <button class="btn" type="submit">Login</button>
+          </div>
+
+          <div id="loginStatus" class="status" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
     <?php endif; ?>
-
-    <section class="card">
-      <form id="loginForm" class="form" autocomplete="off">
-        <div class="field">
-          <label for="username">Username</label>
-          <input id="username" name="username" type="text" required />
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" required autocomplete="current-password" />
-        </div>
-
-        <input type="hidden" id="next" value="<?php echo htmlspecialchars($next, ENT_QUOTES); ?>" />
-
-        <div class="actions">
-          <button class="btn" type="submit">Login</button>
-        </div>
-
-        <div id="loginStatus" class="status" role="status" aria-live="polite"></div>
-      </form>
-    </section>
   </main>
 
   <script>

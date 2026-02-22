@@ -15,7 +15,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Management</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('admin_students.php'); ?>
@@ -27,7 +27,7 @@ auth_require_roles(['admin','management']);
     </header>
 
     <section class="card">
-      <div class="panel-title-row" style="margin-bottom: 10px;">
+      <div class="card-header">
         <h2 style="margin:0;">Add Student</h2>
         <button id="refreshStudentsAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
       </div>
@@ -81,13 +81,13 @@ auth_require_roles(['admin','management']);
     </section>
 
     <section class="card" style="margin-top:14px;">
-      <div class="panel-title-row" style="margin-bottom:10px; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+      <div class="card-header">
         <div>
           <h2 style="margin:0;">All Students</h2>
           <div class="muted" style="margin-top:4px;">Use the Academic Year filter to narrow the list.</div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <div class="field" style="margin:0; min-width:160px;">
             <label for="studentsYearFilter" class="muted" style="font-size:0.85rem;">Academic Year</label>
             <select id="studentsYearFilter" class="navlink" style="padding:7px 10px;">

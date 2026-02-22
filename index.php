@@ -15,7 +15,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="course-dashboard">
   <?php render_portal_navbar('index.php'); ?>
@@ -30,31 +30,31 @@ auth_require_roles(['admin','management']);
       <div class="easter-mini" aria-hidden="false">
         <input id="easterEggInput" type="text" maxlength="3" placeholder="700" />
       </div>
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+      <div class="card-header">
         <div>
-          <h2 style="margin:0;">Dashboard</h2>
-          <div class="muted" style="margin-top:4px;">Use the filters on the right to narrow results.</div>
+          <h2>Dashboard</h2>
+          <p class="card-subtitle">Use the filters on the right to narrow results.</p>
         </div>
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; justify-content:flex-end;">
-            <div class="field" style="margin:0; min-width:140px;">
-              <label class="muted" style="font-size:0.85rem;" for="dashboardYearFilter">Academic Year</label>
-              <select id="dashboardYearFilter" class="navlink" style="padding:7px 10px;">
-                <option value="">All</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-              </select>
-            </div>
-            <div class="field" style="margin:0; min-width:140px;">
-              <label class="muted" style="font-size:0.85rem;" for="dashboardSemesterFilter">Semester</label>
-              <select id="dashboardSemesterFilter" class="navlink" style="padding:7px 10px;">
-                <option value="">All</option>
-                <option value="1">Sem 1</option>
-                <option value="2">Sem 2</option>
-              </select>
-            </div>
-            <button id="refreshCourseDashboard" class="btn btn-secondary" type="button">Refresh</button>
+        <div class="page-actions">
+          <div class="field" style="margin:0;">
+            <label for="dashboardYearFilter">Academic Year</label>
+            <select id="dashboardYearFilter" class="navlink">
+              <option value="">All</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
           </div>
+          <div class="field" style="margin:0;">
+            <label for="dashboardSemesterFilter">Semester</label>
+            <select id="dashboardSemesterFilter" class="navlink">
+              <option value="">All</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+            </select>
+          </div>
+          <button id="refreshCourseDashboard" class="btn btn-secondary" type="button">Refresh</button>
+        </div>
       </div>
 
       <div id="courseDashboardStatus" class="status" role="status" aria-live="polite"></div>
@@ -121,7 +121,7 @@ auth_require_roles(['admin','management']);
         </div>
       </div>
 
-      <h3 style="margin-top:18px;">Details</h3>
+      <h3 class="mt-16">Details</h3>
       <div id="courseDashboardList" class="course-progress-list" aria-live="polite"></div>
     </section>
 

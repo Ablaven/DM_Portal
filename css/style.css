@@ -49,52 +49,68 @@
 }
 
 html[data-theme="light"] {
-  --bg: #dfe8f4;
-  --card: rgba(245, 249, 255, 0.96);
-  --card-border: rgba(18, 24, 40, 0.28);
-  --text: #0f1b2d;
-  --muted: rgba(15, 27, 45, 0.72);
-  --text-strong: #0b1424;
-  --muted-strong: rgba(15, 27, 45, 0.82);
-  --surface-strong: rgba(208, 222, 244, 0.96);
-  --line-strong: rgba(16, 24, 40, 0.36);
+  /* Page background: noticeably darker than cards so white cards stand out */
+  --bg: #a8bcd8;
 
-  --accent: #1c6dff;
-  --accent-rgb: 28, 109, 255;
-  --accent-2: #d7e6ff;
+  /* Cards: pure white — maximum contrast against bg */
+  --card: #ffffff;
+  --card-border: rgba(10, 18, 40, 0.36);
 
-  --danger: #b82f2f;
-  --danger-rgb: 184, 47, 47;
-  --success: #1f9f5f;
-  --success-rgb: 31, 159, 95;
+  /* Text: rich navy — WCAG AA compliant on white */
+  --text: #060f1c;
+  --muted: rgba(6, 15, 30, 0.78);
+  --text-strong: #020810;
+  --muted-strong: rgba(6, 15, 30, 0.90);
+  --surface-strong: rgba(148, 176, 218, 1);
+  --line-strong: rgba(10, 18, 40, 0.38);
 
-  --shadow: 0 18px 46px rgba(12, 18, 32, 0.2);
+  /* Accent: deep blue — AA on white (contrast ≥ 4.5:1) */
+  --accent: #1248c8;
+  --accent-rgb: 18, 72, 200;
+  --accent-2: #a8c4ff;
 
-  --bg-grad-1: rgba(28, 109, 255, 0.18);
-  --bg-grad-2: rgba(98, 170, 255, 0.18);
-  --bg-grad-3: rgba(120, 200, 255, 0.16);
-  --nav-bg: rgba(230, 238, 252, 0.8);
-  --nav-panel-bg: rgba(230, 238, 252, 0.95);
-  --overlay: rgba(12, 20, 36, 0.28);
-  --surface-1: rgba(235, 242, 255, 0.98);
-  --surface-2: rgba(224, 235, 251, 0.94);
-  --surface-3: rgba(215, 228, 247, 0.92);
-  --input-bg: rgba(248, 251, 255, 0.98);
-  --input-border: rgba(16, 24, 40, 0.3);
-  --dropdown-bg: rgba(232, 240, 253, 0.98);
-  --dropdown-border: rgba(16, 24, 40, 0.26);
-  --dashboard-surface: rgba(202, 218, 244, 0.95);
-  --pill-bg: rgba(28, 109, 255, 0.18);
-  --pill-text: #102038;
-  --badge-success-border: rgba(31, 159, 95, 0.32);
-  --badge-success-bg: rgba(31, 159, 95, 0.18);
-  --badge-success-text: rgba(14, 90, 52, 0.92);
-  --scrollbar-thumb: rgba(16, 24, 40, 0.3);
-  --scrollbar-track: rgba(16, 24, 40, 0.12);
-  --slot-empty-title: rgba(15, 27, 45, 0.88);
-  --slot-empty-sub: rgba(15, 27, 45, 0.7);
-  --slot-unavail-bg: rgba(16, 24, 40, 0.08);
-  --slot-unavail-border: rgba(16, 24, 40, 0.26);
+  --danger: #8c1010;
+  --danger-rgb: 140, 16, 16;
+  --success: #0e5232;
+  --success-rgb: 14, 82, 50;
+
+  --shadow: 0 6px 24px rgba(6, 12, 28, 0.18), 0 2px 6px rgba(6, 12, 28, 0.12);
+
+  --bg-grad-1: rgba(18, 72, 200, 0.08);
+  --bg-grad-2: rgba(50, 120, 230, 0.06);
+  --bg-grad-3: rgba(70, 150, 255, 0.04);
+
+  /* Navbar: solid white, clearly separated from page bg */
+  --nav-bg: rgba(255, 255, 255, 0.97);
+  --nav-panel-bg: rgba(255, 255, 255, 1);
+  --overlay: rgba(4, 10, 24, 0.60);
+
+  /* Surfaces inside cards: 3 clearly distinct tiers with more separation */
+  --surface-1: #edf3ff;
+  --surface-2: #d4e3f8;
+  --surface-3: #b8cff0;
+
+  /* Inputs: white bg with clearly visible border */
+  --input-bg: #ffffff;
+  --input-border: rgba(10, 18, 40, 0.44);
+
+  /* Dropdowns */
+  --dropdown-bg: #ffffff;
+  --dropdown-border: rgba(10, 18, 40, 0.36);
+
+  --dashboard-surface: rgba(196, 218, 248, 1);
+  --pill-bg: rgba(18, 72, 200, 0.10);
+  --pill-text: #081840;
+  --badge-success-border: rgba(14, 82, 50, 0.36);
+  --badge-success-bg: rgba(14, 82, 50, 0.10);
+  --badge-success-text: #083a22;
+  --scrollbar-thumb: rgba(10, 18, 40, 0.36);
+  --scrollbar-track: rgba(10, 18, 40, 0.08);
+  --slot-empty-title: rgba(8, 18, 36, 0.70);
+  --slot-empty-sub: rgba(8, 18, 36, 0.48);
+  --slot-unavail-bg: rgba(10, 18, 40, 0.07);
+  --slot-unavail-border: rgba(10, 18, 40, 0.30);
+  --track-dark: rgba(10, 18, 40, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -796,7 +812,7 @@ body.students-view .container {
 }
 
 .card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(var(--accent-rgb), 0.28);
 }
 
 .form {
@@ -1533,7 +1549,8 @@ body.dashboard .layout.layout-single {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
 }
 
 .hours-remaining-name {
@@ -3979,3 +3996,423 @@ body.dashboard .schedule-grid {
   cursor: wait;
   pointer-events: none;
 }
+
+/* ============================================================
+   DIGITAL MARKETING PORTAL — COMPONENT EXTENSIONS
+   Appended additions: layout helpers, tables, stats, alerts,
+   auth, navbar extras, wizard, spacing utilities.
+   ============================================================ */
+
+/* 1. Card header row */
+.card-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.card-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* 3. Card subtitle */
+.card-subtitle {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* 4. Filter bar */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* 5. Filter bar fields */
+.filter-bar .field {
+  margin: 0;
+}
+
+/* 6. Page actions */
+.page-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* 7. Section divider */
+.section-divider {
+  border: 0;
+  border-top: 1px solid var(--card-border);
+  margin: 20px 0;
+}
+
+/* 8. Data table */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead th {
+  text-align: left;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.data-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+html[data-theme='light'] .data-table tbody td {
+  border-bottom: 1px solid rgba(16, 24, 40, 0.1);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(var(--accent-rgb), 0.06);
+}
+
+/* 9. Stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* 10. Stat card */
+.stat-card {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+}
+
+.stat-card-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-card-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+/* 11. Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+
+.empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.empty-state-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+/* 12. Alert */
+.alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.alert-success {
+  border-color: rgba(var(--success-rgb), 0.4);
+  background: rgba(var(--success-rgb), 0.12);
+  color: var(--success);
+}
+
+.alert-error {
+  border-color: rgba(var(--danger-rgb), 0.4);
+  background: rgba(var(--danger-rgb), 0.12);
+  color: var(--danger);
+}
+
+.alert-info {
+  border-color: rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+}
+
+/* 13. Mobile improvements */
+@media (max-width: 640px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .field {
+    width: 100%;
+  }
+
+  .page-actions {
+    justify-content: flex-start;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 14. Login / auth page */
+.auth-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  padding: 24px 16px;
+}
+
+.auth-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 460px;
+  backdrop-filter: blur(22px);
+}
+
+.auth-card h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.auth-card .subtitle {
+  margin: 0 0 24px;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 20px;
+  }
+}
+
+/* 15. Navbar improvements */
+.nav-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 8px 4px 2px;
+  font-weight: 600;
+}
+
+.navlink.navlink-active {
+  border-color: rgba(var(--accent-rgb), 0.9);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+/* ── Admin dropdown: polished grouped menu ──────────────────────────────── */
+#adminNav > .dropdown {
+  width: min(260px, 96vw);
+  padding: 6px;
+}
+
+/* ── Rich dropdown item: icon + label + sub-text ───────────────────────── */
+.dropdown-item-rich {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.15s, color 0.15s;
+}
+.dropdown-item-rich:hover,
+.dropdown-item-rich:focus {
+  background: var(--surface-2);
+  color: var(--accent);
+  outline: none;
+}
+.dropdown-item-rich.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+.ddi-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.dropdown-item-rich:hover .ddi-icon,
+.dropdown-item-rich.active .ddi-icon {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.ddi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.ddi-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ddi-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dropdown-item-rich:hover .ddi-sub,
+.dropdown-item-rich.active .ddi-sub {
+  color: color-mix(in srgb, var(--accent) 70%, var(--muted));
+}
+
+/* Section label: uppercase accent, with divider above (except the first) */
+.dropdown-section-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  padding: 10px 10px 4px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+.dropdown-section-label:not(:first-child) {
+  margin-top: 2px;
+  border-top: 1px solid var(--card-border);
+  padding-top: 10px;
+}
+
+/* Rich dropdown item: icon + label side by side */
+.dropdown-item-rich {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.dropdown-item-rich:hover,
+.dropdown-item-rich.active {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.dropdown-item-rich.active {
+  font-weight: 600;
+}
+.dropdown-item-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: background 0.15s;
+}
+.dropdown-item-rich:hover .dropdown-item-icon,
+.dropdown-item-rich.active .dropdown-item-icon {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.dropdown-item-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* 16. Wizard step fade-in */
+.wiz-step {
+  animation: wizStepIn 180ms ease;
+}
+
+@keyframes wizStepIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Admin indicator dot (shown on Admin dropdown button when on an admin page) */
+.admin-indicator-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 5px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* 17. Spacing utilities */
+.mt-0  { margin-top: 0; }
+.mt-8  { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+.mb-0  { margin-bottom: 0; }
+.mb-8  { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }

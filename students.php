@@ -18,7 +18,7 @@ auth_require_roles(['admin','management','student']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Schedule</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('students.php'); ?>
@@ -30,9 +30,9 @@ auth_require_roles(['admin','management','student']);
     </header>
 
     <section class="card">
-      <div class="schedule-header" style="align-items:flex-end;">
-        <div class="controls" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div class="field" style="min-width:220px;">
+      <div class="schedule-header">
+        <div class="filter-bar">
+          <div class="field">
             <label for="studentProgram">Program</label>
             <select id="studentProgram">
               <option value="Digital Marketing">Digital Marketing</option>
@@ -40,7 +40,7 @@ auth_require_roles(['admin','management','student']);
             </select>
           </div>
 
-          <div class="field" style="min-width:180px;">
+          <div class="field">
             <label for="studentSemester">Semester</label>
             <select id="studentSemester">
               <option value="1">Semester 1</option>
@@ -48,7 +48,7 @@ auth_require_roles(['admin','management','student']);
             </select>
           </div>
 
-          <div class="field" style="min-width:200px;">
+          <div class="field">
             <label for="studentWeekSelect">Week</label>
             <select id="studentWeekSelect">
               <option value="">Loading…</option>
@@ -56,7 +56,7 @@ auth_require_roles(['admin','management','student']);
           </div>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+        <div class="page-actions">
           <button id="exportStudentXls" class="btn btn-secondary btn-small" type="button">Export Excel (.xlsx)</button>
           <?php $u = auth_current_user(); ?>
           <?php if (($u['role'] ?? '') === 'admin' || ($u['role'] ?? '') === 'management') : ?>

@@ -133,7 +133,7 @@
     const status = String(s.attendance_status || "").toUpperCase();
     const isPresent = status === "PRESENT";
     const hasStatus = status === "PRESENT" || status === "ABSENT";
-    const isLocked = !isAdmin && (Boolean(s.attendance_locked) || hasStatus);
+    const isLocked = !isAdmin && Boolean(s.attendance_locked);
 
     // Default is unchecked => Absent
     tr.innerHTML = `
