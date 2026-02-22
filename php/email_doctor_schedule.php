@@ -218,11 +218,11 @@ try {
     foreach ($slots as $slot) {
         $slotLabel = $isRamadanWeek
             ? match ($slot) {
-                1 => '9:00 AM–10:00 AM',
-                2 => '10:10 AM–11:10 AM',
-                3 => '11:20 AM–12:20 PM',
-                4 => '12:30 PM–1:30 PM',
-                5 => '1:40 PM–2:40 PM',
+                1 => '8:30 AM–9:40 AM',
+                2 => '9:45 AM–10:55 AM',
+                3 => '11:00 AM–12:10 PM',
+                4 => '12:10 PM–1:20 PM',
+                5 => '1:20 PM–2:30 PM',
                 default => 'Time',
             }
             : match ($slot) {

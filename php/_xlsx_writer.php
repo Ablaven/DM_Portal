@@ -647,12 +647,19 @@ final class SimpleXlsxWriter
             . '</sheetView></sheetViews>';
 
         // Print/layout polish (landscape + fit to 1 page wide)
+        // fitToPage must be enabled both in sheetPr and pageSetup for Excel/mobile viewers to honour it.
+        $sheetPr = '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>';
+        // defaultRowHeight + customHeight ensure mobile spreadsheet apps (Google Sheets, WPS, etc.)
+        // honour the explicit row heights instead of collapsing them to a tiny default.
+        $sheetFormatPr = '<sheetFormatPr defaultRowHeight="60" customHeight="1" defaultColWidth="12"/>';
         $pageMargins = '<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.3" footer="0.3"/>';
-        $pageSetup = '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>';
+        $pageSetup = '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0" fitToPage="1"/>';
 
         return '<?xml version="1.0" encoding="UTF-8"?>'
             . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            . $sheetPr
             . $sheetViews
+            . $sheetFormatPr
             . $colsXml
             . '<sheetData>' . $rowsXml . '</sheetData>'
             . $mergeXml
