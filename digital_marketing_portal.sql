@@ -1,6 +1,6 @@
 -- Digital Marketing Portal SQL Export
 -- Database: digital_marketing_portal
--- Generated: 2026-02-20 11:59:46 UTC
+-- Generated: 2026-02-22 06:59:41 UTC
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
@@ -1877,7 +1877,7 @@ CREATE TABLE `doctor_schedules` (
   CONSTRAINT `fk_doctor_schedules_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_week` FOREIGN KEY (`week_id`) REFERENCES `weeks` (`week_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=266 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=272 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `doctor_schedules`
 INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_id`, `day_of_week`, `slot_number`, `room_code`, `counts_towards_hours`, `extra_minutes`, `created_at`) VALUES
@@ -2063,19 +2063,19 @@ INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_i
 (250, 6, 1, 45, 'Wed', 3, '127', 1, 0, '2026-02-18 14:05:26'),
 (251, 6, 4, 38, 'Sun', 1, '127', 1, 0, '2026-02-18 14:07:01'),
 (252, 6, 4, 38, 'Sun', 2, '127', 1, 0, '2026-02-18 14:07:13'),
-(253, 6, 4, 38, 'Thu', 4, '127', 1, 0, '2026-02-18 14:07:29'),
-(254, 6, 4, 38, 'Thu', 5, '127', 1, 0, '2026-02-18 14:07:48'),
 (255, 6, 7, 34, 'Wed', 4, '127', 1, 0, '2026-02-18 14:08:37'),
 (256, 6, 7, 34, 'Wed', 5, '127', 1, 0, '2026-02-18 14:08:49'),
 (257, 6, 5, 36, 'Tue', 4, '127', 1, 0, '2026-02-18 14:10:11'),
 (258, 6, 5, 54, 'Tue', 5, '127', 1, 0, '2026-02-18 14:13:11'),
-(259, 6, 4, 84, 'Thu', 1, '129', 1, 0, '2026-02-18 14:19:10'),
-(260, 6, 4, 84, 'Thu', 2, '129', 1, 0, '2026-02-18 14:19:19'),
-(261, 6, 2, 92, 'Thu', 4, '129', 1, 0, '2026-02-18 14:19:54'),
-(262, 6, 2, 92, 'Thu', 5, '129', 1, 0, '2026-02-18 14:20:01'),
 (263, 6, 3, 52, 'Sun', 3, '127', 1, 0, '2026-02-18 20:13:09'),
 (264, 6, 12, 42, 'Thu', 1, '127', 1, 0, '2026-02-18 20:29:43'),
-(265, 6, 12, 42, 'Thu', 3, '127', 1, 0, '2026-02-18 20:29:50');
+(265, 6, 12, 42, 'Thu', 3, '127', 1, 0, '2026-02-18 20:29:50'),
+(266, 6, 4, 84, 'Sun', 4, '129', 1, 0, '2026-02-20 14:25:09'),
+(267, 6, 4, 84, 'Sun', 5, '129', 1, 0, '2026-02-20 14:25:16'),
+(268, 6, 2, 92, 'Sun', 1, '129', 1, 0, '2026-02-20 14:27:19'),
+(269, 6, 2, 92, 'Sun', 2, '129', 1, 0, '2026-02-20 14:27:27'),
+(270, 6, 2, 51, 'Thu', 2, '127', 1, 0, '2026-02-20 21:56:23'),
+(271, 6, 2, 51, 'Thu', 4, '127', 1, 0, '2026-02-20 21:57:05');
 
 -- ----------------------------------------
 -- Table structure for `doctor_slot_cancellations`

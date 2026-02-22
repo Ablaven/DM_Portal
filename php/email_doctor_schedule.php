@@ -54,7 +54,7 @@ try {
     $termId = dmportal_get_term_id_from_request($pdo, $input);
 
     if ($weekId <= 0) {
-        $stmt = $pdo->prepare("SELECT week_id, label, start_date FROM weeks WHERE status='active' AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt = $pdo->prepare("SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
         $stmt->execute([':term_id' => $termId]);
         $wk = $stmt->fetch();
         if (!$wk) {
@@ -65,25 +65,37 @@ try {
         $weekId = (int)$wk['week_id'];
         $weekLabel = (string)$wk['label'];
         $weekStartDate = !empty($wk['start_date']) ? (string)$wk['start_date'] : null;
+        $isRamadanWeek = (int)($wk['is_ramadan'] ?? 0) === 1;
     } else {
-        $wkStmt = $pdo->prepare('SELECT week_id, label, start_date FROM weeks WHERE week_id = :id');
+        $wkStmt = $pdo->prepare('SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE week_id = :id');
         $wkStmt->execute([':id' => $weekId]);
         $wk = $wkStmt->fetch();
         $weekLabel = $wk ? (string)$wk['label'] : ('Week ' . $weekId);
         $weekStartDate = ($wk && !empty($wk['start_date'])) ? (string)$wk['start_date'] : null;
+        $isRamadanWeek = ($wk && (int)($wk['is_ramadan'] ?? 0) === 1);
     }
 
     $days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
     $dayOffsets = ['Sun' => 0, 'Mon' => 1, 'Tue' => 2, 'Wed' => 3, 'Thu' => 4];
     $slots = [1, 2, 3, 4, 5];
 
-    $slotTimes = [
+    $regularSlotTimes = [
         1 => ['08:30:00', '10:00:00'],
         2 => ['10:10:00', '11:30:00'],
         3 => ['11:40:00', '13:00:00'],
         4 => ['13:10:00', '14:40:00'],
         5 => ['14:50:00', '16:20:00'],
     ];
+
+    $ramadanSlotTimes = [
+        1 => ['09:00:00', '10:00:00'],
+        2 => ['10:10:00', '11:10:00'],
+        3 => ['11:20:00', '12:20:00'],
+        4 => ['12:30:00', '13:30:00'],
+        5 => ['13:40:00', '14:40:00'],
+    ];
+
+    $slotTimes = $isRamadanWeek ? $ramadanSlotTimes : $regularSlotTimes;
 
     $dayCancelStmt = $pdo->prepare('SELECT day_of_week, reason FROM doctor_week_cancellations WHERE week_id = :week_id AND doctor_id = :doctor_id');
     $dayCancelStmt->execute([':week_id' => $weekId, ':doctor_id' => $doctorId]);
@@ -204,14 +216,23 @@ try {
     $rowHeights[] = 20;
 
     foreach ($slots as $slot) {
-        $slotLabel = match ($slot) {
-            1 => '8:30 AM–10:00 AM',
-            2 => '10:10 AM–11:30 AM',
-            3 => '11:40 AM–1:00 PM',
-            4 => '1:10 PM–2:40 PM',
-            5 => '2:50 PM–4:20 PM',
-            default => 'Time',
-        };
+        $slotLabel = $isRamadanWeek
+            ? match ($slot) {
+                1 => '9:00 AM–10:00 AM',
+                2 => '10:10 AM–11:10 AM',
+                3 => '11:20 AM–12:20 PM',
+                4 => '12:30 PM–1:30 PM',
+                5 => '1:40 PM–2:40 PM',
+                default => 'Time',
+            }
+            : match ($slot) {
+                1 => '8:30 AM–10:00 AM',
+                2 => '10:10 AM–11:30 AM',
+                3 => '11:40 AM–1:00 PM',
+                4 => '1:10 PM–2:40 PM',
+                5 => '2:50 PM–4:20 PM',
+                default => 'Time',
+            };
 
         $row = [$slotLabel];
         $rowStyles = [0 => $xlsx->styleSlot()];
@@ -276,10 +297,11 @@ try {
     $xlsxBytes = $xlsx->downloadToString($fileName);
     $mailer = new DmportalSmtpMailer();
     $subjectTerm = $termId > 0 ? " (Term {$termId})" : '';
+    $weekTypeLabel = $isRamadanWeek ? 'Ramadan Weekly Schedule' : 'Weekly Schedule';
     $mailer->send(
         $docEmail,
-        'Weekly Schedule' . $subjectTerm,
-        "Dear Dr. " . $docName . ",\n\nPlease find your weekly schedule attached.\n\nBest regards,",
+        $weekTypeLabel . $subjectTerm,
+        "Dear Dr. " . $docName . ",\n\nPlease find your " . ($isRamadanWeek ? 'Ramadan ' : '') . "weekly schedule attached.\n\nBest regards,",
         [[
             'name' => $fileName,
             'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
