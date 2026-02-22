@@ -21,7 +21,7 @@ $isTeacher = $role === 'teacher';
   <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
-  <?php render_portal_navbar('hours_report.php'); ?>
+  <?php render_portal_navbar('attendance_report.php'); ?>
 
   <main class="container container-top report-detail-page">
     <header class="page-header">

@@ -24,6 +24,9 @@ function render_portal_navbar(string $activePage): void
         'admin_users.php',
         'admin_panel.php',
         'hours_report.php',
+        'hours_report_detail.php',
+        'evaluation_reports.php',
+        'attendance_report.php',
         'student_dashboard.php',
     ];
     $adminDropdownActive = in_array($activePage, $adminPages, true);
@@ -120,11 +123,18 @@ function render_portal_navbar(string $activePage): void
         echo '<div class="dropdown-section-label">Reports</div>';
 
         if (auth_can_access_page('hours_report.php')) {
-            $reportsLabel = ($role === 'teacher') ? 'My Reports' : 'Hours Report';
-            $ddItem('hours_report.php', '📊', $reportsLabel, 'Doctor hours & course breakdown', $activePage === 'hours_report.php');
+            $hubLabel = ($role === 'teacher') ? 'My Reports' : 'Reports Hub';
+            $ddItem('hours_report.php', '🗂️', $hubLabel, 'Overview of all report modules', $activePage === 'hours_report.php');
+        }
+        if (auth_can_access_page('hours_report_detail.php')) {
+            $hoursLabel = ($role === 'teacher') ? 'My Hours' : 'Hours Report';
+            $ddItem('hours_report_detail.php', '⏱️', $hoursLabel, 'Doctor hours & course breakdown', $activePage === 'hours_report_detail.php');
         }
         if (auth_can_access_page('evaluation_reports.php')) {
             $ddItem('evaluation_reports.php', '📝', 'Evaluation Reports', 'Grades & assessment summaries', $activePage === 'evaluation_reports.php');
+        }
+        if (auth_can_access_page('attendance_report.php')) {
+            $ddItem('attendance_report.php', '✅', 'Attendance Report', 'Participation rates & history', $activePage === 'attendance_report.php');
         }
         if (auth_can_access_page('student_dashboard.php')) {
             $ddItem('student_dashboard.php', '📈', 'Student Dashboard', 'Per-student performance view', $activePage === 'student_dashboard.php');
