@@ -1569,6 +1569,11 @@ body.dashboard .layout.layout-single {
 
   .schedule-hours-panel {
     position: static;
+    order: 2; /* Push the hours panel below the builder on mobile */
+  }
+
+  .schedule-builder-layout > main {
+    order: 1; /* Builder comes first on mobile */
   }
 }
 
@@ -4173,26 +4178,182 @@ html[data-theme='light'] .data-table tbody td {
 
 /* 13. Mobile improvements */
 @media (max-width: 640px) {
+  /* ── Global: prevent any element from causing horizontal scroll ── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Filter bar: stack vertically */
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .filter-bar .field {
+    flex-wrap: wrap;
     width: 100%;
   }
 
-  .page-actions {
-    justify-content: flex-start;
+  .filter-bar .field,
+  .filter-bar select,
+  .filter-bar input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
+  /* Page actions: wrap and align left */
+  .page-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Card headers: stack vertically */
   .card-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
-  .grid-3 {
+  .card-header .page-actions {
+    width: 100%;
+  }
+
+  /* Grids: single column */
+  .grid-3,
+  .grid-2 {
     grid-template-columns: 1fr;
+  }
+
+  /* ── Tables: scrollable, never overflow ── */
+  .table-wrap,
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  .data-table,
+  table {
+    min-width: 500px; /* allow horizontal scroll instead of squishing */
+  }
+
+  /* ── Schedule builder ── */
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .schedule-header .filter-bar,
+  .schedule-header .page-actions {
+    width: 100%;
+  }
+
+  /* Weekbar: wrap days */
+  .weekbar {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .weekbar-type-update {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .weekbar-type-update select,
+  .weekbar-type-update button {
+    width: 100%;
+  }
+
+  /* Main layout header on schedule builder */
+  .main-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* ── Stat cards & summary cards ── */
+  .stat-cards,
+  .summary-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ── Modals ── */
+  .modal-card {
+    width: calc(100vw - 24px);
+    max-width: 100%;
+    padding: 18px 14px;
+    margin: 12px auto;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* ── Forms inside cards ── */
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-row .field {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* ── Buttons: allow wrapping ── */
+  .btn-row,
+  .actions-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* ── Attendance grid ── */
+  .attendance-grid-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Hours report ── */
+  .hours-detail-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Evaluation ── */
+  .eval-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Student dashboard ── */
+  .student-schedule-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Profile page ── */
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* ── Tabs: scrollable ── */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  /* ── Ensure inputs/selects don't overflow ── */
+  input, select, textarea, button {
+    max-width: 100%;
   }
 }
 
