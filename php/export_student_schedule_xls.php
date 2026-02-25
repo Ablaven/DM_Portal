@@ -31,6 +31,7 @@ try {
     dmportal_ensure_doctor_year_colors_table($pdo);
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+    // $semester is already in scope from $_GET; no need to re-fetch from terms table.
 
     if ($weekId <= 0) {
         $stmt = $pdo->prepare("SELECT week_id, label, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
@@ -105,8 +106,7 @@ try {
 
     $xlsx = new SimpleXlsxWriter();
 
-    $termLabel = $termId > 0 ? " — Term {$termId}" : '';
-    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester}{$termLabel} — {$weekLabel}";
+    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
@@ -195,8 +195,7 @@ try {
         ]
     );
 
-    $termSuffix = $termId > 0 ? " Term {$termId}" : '';
-    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester}{$termSuffix} - {$weekLabel}.xlsx";
+    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester} - {$weekLabel}.xlsx";
     $xlsx->download($fileName);
 } catch (Throwable $e) {
     http_response_code(500);

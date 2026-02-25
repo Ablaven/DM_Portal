@@ -141,7 +141,7 @@ try {
 
     $totalCols = count($header);
     $yearSem = 'Year ' . (string)$course['year_level'] . ((int)$course['semester'] > 0 ? (' / Sem ' . (string)$course['semester']) : '');
-    $yearSem .= $termId > 0 ? (' / Term ' . $termId) : '';
+    // semester is already included in $yearSem from the course row; no raw term ID label needed.
     $academicYear = academic_year_from_date(new DateTimeImmutable('now'));
     $faculty = 'Management';
     $department = 'Digital Marketing';

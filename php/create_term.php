@@ -16,14 +16,18 @@ try {
     auth_require_api_access();
     auth_require_roles(['admin']);
 
-    $label = trim((string)($_POST['label'] ?? ''));
     $semester = (int)($_POST['semester'] ?? 0);
     $startDate = trim((string)($_POST['start_date'] ?? ''));
     $endDate = trim((string)($_POST['end_date'] ?? ''));
 
-    if ($label === '' || !in_array($semester, [1, 2], true)) {
-        bad_request('Label and a valid semester (1 or 2) are required.');
+    if (!in_array($semester, [1, 2], true)) {
+        bad_request('A valid semester (1 or 2) is required.');
     }
+
+    // Auto-generate label from semester number — no free-text label allowed.
+    // This ensures labels are always "Semester 1" or "Semester 2" and never
+    // contain raw term IDs or confusing custom text like "Year X Semester X Term X".
+    $label = 'Semester ' . $semester;
 
     $pdo = get_pdo();
     $termId = dmportal_create_term($pdo, $label, $semester, $startDate !== '' ? $startDate : null, $endDate !== '' ? $endDate : null);

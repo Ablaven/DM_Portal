@@ -76,9 +76,7 @@ try {
     } elseif ($semester > 0) {
         $yearSemLabel = 'All Years / Sem ' . $semester;
     }
-    if ($termId > 0) {
-        $yearSemLabel .= ' / Term ' . $termId;
-    }
+    // semester filter is already reflected in $yearSemLabel above; no raw term ID label needed.
 
     $academicYear = academic_year_from_date(new DateTimeImmutable('now'));
     $faculty = 'Management';

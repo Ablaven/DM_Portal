@@ -196,8 +196,10 @@
     e.preventDefault();
     const form = e.currentTarget;
     const payload = new FormData(form);
-    if (!String(payload.get("label") || "").trim()) {
-      setStatusById("createTermStatus", "Label is required.", "error");
+    // Label is now auto-generated server-side from the semester number.
+    // Only semester number (and optional dates) need to be present.
+    if (!payload.get("semester")) {
+      setStatusById("createTermStatus", "Please select a semester.", "error");
       return;
     }
     try {

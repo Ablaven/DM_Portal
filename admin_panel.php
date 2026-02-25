@@ -179,12 +179,9 @@ $importStatus = $_GET['import_status'] ?? '';
         <!-- Create -->
         <div style="border-top:1px solid var(--card-border); padding-top:16px; margin-bottom:6px;">
           <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">Create a New Semester</h3>
+          <p class="muted" style="margin:0 0 12px; font-size:0.85rem;">The label is auto-generated from the semester number (e.g. "Semester 1" or "Semester 2").</p>
           <form id="termCreateForm">
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-                Label
-                <input name="label" type="text" placeholder="e.g. Semester 1 (2026)" style="padding:8px 10px;" required />
-              </label>
               <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
                 Semester #
                 <select name="semester" style="padding:8px 10px;" required>

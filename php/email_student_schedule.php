@@ -134,8 +134,7 @@ try {
     }
 
     $xlsx = new SimpleXlsxWriter();
-    $termLabel = $termId > 0 ? " — Term {$termId}" : '';
-    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester}{$termLabel} — {$weekLabel}";
+    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
@@ -216,13 +215,11 @@ try {
         ]
     );
 
-    $termSuffix = $termId > 0 ? " Term {$termId}" : '';
-    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester}{$termSuffix} - {$weekLabel}.xlsx";
+    $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $program) . " Year {$yearLevel} Sem {$semester} - {$weekLabel}.xlsx";
     $xlsxBytes = $xlsx->downloadToString($fileName);
 
-    $termSubject = $termId > 0 ? " — Term {$termId}" : '';
     $weekTypePrefix = $isRamadanWeek ? 'Ramadan ' : '';
-    $subject = "{$weekTypePrefix}Student Schedule — Year {$yearLevel} — Sem {$semester}{$termSubject} — {$weekLabel}";
+    $subject = "{$weekTypePrefix}Student Schedule — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
     $body = "Dear Students,\n\nPlease find attached the " . ($isRamadanWeek ? 'Ramadan ' : '') . "schedule for {$program} (Year {$yearLevel}, Semester {$semester}) for {$weekLabel}." .
         "\n\nIf you have any questions or require clarification, please contact the Academic Office." .
         "\n\nKind regards,\nDigital Marketing Portal";

@@ -48,6 +48,9 @@ try {
     }
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+    $termSemStmt = $pdo->prepare('SELECT semester FROM terms WHERE term_id = :id LIMIT 1');
+    $termSemStmt->execute([':id' => $termId]);
+    $termSemester = (int)($termSemStmt->fetchColumn() ?: 0);
 
     if ($weekId <= 0) {
         $stmt = $pdo->prepare("SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
@@ -184,7 +187,7 @@ try {
 
     $xlsx = new SimpleXlsxWriter();
 
-    $termLabel = $termId > 0 ? " — Term {$termId}" : '';
+    $termLabel = $termSemester > 0 ? " — Sem {$termSemester}" : '';
     $title = "{$docName}{$termLabel} — {$weekLabel}";
 
     $dataRows = [];
@@ -297,7 +300,7 @@ try {
         ]
     );
 
-    $termSuffix = $termId > 0 ? " Term {$termId}" : '';
+    $termSuffix = $termSemester > 0 ? " Sem {$termSemester}" : '';
     $fileName = preg_replace('/[^a-zA-Z0-9\-_ ]+/', '', $docName) . "{$termSuffix} - {$weekLabel}.xlsx";
     $xlsx->download($fileName);
 } catch (Throwable $e) {

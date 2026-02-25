@@ -251,8 +251,7 @@ try {
     // Header values
     $courseName = (string)($course['course_name'] ?? '');
     $yearSem = 'Year ' . $yearLevel . ($semester > 0 ? (' / Sem ' . $semester) : '');
-    $termLabel = $termId > 0 ? (' / Term ' . $termId) : '';
-    $yearSem .= $termLabel;
+    // $semester is already in scope from the course row; no term ID label needed.
 
     // Academic year computed from first available session date or first week start date
     $academicYear = '__________';
