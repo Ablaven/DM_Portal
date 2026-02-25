@@ -31,7 +31,7 @@ function dmportal_ensure_schema_version(PDO $pdo): void
     $row = $stmt->fetch();
     $current = $row ? (int)$row['version'] : 0;
 
-    $target = 4;
+    $target = 5;
 
     if ($current < 1) {
         $pdo->prepare('INSERT INTO schema_versions (schema_name, version) VALUES (:name, 1) ON DUPLICATE KEY UPDATE version = VALUES(version)')
@@ -99,5 +99,26 @@ function dmportal_ensure_schema_version(PDO $pdo): void
         $pdo->prepare('UPDATE schema_versions SET version = 4 WHERE schema_name = :name')
             ->execute([':name' => $schemaName]);
         $current = 4;
+    }
+
+    if ($current < 5) {
+        // Fix weeks unique key: old key was (label) only, which collides when a new term
+        // reuses week labels like "Week 1". Correct key is (term_id, label).
+        try {
+            $pdo->exec("ALTER TABLE weeks DROP INDEX uq_weeks_label");
+        } catch (PDOException $e) {
+            // 1091 = key doesn't exist — already gone, fine.
+            if ((int)($e->errorInfo[1] ?? 0) !== 1091) throw $e;
+        }
+        try {
+            $pdo->exec("ALTER TABLE weeks ADD UNIQUE KEY uq_weeks_label (term_id, label)");
+        } catch (PDOException $e) {
+            // 1061 = duplicate key name — already correct, fine.
+            if ((int)($e->errorInfo[1] ?? 0) !== 1061) throw $e;
+        }
+
+        $pdo->prepare('UPDATE schema_versions SET version = 5 WHERE schema_name = :name')
+            ->execute([':name' => $schemaName]);
+        $current = 5;
     }
 }

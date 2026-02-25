@@ -51,14 +51,30 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
         $pdo->exec("ALTER TABLE attendance_records ADD COLUMN term_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 1");
     }
 
-    // 3) Ensure unique key exists (schedule_id, student_id)
-    // MySQL doesn't support IF NOT EXISTS for ADD INDEX in older versions, so ignore duplicate.
+    // 3) Ensure unique key is (term_id, schedule_id, student_id).
+    //    Old installs may have the wrong unique key (schedule_id, student_id) which caused
+    //    attendance saved in a later term to silently overwrite an earlier term's record via
+    //    ON DUPLICATE KEY UPDATE, making saves appear to vanish when re-opening a slot.
+    //    Drop the old key if it exists, then add the correct one.
+
+    // Drop the old narrow unique key if present (ignore errors if it doesn't exist).
     try {
-        $pdo->exec("ALTER TABLE attendance_records ADD UNIQUE KEY uq_attendance_schedule_student (schedule_id, student_id)");
+        $pdo->exec("ALTER TABLE attendance_records DROP INDEX uq_attendance_schedule_student");
     } catch (PDOException $e) {
-        // 1061 = duplicate key name, 1060 = duplicate column name (shouldn't happen here)
+        // 1091 = Can't DROP; key doesn't exist — that's fine.
         $code = (int)($e->errorInfo[1] ?? 0);
-        if (!in_array($code, [1061, 1060], true)) {
+        if ($code !== 1091) {
+            throw $e;
+        }
+    }
+
+    // Add the correct unique key that includes term_id.
+    try {
+        $pdo->exec("ALTER TABLE attendance_records ADD UNIQUE KEY uq_attendance_term_schedule_student (term_id, schedule_id, student_id)");
+    } catch (PDOException $e) {
+        // 1061 = duplicate key name — already correct, fine.
+        $code = (int)($e->errorInfo[1] ?? 0);
+        if ($code !== 1061) {
             throw $e;
         }
     }
@@ -90,7 +106,7 @@ function dmportal_create_attendance_records_table(PDO $pdo): void
         ."  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
         ."  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,\n"
         ."  PRIMARY KEY (attendance_id),\n"
-        ."  UNIQUE KEY uq_attendance_schedule_student (schedule_id, student_id),\n"
+        ."  UNIQUE KEY uq_attendance_term_schedule_student (term_id, schedule_id, student_id),\n"
         ."  KEY idx_attendance_term (term_id, schedule_id),\n"
         ."  KEY idx_attendance_student (student_id),\n"
         ."  KEY idx_attendance_schedule (schedule_id)\n"
