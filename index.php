@@ -27,8 +27,8 @@ auth_require_roles(['admin','management']);
     </header>
 
     <section class="card">
-      <div class="easter-mini" aria-hidden="false">
-        <input id="easterEggInput" type="text" maxlength="3" placeholder="700" />
+      <div class="easter-mini" aria-hidden="true" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;">
+        <input id="easterEggInput" type="text" maxlength="3" tabindex="-1" autocomplete="off" />
       </div>
       <div class="card-header">
         <div>
@@ -127,10 +127,9 @@ auth_require_roles(['admin','management']);
 
   </main>
 
-  <script src="js/core.js?v=20260205"></script>
+  <script src="js/core.js?v=20260228f"></script>
   <script src="js/navbar.js?v=20260121"></script>
   <script src="js/course_dashboard.js?v=20260201"></script>
-  <script src="js/schedule_builder.js?v=20260121"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initCourseDashboardPage?.();

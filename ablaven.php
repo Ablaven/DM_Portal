@@ -9,8 +9,8 @@ $ok = true;
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Credits</title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
-  <link rel="stylesheet" href="css/ablaven.css?v=20260102" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/ablaven.css?v=20260228d" />
 </head>
 <body class="ablaven-egg">
   <canvas id="eggParticles" aria-hidden="true"></canvas>
@@ -32,12 +32,13 @@ $ok = true;
           </div>
         </section>
       <?php else: ?>
+        <div id="eggTiltWrap" style="display:block;">
         <section class="card egg-card" id="eggCard">
           <div class="egg-hero">
             <div style="display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; justify-content:space-between;">
               <div>
                 <div class="egg-by">Made by</div>
-                <h1 class="egg-title" style="margin-top:6px;">Ablaven</h1>
+                <h1 class="egg-title" data-text="Ablaven" style="margin-top:6px;">Ablaven</h1>
                 <div class="egg-realname">Mazin Mohamed Diab</div>
                 <div class="egg-joke">This web app only costs <strong>700 L.E</strong></div>
               </div>
@@ -55,11 +56,12 @@ $ok = true;
             </div>
           </div>
         </section>
+        </div>
       <?php endif; ?>
     </div>
   </main>
 
-  <script src="js/core.js?v=20260121"></script>
-  <script src="js/ablaven.js?v=20260102"></script>
+  <script src="js/core.js?v=20260228f"></script>
+  <script src="js/ablaven.js?v=20260228d"></script>
 </body>
 </html>

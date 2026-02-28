@@ -94,7 +94,7 @@ $isTeacher = $role === 'teacher';
     </section>
   </main>
 
-  <script src="js/core.js?v=20260121"></script>
+  <script src="js/core.js?v=20260228f"></script>
   <script src="js/navbar.js?v=20260121"></script>
   <script src="js/evaluation_reports.js?v=20260121"></script>
   <script>

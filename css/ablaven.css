@@ -1,36 +1,457 @@
-:root{
-  --egg-bg:#05020f;
-  --egg-purple:#a240ff;
-  --egg-pink:#ff66d8;
-  --egg-cyan:#5cf2ff;
-  --egg-text:rgba(255,255,255,.92);
-  --egg-muted:rgba(255,255,255,.72);
+:root {
+  --egg-bg:     #05020f;
+  --egg-purple: #a240ff;
+  --egg-pink:   #ff66d8;
+  --egg-cyan:   #5cf2ff;
+  --egg-text:   rgba(255,255,255,.92);
+  --egg-muted:  rgba(255,255,255,.72);
 }
 
-body.ablaven-egg{
-  min-height:100vh;
+/* ─────────────────────────────────────────────
+   BODY / BACKGROUND
+───────────────────────────────────────────── */
+body.ablaven-egg {
+  min-height: 100vh;
   background:
-    radial-gradient(1000px 620px at 15% 10%, rgba(92,242,255,.22), transparent 60%),
-    radial-gradient(900px 620px at 90% 16%, rgba(162,64,255,.22), transparent 55%),
-    radial-gradient(720px 520px at 60% 90%, rgba(255,102,216,.18), transparent 55%),
-    linear-gradient(180deg, #060214, #0a0322 55%, #050216);
-  overflow-x:hidden;
+    radial-gradient(1200px 700px at 10%  5%,  rgba(92,242,255,.20),  transparent 58%),
+    radial-gradient(1000px 700px at 92%  12%, rgba(162,64,255,.22),  transparent 52%),
+    radial-gradient(800px  580px at 55%  95%, rgba(255,102,216,.18), transparent 52%),
+    radial-gradient(600px  400px at 80%  60%, rgba(92,242,255,.10),  transparent 50%),
+    radial-gradient(500px  300px at 20%  70%, rgba(162,64,255,.10),  transparent 50%),
+    linear-gradient(180deg, #04010e, #080120 45%, #050118 75%, #04010e);
+  overflow-x: hidden;
 }
 
+/* ─────────────────────────────────────────────
+   ANIMATED AURORA BLOBS (::before / ::after)
+───────────────────────────────────────────── */
+body.ablaven-egg::before,
+body.ablaven-egg::after {
+  content: "";
+  position: fixed;
+  inset: -30vmax;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(162,64,255,.22),  transparent 42%),
+    radial-gradient(circle at 72% 38%, rgba(255,102,216,.16), transparent 40%),
+    radial-gradient(circle at 50% 78%, rgba(92,242,255,.12),  transparent 44%),
+    radial-gradient(circle at 15% 65%, rgba(162,64,255,.10),  transparent 38%),
+    radial-gradient(circle at 85% 70%, rgba(92,242,255,.10),  transparent 36%);
+  filter: blur(32px);
+  opacity: .88;
+  pointer-events: none;
+  z-index: 0;
+  animation: eggFloat 16s ease-in-out infinite;
+}
+body.ablaven-egg::after {
+  opacity: .52;
+  animation-duration: 21s;
+  animation-direction: reverse;
+  filter: blur(44px);
+}
+
+@keyframes eggFloat {
+  0%   { transform: translate3d(-2%, -1.5%, 0) scale(1.02) rotate(0deg); }
+  33%  { transform: translate3d(1.5%, 2%,   0) scale(1.05) rotate(4deg); }
+  66%  { transform: translate3d(-1%, 1%,    0) scale(1.03) rotate(-3deg); }
+  100% { transform: translate3d(-2%, -1.5%, 0) scale(1.02) rotate(0deg); }
+}
+
+/* ─────────────────────────────────────────────
+   NEON GRID OVERLAY
+───────────────────────────────────────────── */
+body.ablaven-egg .egg-wrap::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .18;
+  background:
+    linear-gradient(to right,  rgba(162,64,255,.20) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(92,242,255,.15) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at 50% 30%, rgba(0,0,0,1), rgba(0,0,0,0) 68%);
+  animation: gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: .14; }
+  50%       { opacity: .26; }
+}
+
+/* ─────────────────────────────────────────────
+   SCANLINES (CRT feel across whole page)
+───────────────────────────────────────────── */
+body.ablaven-egg .egg-wrap::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,.06) 0px,
+    rgba(0,0,0,.06) 1px,
+    transparent    1px,
+    transparent    3px
+  );
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────
+   LAYOUT
+───────────────────────────────────────────── */
+.egg-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.egg-enter {
+  /* perspective is applied inline via JS perspective() in the card transform — no CSS perspective needed */
+}
+
+/* ─────────────────────────────────────────────
+   CARD
+───────────────────────────────────────────── */
+.egg-card {
+  --mx: 50%;
+  --my: 35%;
+
+  position: relative;
+  background: rgba(14, 6, 32, .72) !important;
+  backdrop-filter: blur(22px) !important;
+  -webkit-backdrop-filter: blur(22px) !important;
+  border: 1px solid rgba(162, 64, 255, .45) !important;
+  border-radius: 20px !important;
+  box-shadow:
+    0 0 0 1px rgba(162,64,255,.30),
+    0 0 40px rgba(162,64,255,.18),
+    0 0 80px rgba(162,64,255,.08),
+    0 30px 80px rgba(0,0,0,.75),
+    0 0 0 1px rgba(255,255,255,.04) inset !important;
+  overflow: hidden !important;
+  will-change: transform;
+}
+
+/* Spotlight that follows mouse — pure ::after, no ::before conflict */
+.egg-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  border-radius: inherit;
+  background:
+    radial-gradient(500px 300px at var(--mx) var(--my), rgba(255,255,255,.08), transparent 60%),
+    repeating-linear-gradient(0deg,
+      rgba(255,255,255,.012) 0,
+      rgba(255,255,255,.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+/* ::before — subtle top highlight edge only */
+.egg-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(162,64,255,.80),
+    rgba(255,102,216,.60),
+    rgba(92,242,255,.50),
+    transparent
+  );
+  z-index: 10;
+  pointer-events: none;
+  animation: topEdgePulse 3s ease-in-out infinite;
+}
+
+@keyframes topEdgePulse {
+  0%, 100% { opacity: .60; }
+  50%       { opacity: 1.0; }
+}
+
+/* Holographic scanline sweep across card */
+.egg-card .egg-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(92,242,255,.035) 48%,
+    rgba(162,64,255,.06)  50%,
+    rgba(92,242,255,.035) 52%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: holoSweep 4.5s linear infinite;
+  opacity: .75;
+}
+
+@keyframes holoSweep {
+  0%   { background-position: 0%   -100%; }
+  100% { background-position: 0%    200%; }
+}
+
+.egg-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ─────────────────────────────────────────────
+   HERO LAYOUT
+───────────────────────────────────────────── */
+.egg-hero {
+  display: grid;
+  gap: 16px;
+  position: relative;
+  overflow: hidden; /* clip the holo sweep inside the hero, not the card */
+  border-radius: 8px;
+}
+
+/* ─────────────────────────────────────────────
+   TITLE WITH GLITCH
+───────────────────────────────────────────── */
+.egg-title {
+  margin: 0;
+  letter-spacing: .6px;
+  line-height: 1.02;
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  background: linear-gradient(90deg,
+    var(--egg-purple),
+    var(--egg-pink),
+    var(--egg-cyan),
+    var(--egg-purple)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: eggGradient 4.5s ease-in-out infinite;
+  position: relative;
+  display: inline-block;
+}
+
+@keyframes eggGradient {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+/* Glitch pseudo-layers */
+.egg-title::before,
+.egg-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0;
+  animation: eggGradient 4.5s ease-in-out infinite;
+}
+
+.egg-title--glitch::before {
+  opacity: .85;
+  color: rgba(92,242,255,.75);
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  background: none;
+  transform: translate(-3px, 1px);
+  mix-blend-mode: screen;
+  animation: glitchR .12s steps(2) infinite;
+}
+
+.egg-title--glitch::after {
+  opacity: .75;
+  color: rgba(255,102,216,.70);
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  background: none;
+  transform: translate(3px, -1px);
+  mix-blend-mode: screen;
+  animation: glitchB .12s steps(2) infinite;
+}
+
+@keyframes glitchR {
+  0%  { transform: translate(-3px,  1px) scaleX(1.01); clip-path: inset(30% 0 40% 0); }
+  50% { transform: translate(-5px, -1px) scaleX(1.00); clip-path: inset(60% 0 10% 0); }
+}
+@keyframes glitchB {
+  0%  { transform: translate( 3px, -1px) scaleX(.99); clip-path: inset(10% 0 60% 0); }
+  50% { transform: translate( 5px,  2px) scaleX(1.0); clip-path: inset(40% 0 20% 0); }
+}
+
+/* ─────────────────────────────────────────────
+   BY / NAME / JOKE
+───────────────────────────────────────────── */
+.egg-by {
+  margin-top: -6px;
+  color: rgba(255,255,255,.82);
+  font-weight: 800;
+  letter-spacing: .28px;
+}
+
+.egg-realname {
+  color: rgba(255,255,255,.78);
+  font-size: 1.04rem;
+  margin-top: 10px;
+  letter-spacing: .16px;
+}
+
+.egg-joke {
+  margin-top: 14px;
+  color: rgba(255,255,255,.80);
+  font-size: 0.98rem;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(162,64,255,.28);
+  background: linear-gradient(90deg, rgba(162,64,255,.12), rgba(255,102,216,.08));
+  width: fit-content;
+  box-shadow: 0 10px 30px rgba(0,0,0,.22);
+}
+
+.egg-joke strong {
+  color: rgba(255,255,255,.96);
+}
+
+/* ─────────────────────────────────────────────
+   DIVIDER
+───────────────────────────────────────────── */
+.egg-divider {
+  height: 1px;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(162,64,255,0),
+    rgba(162,64,255,.85),
+    rgba(255,102,216,.65),
+    rgba(92,242,255,.45),
+    rgba(162,64,255,0)
+  );
+  opacity: .80;
+  filter: drop-shadow(0 0 18px rgba(162,64,255,.30));
+  animation: dividerPulse 3.5s ease-in-out infinite;
+}
+
+@keyframes dividerPulse {
+  0%, 100% { opacity: .65; filter: drop-shadow(0 0 14px rgba(162,64,255,.22)); }
+  50%       { opacity: .92; filter: drop-shadow(0 0 28px rgba(162,64,255,.50)); }
+}
+
+/* ─────────────────────────────────────────────
+   SUBTITLE
+───────────────────────────────────────────── */
+.egg-sub {
+  color: var(--egg-muted);
+  margin: 0;
+  line-height: 1.55;
+  font-size: 1.06rem;
+}
+
+/* ─────────────────────────────────────────────
+   BADGE — neon flicker
+───────────────────────────────────────────── */
+.egg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(162,64,255,.38);
+  background: rgba(162,64,255,.12);
+  color: rgba(255,255,255,.94);
+  font-weight: 800;
+  letter-spacing: .18px;
+  animation: badgeFlicker 6s ease-in-out infinite;
+  box-shadow:
+    0 0 18px rgba(162,64,255,.18),
+    0 0 40px rgba(162,64,255,.08);
+}
+
+@keyframes badgeFlicker {
+  0%, 100% { opacity: 1;    box-shadow: 0 0 18px rgba(162,64,255,.20), 0 0 40px rgba(162,64,255,.08); }
+  8%        { opacity: .82;  box-shadow: 0 0  6px rgba(162,64,255,.10); }
+  9%        { opacity: 1;    box-shadow: 0 0 22px rgba(162,64,255,.30); }
+  42%       { opacity: 1;    box-shadow: 0 0 18px rgba(162,64,255,.20), 0 0 40px rgba(162,64,255,.08); }
+  43%       { opacity: .72;  box-shadow: 0 0  4px rgba(162,64,255,.05); }
+  44%       { opacity: 1;    box-shadow: 0 0 28px rgba(162,64,255,.38); }
+  70%       { opacity: 1;    box-shadow: 0 0 18px rgba(162,64,255,.20), 0 0 40px rgba(162,64,255,.08); }
+  71%       { opacity: .88; }
+  72%       { opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────
+   ACTIONS / BUTTONS
+───────────────────────────────────────────── */
+.egg-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+body.ablaven-egg .btn {
+  border-color: rgba(162,64,255,.36);
+  box-shadow: 0 16px 36px rgba(0,0,0,.38), 0 0 18px rgba(162,64,255,.12);
+  font-size: 1.06rem;
+  padding: 12px 24px;
+  transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+}
+
+body.ablaven-egg .btn:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.12);
+  box-shadow: 0 20px 44px rgba(0,0,0,.45), 0 0 32px rgba(162,64,255,.28);
+}
+
+/* ─────────────────────────────────────────────
+   ENTRANCE ANIMATION
+   — opacity only on .egg-enter, JS owns transform on .egg-card
+───────────────────────────────────────────── */
+.egg-enter {
+  opacity: 0;
+}
+.egg-enter.egg-entered {
+  opacity: 1;
+  transition: opacity .65s cubic-bezier(.22,1,.36,1);
+}
+
+/* No CSS transform/animation on .egg-card — JS RAF owns transform entirely */
+
+/* ─────────────────────────────────────────────
+   PARTICLE CANVAS
+───────────────────────────────────────────── */
+#eggParticles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .82;
+}
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
 @media (max-width: 720px) {
   .egg-title {
-    font-size: clamp(2.1rem, 7.8vw, 3rem);
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
   }
-
   .egg-sub {
     font-size: 0.98rem;
   }
-
   .egg-actions {
     flex-direction: column;
     align-items: stretch;
   }
-
   .egg-actions .btn {
     width: 100%;
     justify-content: center;
@@ -41,259 +462,44 @@ body.ablaven-egg{
   .egg-card {
     padding: 18px !important;
   }
-
   .egg-title {
-    font-size: clamp(1.9rem, 9vw, 2.6rem);
+    font-size: clamp(1.9rem, 9.5vw, 2.7rem);
   }
-
   .egg-joke {
     width: 100%;
     text-align: center;
   }
 }
 
-/* Neon grid overlay (very subtle, adds structure) */
-body.ablaven-egg .egg-wrap::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-  opacity:.16;
-  background:
-    linear-gradient(to right, rgba(162,64,255,.18) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(92,242,255,.14) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(circle at 50% 28%, rgba(0,0,0,1), rgba(0,0,0,0) 68%);
+/* ─────────────────────────────────────────────
+   NEUTRALISE style.css .card overrides on egg card
+───────────────────────────────────────────── */
+/* Kill any CSS transform transition — JS RAF is sole driver of the tilt */
+body.ablaven-egg .egg-card,
+body.ablaven-egg .egg-card:hover {
+  /* no transform transition — would fight the JS lerp */
 }
 
-/* Subtle animated aurora */
-body.ablaven-egg::before,
-body.ablaven-egg::after{
-  content:"";
-  position:fixed;
-  inset:-30vmax;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(162,64,255,.18), transparent 45%),
-    radial-gradient(circle at 70% 40%, rgba(255,102,216,.14), transparent 42%),
-    radial-gradient(circle at 55% 75%, rgba(92,242,255,.10), transparent 46%);
-  filter: blur(30px);
-  opacity:.85;
-  pointer-events:none;
-  z-index:0;
-  transform: translate3d(0,0,0);
-  animation: eggFloat 14s ease-in-out infinite;
-}
-body.ablaven-egg::after{
-  opacity:.55;
-  animation-duration: 19s;
-  animation-direction: reverse;
-}
-
-@keyframes eggFloat{
-  0%{ transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
-  50%{ transform: translate3d(2%, 1.5%, 0) scale(1.04) rotate(6deg); }
-  100%{ transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
-}
-
-.egg-wrap{
-  position:relative;
-  z-index:1;
-}
-
-.egg-card{
-  /* Card uses a spotlight highlight driven by JS via --mx/--my */
-  --mx: 50%;
-  --my: 35%;
-
-  background: rgba(16, 8, 36, .42);
-  border: 1px solid rgba(162, 64, 255, .26);
-  box-shadow:
-    0 18px 70px rgba(0,0,0,.55),
-    0 0 0 1px rgba(255,255,255,.04) inset;
-  backdrop-filter: blur(14px);
-  overflow:hidden;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* Spotlight + subtle grain */
-.egg-card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(700px 380px at var(--mx) var(--my), rgba(255,255,255,.09), transparent 55%),
-    radial-gradient(900px 500px at 20% 90%, rgba(162,64,255,.12), transparent 60%),
-    radial-gradient(800px 460px at 90% 10%, rgba(255,102,216,.10), transparent 55%),
-    repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0, rgba(255,255,255,.02) 1px, transparent 1px, transparent 3px);
-  opacity: .95;
-  z-index: 1;
-}
-
-/* Animated border glow */
-.egg-card::before{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  background: conic-gradient(from 90deg,
-    rgba(162,64,255,.0),
-    rgba(162,64,255,.65),
-    rgba(255,102,216,.55),
-    rgba(92,242,255,.35),
-    rgba(162,64,255,.0)
-  );
-  filter: blur(12px);
-  opacity:.55;
-  pointer-events:none;
-  animation: eggSpin 6.5s linear infinite;
-}
-@keyframes eggSpin{ to { transform: rotate(360deg); } }
-
-.egg-card > *{
-  position:relative;
-  z-index:2;
-}
-
-.egg-hero{
-  display:grid;
-  gap:16px;
-}
-
-.egg-divider{
-  height: 1px;
-  width: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg,
-    rgba(162,64,255,0),
-    rgba(162,64,255,.80),
-    rgba(255,102,216,.60),
-    rgba(92,242,255,.40),
-    rgba(162,64,255,0)
-  );
-  opacity: .78;
-  filter: drop-shadow(0 0 18px rgba(162,64,255,.26));
-}
-
-.egg-title{
-  margin:0;
-  letter-spacing:.6px;
-  line-height:1.02;
-  font-size: clamp(2.6rem, 4.6vw, 3.8rem);
-  background: linear-gradient(90deg, var(--egg-purple), var(--egg-pink), var(--egg-cyan));
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip:text;
-  color: transparent;
-  animation: eggGradient 5.5s ease-in-out infinite;
-  text-shadow: 0 0 40px rgba(162,64,255,.26);
-}
-@keyframes eggGradient{
-  0%{ background-position: 0% 50%; }
-  50%{ background-position: 100% 50%; }
-  100%{ background-position: 0% 50%; }
-}
-
-.egg-by{
-  margin-top:-6px;
-  color: rgba(255,255,255,.80);
-  font-weight: 800;
-  letter-spacing: .28px;
-}
-
-.egg-realname{
-  color: rgba(255,255,255,.78);
-  font-size: 1.02rem;
-  margin-top: 10px; /* push it lower under Ablaven */
-  letter-spacing: .16px;
-}
-
-.egg-joke{
-  margin-top: 14px;
-  color: rgba(255,255,255,.78);
-  font-size: 0.98rem;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(162,64,255,.22);
-  background: linear-gradient(90deg, rgba(162,64,255,.10), rgba(255,102,216,.08));
-  width: fit-content;
-  box-shadow: 0 10px 30px rgba(0,0,0,.18);
-}
-
-.egg-joke strong{
-  color: rgba(255,255,255,.95);
-}
-
-.egg-sub{
-  color: var(--egg-muted);
-  margin:0;
-  line-height:1.55;
-  font-size: 1.05rem;
-}
-
-.egg-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(162,64,255,.28);
-  background: rgba(162,64,255,.10);
-  color: rgba(255,255,255,.92);
-  font-weight: 800;
-  letter-spacing: .18px;
-}
-
-.egg-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top: 4px;
-}
-
-/* Give existing buttons a more neon feel inside the egg page */
-body.ablaven-egg .btn{
-  border-color: rgba(162,64,255,.32);
-  box-shadow: 0 16px 36px rgba(0,0,0,.35);
-  font-size: 1.05rem;
-  padding: 12px 22px;
-}
-
-body.ablaven-egg .btn:hover{
-  transform: translateY(-2px);
-  filter: brightness(1.08);
-}
-
-/* Entrance animation */
-.egg-enter{
-  opacity:0;
-  transform: translateY(10px) scale(.99);
-}
-.egg-enter.egg-entered{
-  opacity:1;
-  transform: translateY(0) scale(1);
-  transition: opacity .55s ease, transform .55s ease;
-}
-
-/* Particle canvas */
-#eggParticles{
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: .75;
-}
-
+/* ─────────────────────────────────────────────
+   REDUCED MOTION FALLBACK
+───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   body.ablaven-egg::before,
   body.ablaven-egg::after,
   .egg-title,
-  .egg-card::before {
+  .egg-card::before,
+  .egg-badge,
+  .egg-divider,
+  body.ablaven-egg .egg-wrap::before,
+  .egg-card .egg-hero::before {
     animation: none !important;
   }
   .egg-enter {
     opacity: 1;
     transform: none;
+  }
+  .egg-title--glitch::before,
+  .egg-title--glitch::after {
+    display: none;
   }
 }
