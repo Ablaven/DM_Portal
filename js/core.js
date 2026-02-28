@@ -371,49 +371,71 @@
         snapshot.appendChild(strip);
       }
 
-      // ── RGB echo strips on canvas (cyan left ghost, pink right ghost) ──
-      for (const s of slices) {
-        if (!s.active) continue;
-        const a = intensity * 0.28;
-        if (a < 0.01) continue;
+      // ── Digital corruption overlay ──
 
-        // Cyan echo shifted left
-        ctx.fillStyle = "rgba(92,242,255," + a + ")";
-        ctx.fillRect(0, s.y, W, Math.max(1, s.h * 0.4));
-
-        // Pink echo shifted right
-        ctx.fillStyle = "rgba(255,102,216," + (a * 0.8) + ")";
-        ctx.fillRect(0, s.y + s.h * 0.55, W, Math.max(1, s.h * 0.3));
-      }
-
-      // ── Scanline overlay ──
-      const scanAlpha = intensity * 0.10;
-      if (scanAlpha > 0.005) {
-        for (let y = 0; y < H; y += 3) {
-          ctx.fillStyle = "rgba(0,0,0," + scanAlpha + ")";
-          ctx.fillRect(0, y, W, 1);
+      // 1. Macro codec blocks — large solid rectangles snapped to a 16px grid (broken codec look)
+      const macroCount = Math.floor(intensity * 14) + 2;
+      for (let i = 0; i < macroCount; i++) {
+        const gx = Math.floor(Math.random() * (W / 16)) * 16;
+        const gy = Math.floor(Math.random() * (H / 16)) * 16;
+        const gw = (Math.floor(Math.random() * 8) + 1) * 16;
+        const gh = (Math.floor(Math.random() * 4) + 1) * 16;
+        const roll = Math.random();
+        let color;
+        if (roll < 0.45) {
+          // Near-black corruption
+          const v = Math.floor(Math.random() * 25);
+          color = "rgba(" + v + "," + v + "," + v + "," + (intensity * 0.92) + ")";
+        } else if (roll < 0.65) {
+          // Blown-out white
+          color = "rgba(255,255,255," + (intensity * 0.60) + ")";
+        } else if (roll < 0.82) {
+          // Desaturated purple/teal artifact
+          const r = Math.floor(Math.random() * 60 + 10);
+          const g = Math.floor(Math.random() * 60 + 10);
+          const b = Math.floor(Math.random() * 140 + 60);
+          color = "rgba(" + r + "," + g + "," + b + "," + (intensity * 0.75) + ")";
+        } else {
+          // Fully saturated random color — like GPU memory garbage
+          color = "rgba(" + Math.floor(Math.random()*256) + "," +
+                            Math.floor(Math.random()*256) + "," +
+                            Math.floor(Math.random()*256) + "," + (intensity * 0.65) + ")";
         }
+        ctx.fillStyle = color;
+        ctx.fillRect(gx, gy, gw, gh);
       }
 
-      // ── Bright flash at the very start ──
-      if (t < 0.06) {
-        const flashA = (0.06 - t) / 0.06 * 0.55;
-        ctx.fillStyle = "rgba(255,255,255," + flashA + ")";
-        ctx.fillRect(0, 0, W, H);
+      // 2. Pixel-sort columns — tall narrow strips of wrong solid color (like pixel sorting artifact)
+      const sortCount = Math.floor(intensity * 10);
+      for (let i = 0; i < sortCount; i++) {
+        const sx = Math.random() * W;
+        const sw = Math.random() * 6 + 1;
+        const sy = Math.random() * H * 0.4;
+        const sh = Math.random() * H * 0.6 + H * 0.1;
+        const v  = Math.random() < 0.5 ? 0 : 255;
+        ctx.fillStyle = "rgba(" + v + "," + v + "," + v + "," + (intensity * 0.80) + ")";
+        ctx.fillRect(sx, sy, sw, sh);
       }
 
-      // ── Neon tear lines ──
-      const tears = Math.floor(intensity * 8);
-      for (let i = 0; i < tears; i++) {
-        const ty = Math.random() * H;
-        const col = i % 3 === 0 ? "92,242,255" : i % 3 === 1 ? "162,64,255" : "255,102,216";
-        ctx.fillStyle = "rgba(" + col + "," + (intensity * 0.9) + ")";
-        ctx.fillRect(0, ty, W, 1);
-        // Double line occasionally
-        if (Math.random() < 0.3) {
-          ctx.fillStyle = "rgba(255,255,255," + (intensity * 0.4) + ")";
-          ctx.fillRect(0, ty + 1, W, 1);
-        }
+      // 3. Bit-flip noise — tiny 1–4px random pixels scattered everywhere
+      const noiseCount = Math.floor(intensity * 200);
+      for (let i = 0; i < noiseCount; i++) {
+        const nx = Math.random() * W;
+        const ny = Math.random() * H;
+        const ns = Math.random() * 3 + 1;
+        const nv = Math.random() < 0.5 ? 255 : 0;
+        ctx.fillStyle = "rgba(" + nv + "," + nv + "," + nv + "," + (intensity * 0.90) + ")";
+        ctx.fillRect(nx, ny, ns, ns);
+      }
+
+      // 4. Full-width horizontal corruption bands — like a hard seek error on a video file
+      const bandCount = Math.floor(intensity * 5);
+      for (let i = 0; i < bandCount; i++) {
+        const by2 = Math.random() * H;
+        const bh2 = Math.random() * 6 + 1;
+        const bv  = Math.random() < 0.6 ? 0 : 255;
+        ctx.fillStyle = "rgba(" + bv + "," + bv + "," + bv + "," + (intensity * 0.95) + ")";
+        ctx.fillRect(0, by2, W, bh2);
       }
 
       // ── Fade out the snapshot as intensity drops ──

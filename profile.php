@@ -62,7 +62,7 @@ $u = auth_current_user();
     </section>
   </main>
 
-  <script src="js/core.js?v=20260228f"></script>
+  <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260121"></script>
   <script src="js/profile.js?v=20260121"></script>
   <script>

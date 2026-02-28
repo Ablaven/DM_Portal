@@ -75,7 +75,7 @@ $isTeacher = $role === 'teacher';
     <?php endif; ?>
   </main>
 
-  <script src="js/core.js?v=20260228f"></script>
+  <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260121"></script>
   <script src="js/reports_teacher_cards.js?v=20260209"></script>
   <script>
