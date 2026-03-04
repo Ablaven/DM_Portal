@@ -374,7 +374,8 @@
         return;
       }
       const allIds = (currentCtx.items || []).map((x) => Number(x.student_id)).filter((n) => n > 0);
-      const targets = isAdmin ? Array.from(dirtyStudents || []).filter((n) => Number(n) > 0) : allIds;
+      const dirtyList = Array.from(dirtyStudents || []).filter((n) => Number(n) > 0);
+      const targets = dirtyList.length > 0 ? dirtyList : allIds;
       if (!targets.length) {
         setStatusById("attendanceModalStatus", "No changes to save.", "info");
         return;

@@ -287,6 +287,19 @@ body.page-transitioning::before {
 
 .nav-toggle:active { transform: translateY(1px); }
 
+.nav-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  transition: transform 220ms ease, opacity 180ms ease;
+}
+
+.nav-toggle span + span {
+  margin-top: 4px;
+}
+
 .navbar {
   position: sticky;
   top: 0;
