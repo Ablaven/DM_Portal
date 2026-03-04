@@ -313,7 +313,7 @@
 
         card.innerHTML = `
           <div class="dashboard-card-title">${escapeHtml(item.course_name)}</div>
-          <div class="dashboard-card-subtitle">${subjectCode} · Year ${escapeHtml(item.year_level)} · Sem ${escapeHtml(item.semester)}</div>
+          <div class="dashboard-card-subtitle">${subjectCode} \u00B7 Year ${escapeHtml(item.year_level)} \u00B7 Sem ${escapeHtml(item.semester)}</div>
           <div class="student-insight-row" style="margin-top:8px;">
             <div class="dashboard-metric student-insight-value">${score}</div>
             <span class="student-dashboard-badge">/ 20</span>

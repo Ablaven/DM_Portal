@@ -8,6 +8,19 @@ require_once __DIR__ . '/_auth_schema.php';
 function auth_session_start(): void
 {
     if (session_status() !== PHP_SESSION_ACTIVE) {
+        // Ensure session cookie works across all browsers and network setups:
+        // - SameSite=Lax: allows cookie on top-level navigations (redirects after login)
+        // - Secure=false: works on HTTP (local/LAN deployments without HTTPS)
+        // - HttpOnly=true: prevents JS access to session cookie (security)
+        // - Long lifetime: 8 hours, prevents session expiry mid-use
+        session_set_cookie_params([
+            'lifetime' => 28800,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => false,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
         session_start();
     }
 }

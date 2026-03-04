@@ -5,6 +5,7 @@
     fetchJson,
     setStatusById,
     escapeHtml,
+    formatHours,
     getEffectivePageFilters,
     applyGlobalFiltersToCourses,
     initPageFiltersUI,
@@ -12,12 +13,6 @@
   } = window.dmportal || {};
 
   const state = { courses: [] };
-
-  function formatHours(n) {
-    const num = Number(n);
-    if (Number.isNaN(num)) return "0.00";
-    return num.toFixed(2);
-  }
 
   async function loadCourses() {
     const payload = await fetchJson("php/get_courses.php");
@@ -70,6 +65,8 @@ function prepareCanvas2d(canvas, { minW = 260, minH = 200 } = {}) {
 
 function getDashboardPalette() {
   const styles = getComputedStyle(document.documentElement);
+  const successChart = styles.getPropertyValue("--success-chart-rgb").trim();
+  const dangerChart = styles.getPropertyValue("--danger-chart-rgb").trim();
   const success = styles.getPropertyValue("--success-rgb").trim();
   const danger = styles.getPropertyValue("--danger-rgb").trim();
   const accent = styles.getPropertyValue("--accent-rgb").trim();
@@ -82,8 +79,8 @@ function getDashboardPalette() {
   const trackDark = styles.getPropertyValue("--track-dark").trim();
 
   return {
-    done: `rgba(${success || '0, 220, 140'}, 0.92)`,
-    remain: `rgba(${danger || '239, 65, 53'}, 0.88)`,
+    done: `rgba(${successChart || success || '0, 220, 140'}, 0.92)`,
+    remain: `rgba(${dangerChart || danger || '239, 65, 53'}, 0.88)`,
     accent: `rgba(${accent || '0, 204, 255'}, 0.82)`,
     grid: grid || "rgba(255,255,255,0.10)",
     text: textDark || text || "#ffffff",
@@ -209,85 +206,6 @@ function drawCourseDashboardDonut(courses) {
   }
 }
 
-function drawCourseDashboardByYear(courses) {
-  const canvas = document.getElementById("courseDashboardByYear");
-  if (!canvas) return;
-
-  const { ctx, w, h } = prepareCanvas2d(canvas, { minW: 260, minH: 220 });
-  const C = getDashboardPalette();
-
-  const items = getDashboardCoursesSorted(courses || []);
-  ctx.clearRect(0, 0, w, h);
-
-  if (!items.length) {
-    ctx.fillStyle = C.muted;
-    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("No data.", 12, 20);
-    return;
-  }
-
-  // Aggregate totals by (year, sem)
-  const buckets = new Map();
-  for (const c of items) {
-    const y = Number(c.year_level || 0) || 0;
-    const s = Number(c.semester || 0) || 0;
-    const key = `Y${y}S${s}`;
-    const { total } = computeCourseDoneHours(c);
-    buckets.set(key, (buckets.get(key) || 0) + total);
-  }
-
-  const labels = [
-    { k: "Y1S1", label: "Y1 S1" },
-    { k: "Y1S2", label: "Y1 S2" },
-    { k: "Y2S1", label: "Y2 S1" },
-    { k: "Y2S2", label: "Y2 S2" },
-    { k: "Y3S1", label: "Y3 S1" },
-    { k: "Y3S2", label: "Y3 S2" },
-  ];
-
-  const values = labels.map((x) => buckets.get(x.k) || 0);
-  const maxV = Math.max(1, ...values);
-
-  const pad = { top: 14, right: 12, bottom: 32, left: 36 };
-  const chartW = w - pad.left - pad.right;
-  const chartH = h - pad.top - pad.bottom;
-
-  // Grid + ticks
-  ctx.strokeStyle = C.grid;
-  ctx.fillStyle = C.muted;
-  ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-  const ticks = 4;
-  for (let i = 0; i <= ticks; i++) {
-    const t = i / ticks;
-    const y = pad.top + chartH - t * chartH;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(pad.left + chartW, y);
-    ctx.stroke();
-    ctx.fillText(String(Math.round(t * maxV)), 6, y + 4);
-  }
-
-  const gap = 10;
-  const barW = Math.max(10, (chartW - gap * (labels.length - 1)) / labels.length);
-
-  for (let i = 0; i < labels.length; i++) {
-    const v = values[i];
-    const bh = (v / maxV) * chartH;
-    const x = pad.left + i * (barW + gap);
-    const y = pad.top + chartH - bh;
-
-    ctx.fillStyle = i % 2 === 0 ? C.accent : C.done;
-    ctx.fillRect(x, y, barW, bh);
-
-    ctx.fillStyle = C.text;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.font = "10px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText(labels[i].label, x + barW / 2, pad.top + chartH + 8);
-  }
-}
-
 async function drawMissionnairePieChart() {
   const canvas = document.getElementById("missionnairePie");
   if (!canvas) return;
@@ -378,13 +296,13 @@ async function drawMissionnairePieChart() {
   // French slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.fillStyle = getDashboardPalette().done;
+  ctx.fillStyle = C.done;
   ctx.arc(cx, cy, r, aEgyptianEnd, startAngle + Math.PI * 2);
   ctx.closePath();
   ctx.fill();
 
   // Separators + border
-  ctx.strokeStyle = getDashboardPalette().grid;
+  ctx.strokeStyle = C.grid;
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.arc(cx, cy, r, startAngle, startAngle + Math.PI * 2);
@@ -425,7 +343,7 @@ async function drawMissionnairePieChart() {
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid var(--card-border);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-            <span style="width:10px; height:10px; border-radius:2px; background: ${getDashboardPalette().done}; flex:0 0 auto;"></span>
+            <span style="width:10px; height:10px; border-radius:2px; background: ${C.done}; flex:0 0 auto;"></span>
             <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(frenchName)}</span>
           </div>
           <div style="white-space:nowrap;">${formatHours(frenchTotal)}h</div>
@@ -579,7 +497,7 @@ function drawCourseDashboardChart(courses) {
     const raw = String(text || "").trim();
     if (!raw) return "";
     if (ctx.measureText(raw).width <= maxPx) return raw;
-    const ell = "…";
+    const ell = "\u2026";
     let lo = 0;
     let hi = raw.length;
     while (lo < hi) {
@@ -717,8 +635,6 @@ function drawCourseDashboardChart(courses) {
 function redrawAllDashboardCharts() {
   drawCourseDashboardDonut(state.courses || []);
   drawCourseDashboardChart(state.courses || []);
-  // Removed Hours by Year/Sem chart from the dashboard UI.
-  // drawCourseDashboardByYear(state.courses || []);
   drawDoctorTypeHoursCharts();
   drawMissionnairePieChart();
 }
@@ -759,19 +675,15 @@ function renderCourseProgressList(courses) {
     item.className = "course-progress-item";
 
     const code = String(c.subject_code || "").trim();
-    const codeLabel = code ? ` • ${escapeHtml(code)}` : "";
+    const codeLabel = code ? ` \u2022 ${escapeHtml(code)}` : "";
 
     item.innerHTML = `
       <div class="course-progress-top">
         <div>
           <div class="course-progress-title">${escapeHtml(c.course_name || "(Unnamed course)")}</div>
-          <div class="course-progress-meta">${escapeHtml(c.program || "")}${codeLabel} • Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</div>
+          <div class="course-progress-meta">${escapeHtml(c.program || "")}${codeLabel} \u2022 Year ${escapeHtml(c.year_level)} \u2022 Sem ${escapeHtml(c.semester)}</div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-          <span class="badge badge-success">Done ${formatHours(done)}h</span>
-          <span class="badge badge-danger">Remaining ${formatHours(Math.max(0, total - done))}h</span>
-          <span class="muted">${formatHours(done)}h / ${formatHours(total)}h</span>
-        </div>
+        <span class="muted">${formatHours(done)}h / ${formatHours(total)}h</span>
       </div>
 
       <div class="course-progress-bar" aria-label="Course progress">
@@ -793,7 +705,7 @@ function renderCourseProgressList(courses) {
 
   async function initCourseDashboardPage() {
     try {
-      setStatusById("courseDashboardStatus", "Loading�");
+      setStatusById("courseDashboardStatus", "Loading\u2026");
       initPageFiltersUI({ yearSelectId: "dashboardYearFilter", semesterSelectId: "dashboardSemesterFilter" });
       await loadCourses();
       redrawAllDashboardCharts();
@@ -802,7 +714,7 @@ function renderCourseProgressList(courses) {
 
       document.getElementById("refreshCourseDashboard")?.addEventListener("click", async () => {
         try {
-          setStatusById("courseDashboardStatus", "Refreshing�");
+          setStatusById("courseDashboardStatus", "Refreshing\u2026");
           await loadCourses();
           redrawAllDashboardCharts();
           renderCourseProgressList(state.courses || []);
@@ -821,6 +733,10 @@ function renderCourseProgressList(courses) {
       window.addEventListener("resize", () => {
         clearTimeout(resizeT);
         resizeT = setTimeout(() => redrawAllDashboardCharts(), 120);
+      });
+
+      window.addEventListener("dmportal:themeChanged", () => {
+        redrawAllDashboardCharts();
       });
     } catch (err) {
       setStatusById("courseDashboardStatus", err.message, "error");

@@ -64,7 +64,7 @@
         <td data-label="Course">
           <div class="report-course">
             <div class="report-course-title">${escapeHtml(course.course_name || "")}</div>
-            <div class="report-course-sub">Y${escapeHtml(course.year_level ?? "-")} · S${escapeHtml(course.semester ?? "-")}</div>
+            <div class="report-course-sub">Y${escapeHtml(course.year_level ?? "-")} \u00B7 S${escapeHtml(course.semester ?? "-")}</div>
           </div>
         </td>
         <td data-label="Doctors">${escapeHtml(course.doctor_names || "-")}</td>

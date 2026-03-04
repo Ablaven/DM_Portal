@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
@@ -293,8 +295,8 @@ auth_require_roles(['admin','management']);
   </div>
 
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/schedule_builder.js?v=20260121"></script>
+  <script src="js/navbar.js?v=20260228g"></script>
+  <script src="js/schedule_builder.js?v=20260228g"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initScheduleBuilder?.();

@@ -1,13 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, escapeHtml, initPageFiltersUI, getEffectivePageFilters } = window.dmportal || {};
-
-  function formatHours(n) {
-    const num = Number(n);
-    if (Number.isNaN(num)) return "0.00";
-    return num.toFixed(2);
-  }
+  const { fetchJson, escapeHtml, initPageFiltersUI, getEffectivePageFilters, formatHours } = window.dmportal || {};
 
   function renderDoctorCard(doctor) {
     const totals = doctor.totals || {};
@@ -36,11 +30,7 @@
                 <div class="course-progress-title">${escapeHtml(title)}</div>
                 <div class="course-progress-meta">${escapeHtml(meta)}</div>
               </div>
-              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <span class="badge badge-success">Done ${formatHours(done)}h</span>
-                <span class="badge badge-danger">Remaining ${formatHours(rem)}h</span>
-                <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
-              </div>
+              <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
             </div>
             <div class="course-progress-bar" aria-label="Course progress">
               <div class="course-progress-fill" style="width:${alloc > 0 ? ((done / alloc) * 100).toFixed(2) : 0}%"></div>
@@ -62,17 +52,13 @@
             <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
             <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <span class="badge">Allocated ${formatHours(allocT)}h</span>
-            <span class="badge badge-success">Done ${formatHours(doneT)}h</span>
-            <span class="badge badge-danger">Remaining ${formatHours(remT)}h</span>
-            <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
-          </div>
+          <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
         </div>
         <div class="course-progress-bar" aria-label="Doctor progress">
           <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
         </div>
         <div class="course-progress-legend">
+          <span class="badge">Allocated: ${formatHours(allocT)}h</span>
           <span class="badge badge-success">Done: ${formatHours(doneT)}h</span>
           <span class="badge badge-danger">Remaining: ${formatHours(remT)}h</span>
           <span class="muted">${pct.toFixed(0)}%</span>

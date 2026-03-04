@@ -1,30 +1,21 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl } = window.dmportal || {};
 
-  // Dashboard scheduling UI
-  // -----------------------------
-  // Week starts Sunday. Weekend Fri/Sat are not scheduled.
+  // Week starts Sunday (Sun–Thu). Weekend Fri/Sat are not scheduled.
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
   const SLOT_HOURS = 1.5;
-
-  // Slot timing (updated):
-  // 1) 8:30–10:00
-  // 2) 10:10–11:30
-  // 3) 11:40–1:00
-  // 4) 1:10–2:40
-  // 5) 2:50–4:20
   const SLOT_TIMES = {
-  1: "8:30 AM–10:00 AM",
-  2: "10:10 AM–11:30 AM",
-  3: "11:40 AM–1:00 PM",
-  4: "1:10 PM–2:40 PM",
-  5: "2:50 PM–4:20 PM",
+    1: "8:30 AM–10:00 AM",
+    2: "10:10 AM–11:30 AM",
+    3: "11:40 AM–1:00 PM",
+    4: "1:10 PM–2:40 PM",
+    5: "2:50 PM–4:20 PM",
   };
 
-  const STUDENT_SCHEDULE_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
+  const STUDENT_SCHEDULE_DAYS = DAYS;
 
   function slotLabel(slot) {
   const t = SLOT_TIMES[slot] || "";
@@ -47,12 +38,8 @@
   availabilityMap: {},
   };
 
-  // Auto-filter note: tracks the last time filters were auto-switched for a doctor.
-  // Set this when auto-switching Year/Sem filters based on a doctor's assigned courses.
   let lastBuilderAutoFilterNote = null;
 
-  // Auto-set builder filters based on the selected doctor's courses.
-  // Currently a no-op placeholder — can be implemented to auto-switch Year/Sem.
   function maybeAutoSetBuilderFiltersForDoctor(doctorId) {
     // Find the doctor's most common Year/Sem from their assigned courses and auto-switch filters.
     const did = Number(doctorId || 0);
@@ -76,12 +63,6 @@
     if (current.year_level === year_level && current.semester === semester) return;
     if (setGlobalFilters) setGlobalFilters({ year_level, semester });
     lastBuilderAutoFilterNote = { doctor_id: did, year_level, semester, at: Date.now() };
-  }
-
-  function formatHours(n) {
-  const num = Number(n);
-  if (Number.isNaN(num)) return "0.00";
-  return num.toFixed(2);
   }
 
   function getWeekLabel(weekId) {
@@ -150,11 +131,7 @@
                 <div class="course-progress-title">${escapeHtml(title)}</div>
                 <div class="course-progress-meta">${escapeHtml(meta)}</div>
               </div>
-              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <span class="badge badge-success">Done ${formatHours(done)}h</span>
-                <span class="badge badge-danger">Remaining ${formatHours(rem)}h</span>
-                <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
-              </div>
+              <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
             </div>
             <div class="course-progress-bar" aria-label="Course progress">
               <div class="course-progress-fill" style="width:${alloc > 0 ? ((done / alloc) * 100).toFixed(2) : 0}%"></div>
@@ -176,17 +153,13 @@
             <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
             <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-            <span class="badge">Allocated ${formatHours(allocT)}h</span>
-            <span class="badge badge-success">Done ${formatHours(doneT)}h</span>
-            <span class="badge badge-danger">Remaining ${formatHours(remT)}h</span>
-            <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
-          </div>
+          <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
         </div>
         <div class="course-progress-bar" aria-label="Doctor progress">
           <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
         </div>
         <div class="course-progress-legend">
+          <span class="badge">Allocated: ${formatHours(allocT)}h</span>
           <span class="badge badge-success">Done: ${formatHours(doneT)}h</span>
           <span class="badge badge-danger">Remaining: ${formatHours(remT)}h</span>
           <span class="muted">${pct.toFixed(0)}%</span>
@@ -810,6 +783,65 @@
     panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
   }
 
+  // Tracks whether the user has manually changed the student schedule filters,
+  // in which case auto-sync from global builder filters is suppressed.
+  let studentScheduleUserOverride = false;
+
+  // Sync the student schedule panel's year/semester/program selectors to match
+  // the current global builder filters (year_level, semester).
+  // Auto-picks the first available program for the given year/sem if not already set.
+  // Only runs when the panel is open and the user has not manually overridden.
+  function autoSyncStudentScheduleFilters() {
+    const panel = document.getElementById("studentScheduleMini");
+    if (!panel?.classList.contains("open")) return;
+    if (studentScheduleUserOverride) return;
+
+    const f = getGlobalFilters ? getGlobalFilters() : {};
+    const year = Number(f?.year_level || 0);
+    const semester = Number(f?.semester || 0);
+    if (!year || !semester) return;
+
+    const yearSel = document.getElementById("studentYearSelect");
+    const semSel = document.getElementById("studentSemesterSelect");
+    const progSel = document.getElementById("studentProgramSelect");
+
+    let changed = false;
+
+    if (yearSel && String(yearSel.value) !== String(year)) {
+      yearSel.value = String(year);
+      changed = true;
+    }
+    if (semSel && String(semSel.value) !== String(semester)) {
+      semSel.value = String(semester);
+      changed = true;
+    }
+
+    // Auto-select program: pick first program that has courses for this year/sem,
+    // or just the first program available if no match, but only if nothing is selected.
+    if (progSel && !progSel.value && state.courses?.length) {
+      const matchingPrograms = Array.from(
+        new Set(
+          state.courses
+            .filter((c) => Number(c.year_level) === year && Number(c.semester) === semester)
+            .map((c) => String(c.program || "").trim())
+            .filter(Boolean)
+        )
+      ).sort();
+      const allPrograms = Array.from(
+        new Set(state.courses.map((c) => String(c.program || "").trim()).filter(Boolean))
+      ).sort();
+      const preferred = matchingPrograms[0] || allPrograms[0] || "";
+      if (preferred && progSel.querySelector(`option[value="${CSS.escape(preferred)}"]`)) {
+        progSel.value = preferred;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      refreshStudentScheduleMini();
+    }
+  }
+
   function initStudentScheduleMini() {
     const panel = document.getElementById("studentScheduleMini");
     if (!panel) return;
@@ -822,8 +854,14 @@
       const isOpen = panel.classList.contains("open");
       setStudentMiniOpen(!isOpen);
       if (!isOpen) {
+        // Reset override so the panel auto-syncs to builder filters on open
+        studentScheduleUserOverride = false;
         await refreshStudentProgramOptions();
-        refreshStudentScheduleMini();
+        // Auto-sync to current global filters before loading
+        autoSyncStudentScheduleFilters();
+        if (!getStudentScheduleFilters().year) {
+          refreshStudentScheduleMini();
+        }
       }
     });
 
@@ -837,6 +875,8 @@
 
     ["studentProgramSelect", "studentYearSelect", "studentSemesterSelect"].forEach((id) => {
       document.getElementById(id)?.addEventListener("change", () => {
+        // Mark as user override so auto-sync won't clobber the user's choice
+        studentScheduleUserOverride = true;
         refreshStudentScheduleMini();
       });
     });
@@ -1367,6 +1407,11 @@
     setStatusById("scheduleStatus", "Loading…");
 
     initPageFiltersUI({ yearSelectId: "builderYearFilterMain", semesterSelectId: "builderSemesterFilterMain" });
+
+    // When the builder's year/sem filters change, auto-sync the student schedule panel if it's open.
+    window.addEventListener("dmportal:pageFiltersChanged", () => {
+      autoSyncStudentScheduleFilters();
+    });
 
     await loadDoctors();
     await loadCourses();

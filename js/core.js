@@ -461,13 +461,14 @@
 
     const toggle = document.getElementById("themeToggle");
     if (toggle) {
-      toggle.innerHTML = initial === "light" ? "🌙" : "☀️";
+      toggle.innerHTML = initial === "light" ? "\u{1F319}" : "\u2600\uFE0F";
       toggle.addEventListener("click", () => {
         const current = root.getAttribute("data-theme") === "light" ? "light" : "dark";
         const next = current === "light" ? "dark" : "light";
         root.setAttribute("data-theme", next);
         localStorage.setItem("dmportal-theme", next);
-        toggle.innerHTML = next === "light" ? "🌙" : "☀️";
+        toggle.innerHTML = next === "light" ? "\u{1F319}" : "\u2600\uFE0F";
+        window.dispatchEvent(new CustomEvent("dmportal:themeChanged", { detail: { theme: next } }));
         fireThemeGlitch();
       });
     }
@@ -500,11 +501,18 @@
       .map((x) => Number(x));
   }
 
+  function formatHours(n) {
+    const num = Number(n);
+    if (Number.isNaN(num)) return "0.00";
+    return num.toFixed(2);
+  }
+
   window.dmportal.fetchJson = fetchJson;
   window.dmportal.setStatusById = setStatusById;
   window.dmportal.escapeHtml = escapeHtml;
   window.dmportal.makeCourseLabel = makeCourseLabel;
   window.dmportal.parseDoctorIdsCsv = parseDoctorIdsCsv;
+  window.dmportal.formatHours = formatHours;
   window.dmportal.getPageFilters = getPageFilters;
   window.dmportal.setPageFilters = setPageFilters;
   window.dmportal.getGlobalFilters = getGlobalFilters;

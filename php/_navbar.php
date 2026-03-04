@@ -8,6 +8,9 @@ function render_portal_brand_header(string $href = 'index.php'): void
 {
     echo '<header class="navbar">';
     echo '<a class="brand" href="' . htmlspecialchars($href, ENT_QUOTES) . '">Digital Marketing Portal</a>';
+    echo '<div class="nav-actions" style="margin-left:auto;">';
+    echo '<button id="themeToggle" class="btn btn-secondary btn-small" type="button" aria-label="Toggle theme">Theme</button>';
+    echo '</div>';
     echo '</header>';
 }
 

@@ -6,6 +6,7 @@
     setStatusById,
     escapeHtml,
     makeCourseLabel,
+    formatHours,
     getGlobalFilters,
     applyGlobalFiltersToCourses,
     buildMailtoHref,
@@ -255,12 +256,6 @@
       item.appendChild(top);
       list.appendChild(item);
     }
-  }
-
-  function formatHours(n) {
-    const num = Number(n);
-    if (Number.isNaN(num)) return "0.00";
-    return num.toFixed(2);
   }
 
   async function initDoctorView(doctorId) {

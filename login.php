@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/db_connect.php';
 require_once __DIR__ . '/php/_auth_schema.php';
 require_once __DIR__ . '/php/_auth.php';
@@ -124,6 +126,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
     <?php endif; ?>
   </main>
 
+  <script src="js/core.js?v=20260228g"></script>
   <script>
     (function() {
       const form = document.getElementById('loginForm');
@@ -205,7 +208,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
             return;
           }
           if (role === 'teacher') {
-            window.location.href = 'index.php';
+            window.location.href = 'doctor.php';
             return;
           }
           window.location.href = 'index.php';
