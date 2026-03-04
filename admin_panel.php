@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
@@ -223,9 +225,9 @@ $importStatus = $_GET['import_status'] ?? '';
   </main>
 
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/admin_terms.js?v=20260222c"></script>
-  <script src="js/admin_advance.js?v=20260222c"></script>
+  <script src="js/navbar.js?v=20260228g"></script>
+  <script src="js/admin_terms.js?v=20260228g"></script>
+  <script src="js/admin_advance.js?v=20260228g"></script>
   <script>
     window.dmportal?.initNavbar?.({});
   </script>

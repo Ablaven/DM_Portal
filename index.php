@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
@@ -68,7 +70,7 @@ auth_require_roles(['admin','management']);
             </div>
 
             <div class="dashboard-card-actions" aria-label="Quick links">
-              <a class="btn btn-secondary btn-small" href="schedule_builder.php">Open Portal</a>
+              <a class="btn btn-secondary btn-small" href="https://sherifrostom9-boop.github.io/Digital-Marketing-tutting-plan/" target="_blank" rel="noopener">Open Portal</a>
             </div>
           </div>
 
@@ -128,8 +130,8 @@ auth_require_roles(['admin','management']);
   </main>
 
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/course_dashboard.js?v=20260201"></script>
+  <script src="js/navbar.js?v=20260228g"></script>
+  <script src="js/course_dashboard.js?v=20260228g"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initCourseDashboardPage?.();

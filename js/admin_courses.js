@@ -1,19 +1,13 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, applyPageFiltersToCourses, getGlobalFilters, setGlobalFilters, initPageFiltersUI } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, applyGlobalFiltersToCourses, getGlobalFilters, setGlobalFilters, initPageFiltersUI } = window.dmportal || {};
 
   const state = {
     doctors: [],
     courses: [],
     weeks: [],
   };
-
-  function formatHours(n) {
-    const num = Number(n);
-    if (Number.isNaN(num)) return "0.00";
-    return num.toFixed(2);
-  }
 
   async function loadDoctors() {
     const payload = await fetchJson("php/get_doctors.php");
@@ -153,145 +147,10 @@ async function handleCourseCreateSubmit(e) {
   }
 }
 
-function normalizePhoneForWhatsApp(phone) {
-  // WhatsApp wa.me expects digits only (and country code). We best-effort strip non-digits.
-  // If the result is too short, treat as missing.
-  const digits = String(phone || "").replace(/\D+/g, "");
-  return digits.length >= 8 ? digits : "";
-}
-
-function buildAbsoluteUrl(relativeOrAbsolute) {
-  try {
-    return new URL(String(relativeOrAbsolute || ""), window.location.href).href;
-  } catch {
-    return String(relativeOrAbsolute || "");
-  }
-}
-
-function getWeekLabel(weekId) {
-  const w = (state.weeks || []).find((x) => String(x.week_id) === String(weekId));
-  return String(w?.label || "").trim();
-}
-
-function buildDoctorScheduleExportUrl(doctorId, weekId) {
-  if (!doctorId) return "";
-  const qs = new URLSearchParams({ doctor_id: String(doctorId) });
-  if (weekId) qs.set("week_id", String(weekId));
-  return buildAbsoluteUrl(`php/export_doctor_week_xls.php?${qs.toString()}`);
-}
-
-// Trigger a file download without navigating away.
-// (Used for: "Email" button should download the XLS first, then open the mail draft.)
-function triggerBackgroundDownload(url) {
-  const href = String(url || "").trim();
-  if (!href) return;
-
-  try {
-    const iframe = document.createElement("iframe");
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    iframe.style.position = "absolute";
-    iframe.style.left = "-9999px";
-    iframe.style.top = "-9999px";
-    iframe.setAttribute("aria-hidden", "true");
-
-    iframe.src = href;
-    document.body.appendChild(iframe);
-
-    // Cleanup later
-    window.setTimeout(() => {
-      try {
-        iframe.remove();
-      } catch {
-        // ignore
-      }
-    }, 60_000);
-  } catch {
-    // If iframes are blocked, fallback to opening in a new tab.
-    // (Still better than nothing, but it may show a blank tab.)
-    try {
-      window.open(href, "_blank", "noopener");
-    } catch {
-      // ignore
-    }
-  }
-}
-
-function getDoctorFirstName(fullName) {
-  const s = String(fullName || "").trim();
-  if (!s) return "";
-  // Take the first token (supports: "Dr. Ahmed Ali" -> "Dr."; "Ahmed Ali" -> "Ahmed")
-  // If the name starts with "Dr." / "Dr", skip it.
-  const parts = s.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "";
-  const first = parts[0].replace(/\.+$/, "");
-  if (/^dr$/i.test(first) && parts[1]) return parts[1].replace(/\.+$/, "");
-  return parts[0];
-}
-
-function buildDoctorScheduleGreetingText(doctorName) {
-  const firstName = getDoctorFirstName(doctorName);
-
-  // Keep this in ONE paragraph because WhatsApp is more reliable with simpler text.
-  // Still use CRLF (\r\n) when mail clients parse the body.
-  const namePart = firstName ? ` ${firstName}` : "";
-  const msg = `Dear Dr.${namePart}, I hope you are doing well. Please open your email to find your weekly schedule attached. Let me know if you need any changes or clarifications. Best regards,`;
-
-  // Some handlers prefer CRLF even for single-line strings; normalize anyway.
-  return msg.replace(/\n/g, "\r\n");
-}
-
-function buildWhatsAppSendUrl(phoneDigits, text) {
-  const p = String(phoneDigits || "").trim();
-  if (!p) return "";
-
-  // IMPORTANT:
-  // WhatsApp requires an INTERNATIONAL phone number in most cases:
-  // example: 201012345678 (Egypt) or 14155552671 (USA)
-  // If you store a local number like 01012345678, WhatsApp may open but NOT select a chat.
-
-  // Prefer wa.me format (official + usually the most consistent across devices).
-  // Docs: https://faq.whatsapp.com/591358685853293/
-  if (text) {
-    return `https://wa.me/${encodeURIComponent(p)}?text=${encodeURIComponent(String(text))}`;
-  }
-  return `https://wa.me/${encodeURIComponent(p)}`;
-}
-
-function buildMailtoHref(email, subject = "", body = "") {
-  const to = String(email || "").trim();
-  if (!to) return "";
-
-  const params = [];
-  if (subject) params.push(["subject", subject]);
-  if (body) params.push(["body", body]);
-
-  // Use encodeURIComponent so spaces become %20 (not +).
-  // Some Outlook handlers fail to decode + correctly in mailto query strings.
-  const q = params
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-    .join("&");
-
-  // Note: do not encode the @ and other valid mail characters in the address.
-  // encodeURI keeps them intact but still escapes spaces (shouldn't exist anyway).
-  return `mailto:${encodeURI(to)}${q ? "?" + q : ""}`;
-}
-
 function doctorOptionsHtml(selectedId) {
   const opts = [`<option value=\"\">Unassigned</option>`];
   for (const d of state.doctors || []) {
     const sel = String(d.doctor_id) === String(selectedId) ? "selected" : "";
-    opts.push(`<option value=\"${escapeHtml(d.doctor_id)}\" ${sel}>${escapeHtml(d.full_name)}</option>`);
-  }
-  return opts.join("");
-}
-
-function doctorMultiOptionsHtml(selectedIds) {
-  const selected = new Set((selectedIds || []).map((x) => String(x)));
-  const opts = [];
-  for (const d of state.doctors || []) {
-    const sel = selected.has(String(d.doctor_id)) ? "selected" : "";
     opts.push(`<option value=\"${escapeHtml(d.doctor_id)}\" ${sel}>${escapeHtml(d.full_name)}</option>`);
   }
   return opts.join("");
@@ -723,8 +582,6 @@ function openHoursSplitModal({ course_id, doctor_ids, total_hours, course_name, 
   });
 }
 
-// (existing)
-
 function renderAdminCoursesList(filter = "") {
   const list = document.getElementById("adminCoursesList");
   if (!list) return;
@@ -1141,85 +998,6 @@ function drawCourseDashboardDonut(courses) {
   }
 }
 
-function drawCourseDashboardByYear(courses) {
-  const canvas = document.getElementById("courseDashboardByYear");
-  if (!canvas) return;
-
-  const { ctx, w, h } = prepareCanvas2d(canvas, { minW: 260, minH: 220 });
-  const C = getDashboardPalette();
-
-  const items = getDashboardCoursesSorted(courses || []);
-  ctx.clearRect(0, 0, w, h);
-
-  if (!items.length) {
-    ctx.fillStyle = C.muted;
-    ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("No data.", 12, 20);
-    return;
-  }
-
-  // Aggregate totals by (year, sem)
-  const buckets = new Map();
-  for (const c of items) {
-    const y = Number(c.year_level || 0) || 0;
-    const s = Number(c.semester || 0) || 0;
-    const key = `Y${y}S${s}`;
-    const { total } = computeCourseDoneHours(c);
-    buckets.set(key, (buckets.get(key) || 0) + total);
-  }
-
-  const labels = [
-    { k: "Y1S1", label: "Y1 S1" },
-    { k: "Y1S2", label: "Y1 S2" },
-    { k: "Y2S1", label: "Y2 S1" },
-    { k: "Y2S2", label: "Y2 S2" },
-    { k: "Y3S1", label: "Y3 S1" },
-    { k: "Y3S2", label: "Y3 S2" },
-  ];
-
-  const values = labels.map((x) => buckets.get(x.k) || 0);
-  const maxV = Math.max(1, ...values);
-
-  const pad = { top: 14, right: 12, bottom: 32, left: 36 };
-  const chartW = w - pad.left - pad.right;
-  const chartH = h - pad.top - pad.bottom;
-
-  // Grid + ticks
-  ctx.strokeStyle = C.grid;
-  ctx.fillStyle = C.muted;
-  ctx.font = "11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-  const ticks = 4;
-  for (let i = 0; i <= ticks; i++) {
-    const t = i / ticks;
-    const y = pad.top + chartH - t * chartH;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(pad.left + chartW, y);
-    ctx.stroke();
-    ctx.fillText(String(Math.round(t * maxV)), 6, y + 4);
-  }
-
-  const gap = 10;
-  const barW = Math.max(10, (chartW - gap * (labels.length - 1)) / labels.length);
-
-  for (let i = 0; i < labels.length; i++) {
-    const v = values[i];
-    const bh = (v / maxV) * chartH;
-    const x = pad.left + i * (barW + gap);
-    const y = pad.top + chartH - bh;
-
-    ctx.fillStyle = i % 2 === 0 ? C.accent : C.done;
-    ctx.fillRect(x, y, barW, bh);
-
-    ctx.fillStyle = C.text;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.font = "10px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText(labels[i].label, x + barW / 2, pad.top + chartH + 8);
-  }
-}
-
 async function drawMissionnairePieChart() {
   const canvas = document.getElementById("missionnairePie");
   if (!canvas) return;
@@ -1310,7 +1088,7 @@ async function drawMissionnairePieChart() {
   // French slice
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.fillStyle = "rgba(0, 220, 140, 0.92)";
+  ctx.fillStyle = C.done;
   ctx.arc(cx, cy, r, aEgyptianEnd, startAngle + Math.PI * 2);
   ctx.closePath();
   ctx.fill();
@@ -1384,7 +1162,7 @@ async function drawMissionnairePieChart() {
   const frenchPct = total > 0 ? frenchTotal / total : 0;
   const frenchLabel = `${frenchName}`;
   const frenchDetail = `${Math.round(frenchPct * 100)}% (${formatHours(frenchTotal)}h)`;
-  drawSliceLabel(frenchAngleMid, frenchLabel, frenchDetail, "rgba(0, 220, 140, 0.92)");
+  drawSliceLabel(frenchAngleMid, frenchLabel, frenchDetail, C.done);
 
   // Two-line legend under the chart
   const t = document.getElementById("missionnairePieText");
@@ -1401,7 +1179,7 @@ async function drawMissionnairePieChart() {
         </div>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:4px 0; border-top:1px solid rgba(255,255,255,0.08);">
           <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-            <span style="width:10px; height:10px; border-radius:2px; background:rgba(0, 220, 140, 0.92); flex:0 0 auto;"></span>
+            <span style="width:10px; height:10px; border-radius:2px; background:${C.done}; flex:0 0 auto;"></span>
             <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(frenchName)}</span>
           </div>
           <div style="white-space:nowrap;">${formatHours(frenchTotal)}h</div>
@@ -1626,8 +1404,6 @@ function drawCourseDashboardChart(courses) {
 function redrawAllDashboardCharts() {
   drawCourseDashboardDonut(state.courses || []);
   drawCourseDashboardChart(state.courses || []);
-  // Removed Hours by Year/Sem chart from the dashboard UI.
-  // drawCourseDashboardByYear(state.courses || []);
   drawCourseDashboardTopRemaining(state.courses || []);
   drawMissionnairePieChart();
 }

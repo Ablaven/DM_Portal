@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
@@ -102,8 +104,8 @@ if ($role === 'teacher') {
     window.AVAILABILITY_IS_ADMIN = <?php echo json_encode($role === 'admin' || $role === 'management'); ?>;
   </script>
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/availability.js?v=20260121"></script>
+  <script src="js/navbar.js?v=20260228g"></script>
+  <script src="js/availability.js?v=20260228g"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAvailabilityView?.({

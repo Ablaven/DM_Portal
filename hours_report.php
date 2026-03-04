@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+header('Content-Type: text/html; charset=utf-8');
+
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
@@ -18,7 +20,7 @@ $isTeacher = $role === 'teacher';
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?php echo $isTeacher ? 'My Reports' : 'The Reports'; ?></title>
-  <link rel="stylesheet" href="css/style.css?v=20251229" />
+  <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
 <body>
   <?php render_portal_navbar('hours_report.php'); ?>
@@ -76,8 +78,8 @@ $isTeacher = $role === 'teacher';
   </main>
 
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260121"></script>
-  <script src="js/reports_teacher_cards.js?v=20260209"></script>
+  <script src="js/navbar.js?v=20260228g"></script>
+  <script src="js/reports_teacher_cards.js?v=20260228g"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initTeacherReportCards?.();

@@ -8,9 +8,9 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px 14px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid rgba(255,255,255,.15);
-  border-radius: 10px;
+  border-radius: 14px;
   background: rgba(255,255,255,.03);
   max-height: min(50vh, 520px);
   overflow: auto;
@@ -19,15 +19,25 @@ body {
 .allowed-pages .chk {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   font-size: 0.95rem;
   line-height: 1.2;
   user-select: none;
+  padding: 7px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.allowed-pages .chk:hover {
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .allowed-pages input[type="checkbox"] {
   width: 16px;
   height: 16px;
+  accent-color: rgba(var(--accent-rgb), 1);
+  cursor: pointer;
 }
 
 /* Make it one column on narrow screens */

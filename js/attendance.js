@@ -6,11 +6,11 @@
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
   const SLOT_TIMES = {
-    1: "8:30 AM–10:00 AM",
-    2: "10:10 AM–11:30 AM",
-    3: "11:40 AM–1:00 PM",
-    4: "1:10 PM–2:40 PM",
-    5: "2:50 PM–4:20 PM",
+    1: "8:30 AM\u201310:00 AM",
+    2: "10:10 AM\u201311:30 AM",
+    3: "11:40 AM\u20131:00 PM",
+    4: "1:10 PM\u20132:40 PM",
+    5: "2:50 PM\u20134:20 PM",
   };
 
   const attendanceState = { weeks: [], activeWeekId: null };
@@ -70,7 +70,7 @@
       const items = (assigned?.items || []).filter(Boolean);
 
       if (!items.length) {
-        cell.innerHTML = `<div class="slot-title">—</div><div class="slot-sub">Empty</div>`;
+        cell.innerHTML = `<div class="slot-title">\u2014</div><div class="slot-sub">Empty</div>`;
         cell.style.cursor = "default";
       } else {
         cell.classList.add("filled");

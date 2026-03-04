@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+header('Content-Type: text/html; charset=utf-8');
 // Easter egg credits page. Access is granted only after completing the dashboard click combo.
 require_once __DIR__ . '/php/_easter_egg_gate.php';
 require_once __DIR__ . '/php/require_easter_egg.php';
@@ -62,6 +64,6 @@ $ok = true;
   </main>
 
   <script src="js/core.js?v=20260228g"></script>
-  <script src="js/ablaven.js?v=20260228d"></script>
+  <script src="js/ablaven.js?v=20260228g"></script>
 </body>
 </html>
