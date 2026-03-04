@@ -89,10 +89,10 @@ try {
         $gradesParams[] = $termId;
     }
 
-    if ($role === 'teacher' && $doctorId > 0) {
-        $gradesSql .= " AND g.doctor_id = ?";
-        $gradesParams[] = $doctorId;
-    }
+    // All grades are stored with doctor_id=0 (shared namespace) regardless of who entered them.
+    // Always filter by doctor_id=0 to ensure consistent results for both admins and teachers.
+    $gradesSql .= " AND g.doctor_id = ?";
+    $gradesParams[] = 0;
 
     $gradesSql .= " GROUP BY g.course_id";
 

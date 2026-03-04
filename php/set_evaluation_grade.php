@@ -57,8 +57,10 @@ try {
 
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
-    $configDoctorId = $role === 'teacher' ? 0 : $doctorId;
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
+    // Always use doctor_id=0 for config and grade storage so that records are shared
+    // regardless of whether an admin or a teacher created/reads them.
+    $sharedDoctorId = 0;
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $sharedDoctorId, $termId);
     if (!$config) {
         bad_request('Evaluation config is required before grading.');
     }
@@ -101,7 +103,7 @@ try {
     $stmt->execute([
         ':term_id' => $termId,
         ':course_id' => $courseId,
-        ':doctor_id' => $doctorId,
+        ':doctor_id' => $sharedDoctorId,
         ':student_id' => $studentId,
         ':attendance_score' => $attendanceScore,
         ':final_score' => $finalScore,
@@ -110,7 +112,7 @@ try {
     $gradeId = (int)$pdo->lastInsertId();
     if ($gradeId === 0) {
         $stmt2 = $pdo->prepare('SELECT grade_id FROM evaluation_grades WHERE term_id = :term_id AND course_id = :course_id AND doctor_id = :doctor_id AND student_id = :student_id LIMIT 1');
-        $stmt2->execute([':term_id' => $termId, ':course_id' => $courseId, ':doctor_id' => $doctorId, ':student_id' => $studentId]);
+        $stmt2->execute([':term_id' => $termId, ':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':student_id' => $studentId]);
         $gradeId = (int)$stmt2->fetchColumn();
     }
 

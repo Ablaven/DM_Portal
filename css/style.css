@@ -2150,6 +2150,60 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   }
 }
 
+/* Extra-small screens: compress schedule further */
+@media (max-width: 480px) {
+  .schedule-grid {
+    min-width: 480px;
+    width: max(480px, 100%);
+    border-spacing: 4px;
+  }
+
+  .schedule-grid .corner { width: 52px; }
+
+  .schedule-grid th {
+    font-size: 0.72rem;
+    padding: 0 1px;
+  }
+
+  .slot {
+    min-height: 56px;
+    padding: 5px 6px;
+    border-radius: 10px;
+  }
+
+  .slot .slot-title {
+    font-size: 0.68rem;
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+
+  .slot .slot-sub,
+  .slot .slot-sub-muted {
+    font-size: 0.6rem;
+    line-height: 1.1;
+  }
+
+  .slot-hdr-num { font-size: 0.72rem; }
+  .slot-hdr-time { font-size: 0.6rem; }
+
+  /* Schedule builder controls: stack compactly */
+  .schedule-header .controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .schedule-header .controls .field {
+    width: 100%;
+  }
+
+  /* Floating schedule panel: full-width on tiny screens */
+  .floating-schedule {
+    right: 8px;
+    left: 8px;
+    width: auto;
+  }
+}
+
 .schedule-grid td { padding: 0; }
 
 .schedule-grid th {
@@ -4634,3 +4688,106 @@ html[data-theme='light'] .data-table tbody td {
 .mb-8  { margin-bottom: 8px; }
 .mb-12 { margin-bottom: 12px; }
 .mb-16 { margin-bottom: 16px; }
+
+/* ── 18. Print styles ───────────────────────────────────────────────────── */
+@media print {
+  /* Hide interactive chrome */
+  .navbar,
+  .nav-toggle,
+  .btn,
+  .icon-btn,
+  .modal,
+  .floating-schedule,
+  .theme-toggle,
+  #themeToggle,
+  .status,
+  .filter-bar,
+  .schedule-header .controls,
+  .page-actions,
+  .hours-bar-actions,
+  .export-btn,
+  .tab-bar,
+  [data-action],
+  .dropdown,
+  form button,
+  .navlinks { display: none !important; }
+
+  /* Reset backgrounds for print */
+  html, body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+  }
+
+  .card,
+  .page-header,
+  .panel,
+  .auth-card,
+  .report-metric,
+  .report-detail-tile,
+  .dashboard-card,
+  .hours-remaining-item,
+  .course-progress-item {
+    background: #fff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    break-inside: avoid;
+  }
+
+  /* Tables */
+  .data-table,
+  .schedule-grid {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 9pt;
+  }
+  .data-table th,
+  .data-table td,
+  .schedule-grid th,
+  .schedule-grid td {
+    border: 1px solid #bbb !important;
+    padding: 4px 6px !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .data-table thead th,
+  .schedule-grid thead th {
+    background: #eee !important;
+    font-weight: bold;
+  }
+  .table-wrap {
+    border-radius: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Schedule grid print: allow wrap */
+  .schedule-wrap {
+    overflow: visible !important;
+  }
+  .schedule-grid {
+    min-width: 0 !important;
+    border-spacing: 2px !important;
+  }
+  .slot {
+    border-radius: 4px !important;
+    padding: 4px !important;
+    min-height: 40px !important;
+    font-size: 8pt;
+  }
+
+  /* Page breaks */
+  .page-header { break-after: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+
+  /* Links */
+  a { color: #000 !important; text-decoration: none !important; }
+
+  /* Progress bars */
+  .course-progress-bar,
+  .course-progress-bar-fill {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

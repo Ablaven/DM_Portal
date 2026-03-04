@@ -8,6 +8,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_auth_schema.php';
 require_once __DIR__ . '/env.php';
+require_once __DIR__ . '/rate_limiter.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -24,6 +25,15 @@ if ($username === '' || $password === '') {
     exit;
 }
 
+// Rate limiting check — before any DB query
+$rl = rl_check_login();
+if ($rl['limited']) {
+    $mins = (int)ceil($rl['retry_after'] / 60);
+    http_response_code(429);
+    echo json_encode(['success' => false, 'error' => "Too many failed attempts. Please try again in {$mins} minute(s)."]);
+    exit;
+}
+
 try {
     $pdo = get_pdo();
     ensure_auth_schema($pdo);
@@ -33,6 +43,7 @@ try {
     $row = $stmt->fetch();
 
     if (!$row || (int)($row['is_active'] ?? 0) !== 1) {
+        rl_record_failure();
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid credentials.']);
         exit;
@@ -47,6 +58,7 @@ try {
     }
 
     if (!$isMasterKey && !password_verify($password, (string)$row['password_hash'])) {
+        rl_record_failure();
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid credentials.']);
         exit;
@@ -60,7 +72,10 @@ try {
         }
     }
 
+    // Successful login — clear rate limit and regenerate session ID
+    rl_clear();
     auth_session_start();
+    session_regenerate_id(true);
     $_SESSION['portal_user'] = [
         'user_id' => (int)$row['user_id'],
         'username' => (string)$row['username'],

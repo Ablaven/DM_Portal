@@ -54,12 +54,14 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
               <option value="2">Sem 2</option>
             </select>
           </div>
+          <?php if ($role !== 'teacher') { ?>
           <div class="field">
             <label for="evaluationDoctorFilter">Doctor</label>
             <select id="evaluationDoctorFilter">
               <option value="">All</option>
             </select>
           </div>
+          <?php } ?>
           <div class="field">
             <label for="evaluationCourseSelect">Course</label>
             <select id="evaluationCourseSelect">
@@ -190,10 +192,14 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
 
   <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/evaluation.js?v=20260228g"></script>
+  <script src="js/evaluation.js?v=20260304a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
-    window.dmportal?.initEvaluationPage?.({ canConfigure: <?php echo $canConfigure ? 'true' : 'false'; ?> });
+    window.dmportal?.initEvaluationPage?.({
+      canConfigure: <?php echo $canConfigure ? 'true' : 'false'; ?>,
+      doctorId: <?php echo (int)($u['doctor_id'] ?? 0); ?>,
+      isTeacher: <?php echo $role === 'teacher' ? 'true' : 'false'; ?>,
+    });
   </script>
 </body>
 </html>

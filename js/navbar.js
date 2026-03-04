@@ -333,8 +333,24 @@
     });
   }
 
+  function highlightActiveNavLink() {
+    const current = window.location.pathname.split("/").pop() || "index.php";
+    const links = document.querySelectorAll(".navlinks a.navlink, .navlinks a[href]");
+    links.forEach((a) => {
+      const href = (a.getAttribute("href") || "").split("?")[0].split("/").pop();
+      if (href && href === current) {
+        a.classList.add("active");
+        a.setAttribute("aria-current", "page");
+      } else {
+        a.classList.remove("active");
+        a.removeAttribute("aria-current");
+      }
+    });
+  }
+
   async function initNavbar(state) {
     initResponsiveNavbar();
+    highlightActiveNavLink();
 
     let me = null;
     try {

@@ -53,7 +53,10 @@ try {
         exit;
     }
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $doctorId);
+    // Always use doctor_id=0 for config and grade storage so that records are shared
+    // regardless of whether an admin or a teacher created/reads them.
+    $sharedDoctorId = 0;
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $sharedDoctorId);
     $items = $config['items'] ?? [];
 
     if (!$items) {
@@ -76,7 +79,7 @@ try {
          FROM evaluation_grades
          WHERE course_id = :course_id AND doctor_id = :doctor_id AND term_id = :term_id'
     );
-    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId, ':term_id' => $termId]);
+    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
     $gradeRows = $gradesStmt->fetchAll();
     $gradeMap = [];
     foreach ($gradeRows as $r) {
@@ -89,7 +92,7 @@ try {
          JOIN evaluation_grades g ON g.grade_id = gi.grade_id
          WHERE g.course_id = :course_id AND g.doctor_id = :doctor_id AND g.term_id = :term_id'
     );
-    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId, ':term_id' => $termId]);
+    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
     $itemScoreRows = $itemScoresStmt->fetchAll();
     $scoreMap = [];
     foreach ($itemScoreRows as $r) {

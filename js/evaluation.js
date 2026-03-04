@@ -16,7 +16,7 @@
   let CATEGORIES = [];
 
   function initEvaluationPage(options = {}) {
-    const { canConfigure = true } = options;
+    const { canConfigure = true, doctorId: myDoctorId = 0, isTeacher = false } = options;
     const courseSelect = document.getElementById("evaluationCourseSelect");
     const doctorSelect = document.getElementById("evaluationDoctorFilter");
     const refreshBtn = document.getElementById("evaluationRefresh");
@@ -334,6 +334,8 @@
     }
 
     function getSelectedDoctorId() {
+      // If logged in as a teacher, always filter by their own doctor ID.
+      if (isTeacher && myDoctorId) return myDoctorId;
       return Number(doctorSelect?.value || 0);
     }
 
@@ -398,7 +400,8 @@
     }
 
     async function loadDoctors() {
-      if (!doctorSelect) return;
+      // If logged in as a teacher, the doctor filter is hidden — no need to load the list.
+      if (isTeacher || !doctorSelect) return;
       try {
         const payload = await fetchJson("php/get_doctors.php");
         doctorsCache = payload?.data || [];
@@ -479,7 +482,7 @@
 
         items.forEach((cfgItem) => {
           if (cfgItem.category === "attendance") return;
-          const scoreVal = item.scores?.[cfgItem.item_id] ?? "";
+          const scoreVal = item.scores?.[String(cfgItem.item_id)] ?? item.scores?.[cfgItem.item_id] ?? "";
           cells.push(`
             <td class="col-number">
               <input type="number" min="0" max="${cfgItem.weight ?? 0}" step="0.01" data-score-item="${cfgItem.item_id}" value="${scoreVal}" style="max-width:80px;" />
