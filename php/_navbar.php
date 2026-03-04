@@ -69,7 +69,7 @@ function render_portal_navbar(string $activePage): void
     // My Lectures — external link, teachers/doctors only.
     $doctorId = (int)($u['doctor_id'] ?? 0);
     if ($role === 'teacher' || $doctorId > 0) {
-        $lecturesUrl = 'https://sherifrostom9-boop.github.io/Digital-Marketing-tutting-plan/';
+        $lecturesUrl = 'https://sherifrostom9-boop.github.io/DM-Lectures/';
         echo '<a class="navlink" href="' . htmlspecialchars($lecturesUrl, ENT_QUOTES) . '" target="_blank" rel="noopener">My Lectures</a>';
     }
 

@@ -70,7 +70,7 @@ auth_require_roles(['admin','management']);
             </div>
 
             <div class="dashboard-card-actions" aria-label="Quick links">
-              <a class="btn btn-secondary btn-small" href="https://sherifrostom9-boop.github.io/Digital-Marketing-tutting-plan/" target="_blank" rel="noopener">Open Portal</a>
+              <a class="btn btn-secondary btn-small" href="https://sherifrostom9-boop.github.io/DM-Lectures/" target="_blank" rel="noopener">Open Portal</a>
             </div>
           </div>
 
