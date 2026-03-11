@@ -216,7 +216,16 @@
   const list = document.getElementById("coursesList");
   if (!list) return;
 
-  const filtered = getFilteredCoursesForUI().filter((course) => Number(course?.remaining_hours || 0) > 0);
+  // Zero-hour courses may have 0 remaining hours by design — include them regardless.
+  // We treat either:
+  // - course_type === "ZH" (explicit zero-hour type), OR
+  // - total_hours === 0 (legacy/explicit 0-hour course)
+  const filtered = getFilteredCoursesForUI().filter((course) => {
+    const type = String(course?.course_type || "").toUpperCase();
+    const total = Number(course?.total_hours ?? 0);
+    const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
+    return isZeroHour || Number(course?.remaining_hours || 0) > 0;
+  });
   if (!filtered.length) {
     list.innerHTML = `<div class="muted">No courses found for the selected filters.</div>`;
     return;
@@ -244,7 +253,12 @@
 
     const badge = document.createElement("span");
     badge.className = "badge badge-hours";
-    badge.textContent = `${formatHours(c.remaining_hours)}h`;
+    {
+      const type = String(c.course_type || "").toUpperCase();
+      const total = Number(c?.total_hours ?? 0);
+      const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
+      badge.textContent = type === "ZH" ? "ZH" : (isZeroHour ? "0h" : `${formatHours(c.remaining_hours)}h`);
+    }
 
     top.appendChild(left);
     top.appendChild(badge);
@@ -312,7 +326,12 @@
     // Course Name dropdown
     const optName = document.createElement("option");
     optName.value = String(c.course_id);
-    optName.textContent = `${courseDisplayLine(c)} (${formatHours(c.remaining_hours)}h left)`;
+    const type = String(c.course_type || "").toUpperCase();
+    const total = Number(c?.total_hours ?? 0);
+    const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
+    optName.textContent = isZeroHour
+      ? `${courseDisplayLine(c)} [Zero Hours]`
+      : `${courseDisplayLine(c)} (${formatHours(c.remaining_hours)}h left)`;
     nameSel.appendChild(optName);
   }
 
@@ -599,9 +618,11 @@
         if (!assignedMatchesFilters) {
           cell.style.background = "#99999922";
           cell.style.borderColor = "#99999988";
+          const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
             <div class="slot-title">Occupied</div>
-            <div class="slot-sub">Other Year/Sem course</div>
+            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.course_name || "")}</div>
+            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} • Sem ${escapeHtml(assigned.semester)}</div>
           `;
           cell.style.cursor = "not-allowed";
           td.appendChild(cell);
@@ -1215,8 +1236,18 @@
   if (roomInput) roomInput.value = preferredRoomCode ? String(preferredRoomCode) : "";
 
   // counts towards hours
+  // Zero-hour courses default to NOT counting towards hours — their purpose is scheduling
+  // without affecting hour tracking. If explicitly saved otherwise, respect that saved value.
   const cth = document.getElementById("modal_counts_towards_hours");
-  if (cth) cth.checked = assigned ? Boolean(Number(assigned.counts_towards_hours ?? 1)) : true;
+  if (cth) {
+    if (assigned) {
+      cth.checked = Boolean(Number(assigned.counts_towards_hours ?? 1));
+    } else {
+      // Default for new slots: checked (counts towards hours).
+      // Backend will still enforce counts_towards_hours=0 for true zero-hour courses (ZH or total_hours=0).
+      cth.checked = true;
+    }
+  }
 
   // extra minutes (0/15/30/45)
   const extraSel = document.getElementById("modal_extra_minutes");

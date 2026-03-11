@@ -130,7 +130,7 @@ async function handleCourseCreateSubmit(e) {
     if (typeSel && preservedCourseType) typeSel.value = preservedCourseType;
 
     const hours = document.getElementById("course_hours");
-    if (hours) hours.value = 10;
+    if (hours) hours.value = (preservedCourseType === "ZH") ? 0 : 10;
 
     const coef = document.getElementById("coefficient");
     if (coef) coef.value = 1;
@@ -373,6 +373,21 @@ function initEditDoctorsMultiSelect(course) {
 // -----------------------------
 // Admin Add Course form: Code/Name syncing using datalists
 // -----------------------------
+function applyZHCourseTypeUI(typeValue, hoursInputId, coefInputId) {
+  // When ZH is selected: force total hours to 0 and disable the field.
+  // When switching away from ZH: re-enable and restore a sensible default.
+  const hoursInput = document.getElementById(hoursInputId);
+  const isZH = String(typeValue || "").trim().toUpperCase() === "ZH";
+  if (hoursInput) {
+    hoursInput.disabled = isZH;
+    if (isZH) {
+      hoursInput.value = "0";
+    } else if (hoursInput.value === "") {
+      hoursInput.value = "10";
+    }
+  }
+}
+
 function initAdminCourseCreateFormEnhancements() {
   // Only for admin_courses.php
   const form = document.getElementById("courseForm");
@@ -451,6 +466,16 @@ function initAdminCourseCreateFormEnhancements() {
   if (document.getElementById("createDoctorsMulti")) {
     renderCreateDoctorsMenu();
     renderCreateDoctorsSummary();
+  }
+
+  // Wire ZH course type change: auto-set hours to 0 and lock the field
+  const courseTypeSel = document.getElementById("course_type");
+  if (courseTypeSel) {
+    // Apply on initial load (in case page reloaded with ZH selected)
+    applyZHCourseTypeUI(courseTypeSel.value, "course_hours", "coefficient");
+    courseTypeSel.addEventListener("change", () => {
+      applyZHCourseTypeUI(courseTypeSel.value, "course_hours", "coefficient");
+    });
   }
 }
 
@@ -722,6 +747,18 @@ function openCourseEditModal(courseId) {
   if (coef) coef.value = String(c.coefficient ?? 1);
   const dr = document.getElementById("edit_default_room_code");
   if (dr) dr.value = String(c.default_room_code ?? "");
+
+  // Apply ZH UI state (lock hours field if type is ZH)
+  applyZHCourseTypeUI(String(c.course_type), "edit_course_hours", "edit_coefficient");
+
+  // Wire course type change in edit modal
+  const editTypeSel = document.getElementById("edit_course_type");
+  if (editTypeSel && !editTypeSel.dataset.zhBound) {
+    editTypeSel.dataset.zhBound = "1";
+    editTypeSel.addEventListener("change", () => {
+      applyZHCourseTypeUI(editTypeSel.value, "edit_course_hours", "edit_coefficient");
+    });
+  }
 
   // Initialize checkbox multi-select for doctors
   initEditDoctorsMultiSelect(c);

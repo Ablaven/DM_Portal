@@ -217,12 +217,23 @@ try {
     }
 
     // validate course exists + lock it for update
-    $chkC = $pdo->prepare('SELECT course_id, total_hours, course_hours, program, year_level, semester FROM courses WHERE course_id = :id FOR UPDATE');
+    $chkC = $pdo->prepare('SELECT course_id, course_type, total_hours, course_hours, program, year_level, semester FROM courses WHERE course_id = :id FOR UPDATE');
     $chkC->execute([':id' => $courseId]);
     $courseRow = $chkC->fetch();
     if (!$courseRow) {
         safe_rollback($pdo);
         bad_request('Course not found.');
+    }
+
+    // Zero-hour courses:
+    // - course_type = ZH OR total_hours = 0
+    // These are allowed to be scheduled freely, but MUST NOT deduct from hour tracking.
+    // So we force counts_towards_hours=0 server-side and skip remaining-hours enforcement.
+    $courseTotalForZeroCheck = isset($courseRow['total_hours']) ? (float)$courseRow['total_hours'] : (float)($courseRow['course_hours'] ?? 0);
+    $type = strtoupper((string)($courseRow['course_type'] ?? ''));
+    $isZeroHourCourse = ($type === 'ZH') || ($courseTotalForZeroCheck == 0.0);
+    if ($isZeroHourCourse) {
+        $countsTowardsHours = 0;
     }
 
     // Enforce that the selected course belongs to the selected doctor.
@@ -332,7 +343,7 @@ try {
 
     // If slot was empty OR course changed, ensure the course has enough remaining hours.
     // Remaining hours = total_hours - scheduled_slots*1.5 (excluding cancelled days)
-    if (!$existing || $existingCourseId !== $courseId) {
+    if ((!$existing || $existingCourseId !== $courseId) && $countsTowardsHours === 1) {
         // total hours
         $total = isset($courseRow['total_hours']) ? (float)$courseRow['total_hours'] : (float)$courseRow['course_hours'];
 

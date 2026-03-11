@@ -120,6 +120,11 @@ function render_portal_navbar(string $activePage): void
         if ($role === 'admin' && auth_can_access_page('admin_panel.php')) {
             echo '<div class="dropdown-section-label">Tools</div>';
             $ddItem('admin_panel.php', '⚙️', 'Admin Panel', 'Semesters, terms & settings', $activePage === 'admin_panel.php');
+            $ddItem('architecture_map.php', "\xF0\x9F\x97\xBA\xEF\xB8\x8F", 'Architecture Map', 'Interactive portal schema explorer', $activePage === 'architecture_map.php');
+            echo '<a href="#" class="dropdown-item dropdown-item-rich" data-admin-email-trigger="1">';
+            echo '<span class="ddi-icon" aria-hidden="true">✉️</span>';
+            echo '<span class="ddi-body"><span class="ddi-label">Send Email</span><span class="ddi-sub">Email teachers or students</span></span>';
+            echo '</a>';
         }
 
         // ─ Section: Reports ──────────────────────────────────────────────────

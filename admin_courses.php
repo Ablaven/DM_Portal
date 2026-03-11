@@ -79,11 +79,13 @@ auth_require_roles(['admin','management']);
         </div>
 
         <div class="field">
-          <label for="course_type">Course Type (R / LAS)</label>
+          <label for="course_type">Course Type</label>
           <select id="course_type" name="course_type" required>
             <option value="R">R (Regular)</option>
             <option value="LAS">LAS</option>
+            <option value="ZH">ZH (Zero Hours)</option>
           </select>
+          <small class="hint">ZH courses have 0 total hours and can be scheduled freely without affecting hour tracking.</small>
         </div>
 
         <div class="grid-2">
@@ -231,10 +233,11 @@ auth_require_roles(['admin','management']);
             </select>
           </div>
           <div class="field">
-            <label for="edit_course_type">Type (R / LAS)</label>
+            <label for="edit_course_type">Course Type</label>
             <select id="edit_course_type">
               <option value="R">R (Regular)</option>
               <option value="LAS">LAS</option>
+              <option value="ZH">ZH (Zero Hours)</option>
             </select>
           </div>
         </div>

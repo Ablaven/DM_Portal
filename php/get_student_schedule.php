@@ -54,7 +54,8 @@ try {
 
     // Find all scheduled lectures for this week where course matches program + year.
     $stmt = $pdo->prepare(
-        "SELECT s.day_of_week, s.slot_number,
+        "SELECT s.day_of_week, s.slot_number, s.room_code,
+                COALESCE(s.extra_minutes, 0) AS extra_minutes,
                 c.course_id, c.course_name, c.course_type, c.subject_code,
                 d.full_name AS doctor_name,
                 COALESCE(dyc.color_code, d.color_code) AS doctor_color
@@ -70,7 +71,6 @@ try {
          WHERE s.week_id = :week_id
            AND x.cancellation_id IS NULL
            AND xs.slot_cancellation_id IS NULL
-           AND s.counts_towards_hours = 1
            AND c.program = :program
            AND c.year_level = :year_level
            AND c.semester = :semester"
@@ -104,6 +104,8 @@ try {
                 'subject_code' => $r['subject_code'],
                 'doctor_name' => $r['doctor_name'],
                 'doctor_color' => $r['doctor_color'],
+                'room_code' => $r['room_code'],
+                'extra_minutes' => (int)($r['extra_minutes'] ?? 0),
 
             ];
         } else {

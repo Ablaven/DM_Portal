@@ -39,11 +39,16 @@ if ($courseName === '') bad_request('course_name is required.');
 if ($program === '') bad_request('program is required.');
 if ($yearLevel < 1 || $yearLevel > 3) bad_request('year_level must be 1-3.');
 if ($semester < 1 || $semester > 2) bad_request('semester must be 1-2.');
-if (!in_array($courseType, ['R', 'LAS'], true)) bad_request('course_type must be R or LAS.');
+if (!in_array($courseType, ['R', 'LAS', 'ZH'], true)) bad_request('course_type must be R, LAS, or ZH.');
 // subject_code is REQUIRED and must be reasonably formatted.
 if ($subjectCode === '') bad_request('subject_code is required.');
 if (!preg_match('/^[A-Za-z0-9._-]{1,30}$/', $subjectCode)) bad_request('subject_code is invalid. Use letters/numbers and . _ - only (max 30 chars).');
-if ($courseHours < 0 || $courseHours > 200) bad_request('course_hours must be 0-200.');
+// ZH (Zero Hours) courses always have 0 total hours
+if ($courseType === 'ZH') {
+    $courseHours = 0.0;
+} elseif ($courseHours < 0 || $courseHours > 200) {
+    bad_request('course_hours must be 0-200.');
+}
 if ($coefficient <= 0 || $coefficient > 100) bad_request('coefficient must be a positive number.');
 if ($defaultRoom !== null) {
     $defaultRoom = trim($defaultRoom);

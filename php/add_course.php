@@ -50,8 +50,8 @@ if ($semester < 1 || $semester > 2) {
     bad_request('Semester must be 1 or 2.');
 }
 
-if (!in_array($courseType, ['R', 'LAS'], true)) {
-    bad_request('Course type must be R or LAS.');
+if (!in_array($courseType, ['R', 'LAS', 'ZH'], true)) {
+    bad_request('Course type must be R, LAS, or ZH.');
 }
 
 // subject_code is REQUIRED and must be reasonably formatted.
@@ -63,8 +63,12 @@ if (!preg_match('/^[A-Za-z0-9._-]{1,30}$/', $subjectCode)) {
     bad_request('subject_code is invalid. Use letters/numbers and . _ - only (max 30 chars).');
 }
 
-if ($courseHours <= 0 || $courseHours > 200) {
-    bad_request('Course hours must be a positive number.');
+// ZH courses may have 0 total hours (they are zero-hour courses by design)
+$isZeroHourType = $courseType === 'ZH';
+if ($isZeroHourType) {
+    $courseHours = 0.0;
+} elseif ($courseHours < 0 || $courseHours > 200) {
+    bad_request('Course hours must be between 0 and 200.');
 }
 
 if ($coefficient <= 0 || $coefficient > 100) {

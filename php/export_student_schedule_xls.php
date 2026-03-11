@@ -75,7 +75,6 @@ try {
          WHERE s.week_id = :week_id
            AND x.cancellation_id IS NULL
            AND xs.slot_cancellation_id IS NULL
-           AND s.counts_towards_hours = 1
            AND c.program = :program
            AND c.year_level = :year_level
            AND c.semester = :semester"

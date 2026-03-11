@@ -848,7 +848,8 @@ body.students-view .container {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   border-radius: 14px;
   border: 1px solid var(--input-border);
@@ -872,6 +873,10 @@ body.students-view .container {
 .field input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
   border-radius: 12px;
+}
+
+textarea {
+  resize: none;
 }
 
 .field input[type="color"]::-webkit-color-swatch {
@@ -1408,6 +1413,7 @@ html[data-theme="light"] .legend-remaining {
 }
 
 .field input:focus,
+.field textarea:focus,
 .field select:focus {
   border-color: rgba(var(--accent-rgb), 0.75);
   box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);

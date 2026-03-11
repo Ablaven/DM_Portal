@@ -31,7 +31,7 @@ function dmportal_ensure_schema_version(PDO $pdo): void
     $row = $stmt->fetch();
     $current = $row ? (int)$row['version'] : 0;
 
-    $target = 5;
+    $target = 6;
 
     if ($current < 1) {
         $pdo->prepare('INSERT INTO schema_versions (schema_name, version) VALUES (:name, 1) ON DUPLICATE KEY UPDATE version = VALUES(version)')
@@ -120,5 +120,24 @@ function dmportal_ensure_schema_version(PDO $pdo): void
         $pdo->prepare('UPDATE schema_versions SET version = 5 WHERE schema_name = :name')
             ->execute([':name' => $schemaName]);
         $current = 5;
+    }
+
+    if ($current < 6) {
+        // Migration: change courses.course_type column from ENUM('R','LAS') to ENUM('R','LAS','ZH')
+        // so that Zero-Hour courses can be registered. All existing courses keep their type unchanged.
+        try {
+            $pdo->exec("ALTER TABLE courses MODIFY COLUMN course_type ENUM('R','LAS','ZH') NOT NULL DEFAULT 'R'");
+        } catch (PDOException $e) {
+            // 1067 = invalid default; try without explicit default
+            if ((int)($e->errorInfo[1] ?? 0) === 1067) {
+                $pdo->exec("ALTER TABLE courses MODIFY COLUMN course_type ENUM('R','LAS','ZH') NOT NULL");
+            } else {
+                throw $e;
+            }
+        }
+
+        $pdo->prepare('UPDATE schema_versions SET version = 6 WHERE schema_name = :name')
+            ->execute([':name' => $schemaName]);
+        $current = 6;
     }
 }
