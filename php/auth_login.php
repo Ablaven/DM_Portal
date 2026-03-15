@@ -64,11 +64,15 @@ try {
         exit;
     }
 
+    // NULL or empty stored list = use role default (teacher→doctor.php, student→students.php).
     $allowed = null;
     if (!empty($row['allowed_pages_json'])) {
         $decoded = json_decode((string)$row['allowed_pages_json'], true);
         if (is_array($decoded)) {
-            $allowed = array_values(array_filter(array_map('strval', $decoded), fn($v) => $v !== ''));
+            $list = array_values(array_filter(array_map('strval', $decoded), fn($v) => $v !== ''));
+            if (count($list) > 0) {
+                $allowed = $list;
+            }
         }
     }
 

@@ -68,10 +68,13 @@ if ($role === 'student') {
     }
 }
 
+// Store NULL when no/empty allowed_pages so role defaults apply (teacher → doctor.php, student → students.php).
 $allowedJson = null;
 if (is_array($allowedPages) && count($allowedPages) > 0) {
     $allowed = array_values(array_unique(array_filter(array_map('strval', $allowedPages), fn($v) => $v !== '')));
-    $allowedJson = json_encode($allowed, JSON_UNESCAPED_SLASHES);
+    if (count($allowed) > 0) {
+        $allowedJson = json_encode($allowed, JSON_UNESCAPED_SLASHES);
+    }
 }
 
 try {

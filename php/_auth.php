@@ -216,10 +216,14 @@ function auth_allowed_pages_for_user(array $user): ?array
 {
     // If an explicit allowed_pages list exists for ANY role (including admin), treat it as an override.
     // - null => use role defaults (or full access for admin)
-    // - []   => no pages allowed
+    // - [] or empty => treat as "no override", use role defaults (fixes new teacher/student seeing Forbidden)
     $ap = $user['allowed_pages'] ?? null;
     if (is_array($ap)) {
-        return array_values(array_unique(array_filter(array_map('strval', $ap), fn($v) => $v !== '')));
+        $list = array_values(array_unique(array_filter(array_map('strval', $ap), fn($v) => $v !== '')));
+        if (count($list) > 0) {
+            return $list;
+        }
+        // Empty list = use role default (e.g. new account with no checkboxes)
     }
 
     // Role defaults
@@ -245,7 +249,9 @@ function auth_is_allowed_pages_override_mode(): bool
 {
     $u = auth_current_user();
     if (!$u) return false;
-    return is_array($u['allowed_pages'] ?? null);
+    $ap = $u['allowed_pages'] ?? null;
+    if (!is_array($ap)) return false;
+    return count(array_filter($ap, fn($v) => $v !== '')) > 0;
 }
 
 function auth_can_access_page(string $pageBasename): bool
