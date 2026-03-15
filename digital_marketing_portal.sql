@@ -1,6 +1,6 @@
 -- Digital Marketing Portal SQL Export
 -- Database: digital_marketing_portal
--- Generated: 2026-03-13 18:16:36 UTC
+-- Generated: 2026-03-15 09:17:56 UTC
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
@@ -65,7 +65,7 @@ CREATE TABLE `attendance_records` (
   KEY `idx_attendance_schedule` (`schedule_id`),
   CONSTRAINT `fk_attendance_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `doctor_schedules` (`schedule_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_attendance_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`student_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3918 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3931 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `attendance_records`
 INSERT INTO `attendance_records` (`attendance_id`, `term_id`, `schedule_id`, `student_id`, `status`, `created_at`, `updated_at`) VALUES
@@ -3054,7 +3054,20 @@ INSERT INTO `attendance_records` (`attendance_id`, `term_id`, `schedule_id`, `st
 (3914, 2, 354, 35, 'PRESENT', '2026-03-12 09:47:53', '2026-03-12 09:47:53'),
 (3915, 2, 354, 31, 'PRESENT', '2026-03-12 09:47:53', '2026-03-12 09:47:53'),
 (3916, 2, 354, 30, 'PRESENT', '2026-03-12 09:47:53', '2026-03-12 09:47:53'),
-(3917, 2, 354, 33, 'PRESENT', '2026-03-12 09:47:54', '2026-03-12 09:47:54');
+(3917, 2, 354, 33, 'PRESENT', '2026-03-12 09:47:54', '2026-03-12 09:47:54'),
+(3918, 2, 388, 42, 'PRESENT', '2026-03-15 09:45:20', '2026-03-15 09:45:20'),
+(3919, 2, 388, 33, 'PRESENT', '2026-03-15 09:45:20', '2026-03-15 09:45:20'),
+(3920, 2, 388, 30, 'PRESENT', '2026-03-15 09:45:20', '2026-03-15 09:45:20'),
+(3921, 2, 388, 35, 'PRESENT', '2026-03-15 09:45:20', '2026-03-15 09:45:20'),
+(3922, 2, 388, 34, 'PRESENT', '2026-03-15 09:45:21', '2026-03-15 09:45:21'),
+(3923, 2, 388, 40, 'PRESENT', '2026-03-15 09:45:21', '2026-03-15 09:45:21'),
+(3924, 2, 394, 42, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3925, 2, 394, 33, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3926, 2, 394, 30, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3927, 2, 394, 35, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3928, 2, 394, 34, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3929, 2, 394, 40, 'PRESENT', '2026-03-15 11:06:53', '2026-03-15 11:06:53'),
+(3930, 2, 394, 36, 'PRESENT', '2026-03-15 11:06:59', '2026-03-15 11:06:59');
 
 -- ----------------------------------------
 -- Table structure for `audit_log`
@@ -3438,7 +3451,7 @@ CREATE TABLE `doctor_schedules` (
   CONSTRAINT `fk_doctor_schedules_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`doctor_id`) ON UPDATE CASCADE,
   CONSTRAINT `fk_doctor_schedules_week` FOREIGN KEY (`week_id`) REFERENCES `weeks` (`week_id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=401 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=402 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `doctor_schedules`
 INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_id`, `day_of_week`, `slot_number`, `room_code`, `counts_towards_hours`, `extra_minutes`, `created_at`) VALUES
@@ -3712,20 +3725,21 @@ INSERT INTO `doctor_schedules` (`schedule_id`, `week_id`, `doctor_id`, `course_i
 (379, 24, 14, 48, 'Wed', 1, '133', 1, 0, '2026-03-12 16:04:41'),
 (380, 24, 14, 48, 'Wed', 2, '133', 1, 0, '2026-03-12 16:04:52'),
 (382, 24, 14, 88, 'Mon', 1, '133', 1, 0, '2026-03-12 16:06:35'),
-(383, 24, 14, 88, 'Mon', 2, '129', 1, 0, '2026-03-12 16:06:45'),
-(384, 24, 14, 88, 'Tue', 1, '129', 1, 0, '2026-03-12 16:06:51'),
-(385, 24, 14, 88, 'Tue', 2, '129', 1, 0, '2026-03-12 16:07:01'),
-(386, 24, 14, 88, 'Mon', 3, '129', 1, 0, '2026-03-12 16:32:11'),
+(383, 24, 14, 88, 'Mon', 2, '133', 1, 0, '2026-03-12 16:06:45'),
+(384, 24, 14, 88, 'Tue', 1, '133', 1, 0, '2026-03-12 16:06:51'),
+(385, 24, 14, 88, 'Tue', 2, '133', 1, 0, '2026-03-12 16:07:01'),
+(386, 24, 14, 88, 'Mon', 3, '133', 1, 0, '2026-03-12 16:32:11'),
 (388, 24, 14, 88, 'Sun', 1, '129', 1, 0, '2026-03-13 19:37:57'),
-(390, 24, 14, 48, 'Tue', 3, '129', 1, 0, '2026-03-13 19:44:59'),
+(390, 24, 14, 48, 'Tue', 3, '133', 1, 0, '2026-03-13 19:44:59'),
 (391, 24, 14, 48, 'Wed', 3, '133', 1, 0, '2026-03-13 19:48:24'),
 (394, 24, 14, 88, 'Sun', 2, '129', 1, 0, '2026-03-13 19:49:05'),
-(395, 24, 3, 55, 'Sun', 3, '129', 1, 0, '2026-03-13 19:52:55'),
+(395, 24, 3, 52, 'Sun', 3, '127', 1, 0, '2026-03-13 19:52:55'),
 (396, 24, 1, 42, 'Mon', 1, '127', 1, 0, '2026-03-13 19:56:23'),
 (397, 24, 1, 42, 'Mon', 2, '127', 1, 0, '2026-03-13 19:56:30'),
 (398, 24, 1, 42, 'Mon', 3, '127', 1, 0, '2026-03-13 19:56:35'),
 (399, 24, 1, 46, 'Tue', 1, '127', 1, 0, '2026-03-13 19:56:53'),
-(400, 24, 1, 46, 'Tue', 2, '127', 1, 0, '2026-03-13 19:56:59');
+(400, 24, 1, 46, 'Tue', 2, '127', 1, 0, '2026-03-13 19:56:59'),
+(401, 24, 3, 52, 'Sun', 2, '127', 1, 0, '2026-03-14 21:45:27');
 
 -- ----------------------------------------
 -- Table structure for `doctor_slot_cancellations`
@@ -3878,7 +3892,7 @@ INSERT INTO `doctors` (`doctor_id`, `full_name`, `email`, `phone_number`, `color
 (11, 'Dr. Khaled', 'Khaled@gmail.com', NULL, '#A34F00', 'Egyptian', '2026-01-01 17:44:35'),
 (12, 'Mutasim', 'Mutasimufe@gmail.com', '+201023319036', '#D742BB', 'Egyptian', '2026-02-04 17:38:54'),
 (13, 'Dr. Franck', 'franck@p-ing.net', NULL, '#0055A4', 'French', '2026-03-01 20:14:36'),
-(14, 'Julian', 'Julian@gmail.com', NULL, '#5DE579', 'French', '2026-03-12 15:54:44');
+(14, 'Julien', 'julien.lasserre.41@gmail.com', NULL, '#5DE579', 'French', '2026-03-12 15:54:44');
 
 -- ----------------------------------------
 -- Table structure for `evaluation_categories`
@@ -4480,7 +4494,7 @@ CREATE TABLE `portal_users` (
   KEY `idx_role` (`role`),
   KEY `idx_doctor_id` (`doctor_id`),
   KEY `idx_student_id` (`student_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for `portal_users`
 INSERT INTO `portal_users` (`user_id`, `username`, `password_hash`, `role`, `doctor_id`, `student_id`, `allowed_pages_json`, `is_active`, `created_at`, `updated_at`) VALUES
@@ -4497,7 +4511,8 @@ INSERT INTO `portal_users` (`user_id`, `username`, `password_hash`, `role`, `doc
 (12, 'Christophe', '$2y$10$ll5eXUfb19m7wW5w4YoOyub/VH5N7HYMBrjkRPfg.01Eipdj41pYy', 'teacher', 9, NULL, NULL, 1, '2026-02-18 11:42:33', '2026-02-18 11:42:33'),
 (15, 'Franck', '$2y$10$Z5lMD5WOuP8.B0vsv38B/eQeJ8ObVgocgZTAhx5/4gChjXOR66Do2', 'teacher', 13, NULL, NULL, 1, '2026-03-04 08:50:33', '2026-03-04 13:59:24'),
 (16, 'Sara', '$2y$10$oDxp5FwT9CNMxRv9NYooeeZg.TaoMReAoxrnRQWUI8ah2W9ATjU4C', 'management', NULL, NULL, '[\"schedule_builder.php\",\"students.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-03-10 09:02:19', '2026-03-11 20:57:15'),
-(17, 'Haguer', '$2y$10$/jYmKSOa3kpHM.TdeBymMuffg.aHLqbY22xht0IwD/U/1DOJeYuVy', 'management', NULL, NULL, '[\"schedule_builder.php\",\"students.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-03-10 09:03:22', '2026-03-11 20:47:19');
+(17, 'Haguer', '$2y$10$/jYmKSOa3kpHM.TdeBymMuffg.aHLqbY22xht0IwD/U/1DOJeYuVy', 'management', NULL, NULL, '[\"schedule_builder.php\",\"students.php\",\"hours_report.php\",\"hours_report_detail.php\",\"evaluation_reports.php\",\"attendance_report.php\",\"profile.php\"]', 1, '2026-03-10 09:03:22', '2026-03-11 20:47:19'),
+(18, 'Julien', '$2y$10$CgP7I.0ql7s7A1YjsoYyX.XEyWxxfQZd6Xi2xIVaiXYYD4pMBS0AK', 'teacher', 14, NULL, NULL, 1, '2026-03-15 08:46:43', '2026-03-15 08:46:43');
 
 -- ----------------------------------------
 -- Table structure for `rooms`

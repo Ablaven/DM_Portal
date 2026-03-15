@@ -354,7 +354,17 @@ function auth_require_page_access(string $pageBasename, bool $json = false): voi
         exit;
     }
 
-    auth_render_forbidden_page('Forbidden (page not allowed).');
+    // Redirect to the user's correct home page instead of showing a Forbidden page.
+    // This handles cases like teachers/students navigating directly to index.php (admin-only).
+    $home = auth_nav_home_href();
+    $current = basename((string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    // Safety: avoid redirect loop if home page is the current page.
+    if ($home === $current) {
+        auth_render_forbidden_page('Forbidden (page not allowed).');
+    } else {
+        header('Location: ' . $home, true, 302);
+        exit;
+    }
 }
 
 function auth_require_api_access(): void
