@@ -57,7 +57,7 @@ try {
     $termSemester = (int)($termSemStmt->fetchColumn() ?: 0);
 
     if ($weekId <= 0) {
-        $stmt = $pdo->prepare("SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
+        $stmt = $pdo->prepare("SELECT week_id, label, start_date, end_date, is_ramadan FROM weeks WHERE (status='active' OR is_ramadan=1) AND term_id = :term_id ORDER BY week_id DESC LIMIT 1");
         $stmt->execute([':term_id' => $termId]);
         $wk = $stmt->fetch();
         if (!$wk) {
@@ -66,14 +66,14 @@ try {
             exit;
         }
         $weekId = (int)$wk['week_id'];
-        $weekLabel = (string)$wk['label'];
+        $weekLabel = dmportal_week_label_with_range($wk, $weekId);
         $weekStartDate = !empty($wk['start_date']) ? (string)$wk['start_date'] : null;
         $isRamadanWeek = (int)($wk['is_ramadan'] ?? 0) === 1;
     } else {
-        $wkStmt = $pdo->prepare('SELECT week_id, label, start_date, is_ramadan FROM weeks WHERE week_id = :id');
+        $wkStmt = $pdo->prepare('SELECT week_id, label, start_date, end_date, is_ramadan FROM weeks WHERE week_id = :id');
         $wkStmt->execute([':id' => $weekId]);
         $wk = $wkStmt->fetch();
-        $weekLabel = $wk ? (string)$wk['label'] : ('Week ' . $weekId);
+        $weekLabel = dmportal_week_label_with_range($wk ?: null, $weekId);
         $weekStartDate = ($wk && !empty($wk['start_date'])) ? (string)$wk['start_date'] : null;
         $isRamadanWeek = ($wk && (int)($wk['is_ramadan'] ?? 0) === 1);
     }

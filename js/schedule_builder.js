@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl, formatWeekLabelWithRange } = window.dmportal || {};
 
   // Week starts Sunday (Sun–Thu). Weekend Fri/Sat are not scheduled.
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
@@ -1422,9 +1422,13 @@
     for (const w of state.weeks) {
       const opt = document.createElement("option");
       opt.value = w.week_id;
-      const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-      const ramadanTag = Number(w.is_ramadan || 0) === 1 ? " (ramadan)" : "";
-      opt.textContent = `${w.label}${prepTag}${ramadanTag}${w.status === "active" ? " (active)" : ""}`;
+      const baseLabel = formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`);
+      const hasPrepInLabel = String(w.label || "").toLowerCase().includes("prep");
+      const showPrepTag = Number(w.is_prep || 0) === 1 && !hasPrepInLabel;
+      let text = baseLabel;
+      if (showPrepTag) text += " (prep)";
+      if (w.status === "active") text += " (active)";
+      opt.textContent = text;
       sel.appendChild(opt);
     }
 

@@ -52,29 +52,28 @@ try {
         exit;
     }
 
-    $dayMap = ['Sun' => 1, 'Mon' => 2, 'Tue' => 3, 'Wed' => 4, 'Thu' => 5];
-    $currentDay = (string)($current['day_of_week'] ?? '');
-    $currentDayIndex = $dayMap[$currentDay] ?? 0;
-    $currentKey = ((int)$current['week_id'] * 100) + ($currentDayIndex * 10) + (int)$current['slot_number'];
-
     $nextStmt = $pdo->prepare(
-        "SELECT s.schedule_id, s.week_id, s.day_of_week, s.slot_number,
-                (s.week_id * 100 + FIELD(s.day_of_week, 'Sun','Mon','Tue','Wed','Thu') * 10 + s.slot_number) AS sort_key
+        "SELECT s.schedule_id, s.week_id, s.day_of_week, s.slot_number
          FROM doctor_schedules s
-         WHERE s.course_id = :course_id
-           AND (s.week_id * 100 + FIELD(s.day_of_week, 'Sun','Mon','Tue','Wed','Thu') * 10 + s.slot_number) > :current_key
-         ORDER BY sort_key ASC, s.schedule_id ASC
+         JOIN courses c ON c.course_id = s.course_id
+         WHERE s.week_id = :week_id
+           AND s.day_of_week = :day_of_week
+           AND s.slot_number > :slot_number
+           AND c.year_level = :year_level
+         ORDER BY s.slot_number ASC, s.schedule_id ASC
          LIMIT 1"
     );
     $nextStmt->execute([
-        ':course_id' => (int)$current['course_id'],
-        ':current_key' => $currentKey,
+        ':week_id' => (int)$current['week_id'],
+        ':day_of_week' => (string)$current['day_of_week'],
+        ':slot_number' => (int)$current['slot_number'],
+        ':year_level' => (int)$current['year_level'],
     ]);
     $next = $nextStmt->fetch();
     if (!$next) {
         echo json_encode([
             'success' => false,
-            'error' => 'No next lecture found for this course.'
+            'error' => 'No next slot found on this day for this year.'
         ]);
         exit;
     }

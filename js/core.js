@@ -507,12 +507,50 @@
     return num.toFixed(2);
   }
 
+  function formatIsoDateMDY(isoDate) {
+    const s = String(isoDate || "").trim();
+    if (!s) return "";
+    const parts = s.split("-");
+    if (parts.length < 3) return s;
+    const y = Number(parts[0]);
+    const m = Number(parts[1]);
+    const d = Number(parts[2]);
+    if (!y || !m || !d) return s;
+    return `${m}/${d}/${y}`;
+  }
+
+  function addDaysIso(isoDate, days) {
+    const s = String(isoDate || "").trim();
+    if (!s) return "";
+    const dt = new Date(`${s}T00:00:00`);
+    if (Number.isNaN(dt.getTime())) return "";
+    dt.setDate(dt.getDate() + Number(days || 0));
+    const m = dt.getMonth() + 1;
+    const d = dt.getDate();
+    const y = dt.getFullYear();
+    return `${m}/${d}/${y}`;
+  }
+
+  function formatWeekLabelWithRange(week) {
+    const w = week || {};
+    const label = String(w.label || `Week ${w.week_id || ""}`).trim();
+    const start = formatIsoDateMDY(w.start_date);
+    let end = formatIsoDateMDY(w.end_date);
+    if (start && !end && w.start_date) {
+      end = addDaysIso(w.start_date, 6);
+    }
+    if (start && end) return `${label} (${start} ~ ${end})`;
+    if (start) return `${label} (${start})`;
+    return label;
+  }
+
   window.dmportal.fetchJson = fetchJson;
   window.dmportal.setStatusById = setStatusById;
   window.dmportal.escapeHtml = escapeHtml;
   window.dmportal.makeCourseLabel = makeCourseLabel;
   window.dmportal.parseDoctorIdsCsv = parseDoctorIdsCsv;
   window.dmportal.formatHours = formatHours;
+  window.dmportal.formatWeekLabelWithRange = formatWeekLabelWithRange;
   window.dmportal.getPageFilters = getPageFilters;
   window.dmportal.setPageFilters = setPageFilters;
   window.dmportal.getGlobalFilters = getGlobalFilters;

@@ -299,3 +299,55 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
         }
     }
 }
+
+function dmportal_format_date_mdy(?string $isoDate): string
+{
+    $s = trim((string)$isoDate);
+    if ($s === '') {
+        return '';
+    }
+    try {
+        $d = new DateTimeImmutable($s . ' 00:00:00');
+        return $d->format('n/j/Y');
+    } catch (Throwable $e) {
+        return $s;
+    }
+}
+
+/**
+ * Builds a display label like:
+ *   Week 6 (3/12/2026 ~ 3/17/2026)
+ * If end_date is missing, assumes a 7-day week starting at start_date.
+ *
+ * @param array<string, mixed>|null $wk
+ */
+function dmportal_week_label_with_range(?array $wk, int $fallbackWeekId = 0): string
+{
+    $label = $wk ? trim((string)($wk['label'] ?? '')) : '';
+    if ($label === '' && $fallbackWeekId > 0) {
+        $label = 'Week ' . $fallbackWeekId;
+    }
+
+    $startIso = $wk ? (string)($wk['start_date'] ?? '') : '';
+    $endIso = $wk ? (string)($wk['end_date'] ?? '') : '';
+
+    $start = dmportal_format_date_mdy($startIso);
+    $end = dmportal_format_date_mdy($endIso);
+
+    if ($start !== '' && $end === '' && trim($startIso) !== '') {
+        try {
+            $d = new DateTimeImmutable($startIso . ' 00:00:00');
+            $end = $d->modify('+6 days')->format('n/j/Y');
+        } catch (Throwable $e) {
+            $end = '';
+        }
+    }
+
+    if ($start !== '' && $end !== '') {
+        return trim($label . ' (' . $start . ' ~ ' . $end . ')');
+    }
+    if ($start !== '') {
+        return trim($label . ' (' . $start . ')');
+    }
+    return $label;
+}

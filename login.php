@@ -179,7 +179,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
         const fd = new FormData(form);
 
         try {
-          const resp = await fetch('php/auth_login.php', { method: 'POST', body: fd });
+          const resp = await fetch('php/auth_login.php', { method: 'POST', body: fd, credentials: 'same-origin' });
           const payload = await resp.json().catch(() => null);
           if (!resp.ok || !payload || !payload.success) {
             setStatus((payload && payload.error) ? payload.error : 'Login failed.');
@@ -202,13 +202,17 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
             return;
           }
 
-          // Fallbacks (should rarely be needed)
+          // Fallbacks (should rarely be needed; must match server defaults)
           if (role === 'student') {
             window.location.href = 'students.php';
             return;
           }
           if (role === 'teacher') {
             window.location.href = 'doctor.php';
+            return;
+          }
+          if (role === 'management') {
+            window.location.href = 'schedule_builder.php';
             return;
           }
           window.location.href = 'index.php';

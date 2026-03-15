@@ -8,16 +8,25 @@ require_once __DIR__ . '/_auth_schema.php';
 function auth_session_start(): void
 {
     if (session_status() !== PHP_SESSION_ACTIVE) {
-        // Ensure session cookie works across all browsers and network setups:
+        // Detect HTTPS when behind a reverse proxy (e.g. ngrok) so cookie can use Secure flag.
+        $isSecure = false;
+        if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') {
+            $isSecure = true;
+        }
+        if (!$isSecure && !empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+            $isSecure = true;
+        }
+
+        // Ensure session cookie works across all browsers and network setups (including ngrok):
         // - SameSite=Lax: allows cookie on top-level navigations (redirects after login)
-        // - Secure=false: works on HTTP (local/LAN deployments without HTTPS)
+        // - Secure: true when request is HTTPS (direct or via X-Forwarded-Proto) so cookie is sent over HTTPS
         // - HttpOnly=true: prevents JS access to session cookie (security)
         // - Long lifetime: 8 hours, prevents session expiry mid-use
         session_set_cookie_params([
             'lifetime' => 28800,
             'path'     => '/',
             'domain'   => '',
-            'secure'   => false,
+            'secure'   => $isSecure,
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
@@ -125,6 +134,11 @@ function auth_render_forbidden_page(string $message = 'Forbidden'): void
 
     $msg = htmlspecialchars($message, ENT_QUOTES);
 
+    // If user is logged in, offer a link to their allowed home so they don't have to re-login.
+    $u = auth_current_user();
+    $homeHref = $u ? auth_nav_home_href() : 'login.php';
+    $homeEsc = htmlspecialchars($homeHref, ENT_QUOTES);
+
     echo "<!doctype html>\n";
     echo "<html lang=\"en\"><head>\n";
     echo "<meta charset=\"utf-8\" />\n";
@@ -135,6 +149,9 @@ function auth_render_forbidden_page(string $message = 'Forbidden'): void
     echo "<main>\n";
     echo "<h1>Forbidden</h1>\n";
     echo "<p>{$msg}</p>\n";
+    if ($u) {
+        echo "<p><a href=\"{$homeEsc}\">Go to my home</a></p>\n";
+    }
     echo "<div class=\"hint\">Failsafe: type <strong>010101</strong> to logout and go back to <a href=\"login.php\">Login</a>.</div>\n";
     echo "</main>\n";
 
@@ -250,8 +267,15 @@ function auth_can_access_page(string $pageBasename): bool
     return in_array($pageBasename, $allowed, true);
 }
 
+/** Pages that require admin or management role; non-admins must never be sent here as landing. */
+function auth_admin_only_page_basenames(): array
+{
+    return ['index.php', 'admin_courses.php', 'admin_users.php'];
+}
+
 /**
  * Render a single navbar link if the current user is allowed to access the target page.
+ * For non-admin roles, never returns admin-only pages (e.g. index.php) to avoid 403 after login.
  */
 function auth_nav_home_href(): string
 {
@@ -260,18 +284,27 @@ function auth_nav_home_href(): string
         return 'login.php';
     }
 
+    $role = (string)($u['role'] ?? '');
+    $isAdminOrManagement = $role === 'admin' || $role === 'management';
+    $adminOnly = auth_admin_only_page_basenames();
+
     $allowed = auth_allowed_pages_for_user($u);
     if (is_array($allowed)) {
-        $first = $allowed[0] ?? '';
-        if ($first !== '') {
-            return $first;
+        foreach ($allowed as $page) {
+            if ($page === '') {
+                continue;
+            }
+            if (!$isAdminOrManagement && in_array($page, $adminOnly, true)) {
+                continue;
+            }
+            return $page;
         }
     }
 
-    $role = (string)($u['role'] ?? '');
+    // Default landings after login (forbidden page only when they open a disallowed URL).
     if ($role === 'student') return 'students.php';
     if ($role === 'teacher') return 'doctor.php';
-    if ($role === 'management') return 'index.php';
+    if ($role === 'management') return 'schedule_builder.php';
     return 'index.php';
 }
 

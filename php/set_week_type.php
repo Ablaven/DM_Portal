@@ -40,7 +40,7 @@ try {
 
     $pdo->beginTransaction();
 
-    $stmt = $pdo->prepare('SELECT week_id, status, is_prep, term_id FROM weeks WHERE week_id = :week_id LIMIT 1');
+$stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_id FROM weeks WHERE week_id = :week_id LIMIT 1');
     $stmt->execute([':week_id' => $weekId]);
     $week = $stmt->fetch();
     if (!$week) {
@@ -67,18 +67,67 @@ try {
     }
 
     if ($weekType === 'RAMADAN') {
-        // Only one Ramadan week per term.
+        // Only one Ramadan week per term: clear flag from all others in this term.
         $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
 
-    $update = $pdo->prepare('UPDATE weeks SET is_prep = :is_prep, is_ramadan = :is_ramadan, status = :status WHERE week_id = :week_id');
+    // Derive numeric part from existing label (first integer we find).
+    $label = (string)($week['label'] ?? '');
+    $num = 0;
+    if (preg_match('/(\d+)/', $label, $m)) {
+        $num = (int)$m[1];
+    }
+    if ($num <= 0) {
+        // Fallback: keep existing label if we cannot parse a number.
+        $newLabel = $label;
+    } else {
+        if ($weekType === 'PREP') {
+            $newLabel = 'Prep Week ' . $num;
+        } elseif ($weekType === 'RAMADAN') {
+            $newLabel = 'Ramadan Week ' . $num;
+        } else {
+            $newLabel = 'Week ' . $num;
+        }
+    }
+
+    $update = $pdo->prepare('UPDATE weeks SET label = :label, is_prep = :is_prep, is_ramadan = :is_ramadan, status = :status WHERE week_id = :week_id');
     $update->execute([
+        ':label' => $newLabel,
         ':is_prep' => $isPrep,
         ':is_ramadan' => $isRamadan,
         ':status' => $newStatus,
         ':week_id' => $weekId,
     ]);
+
+    // If we just marked this week as RAMADAN, also normalize labels for all
+    // *other* weeks in the term so they no longer contain stale "Ramadan"/"Prep"
+    // wording that doesn't match their flags.
+    if ($weekType === 'RAMADAN') {
+        $otherStmt = $pdo->prepare('SELECT week_id, label, is_prep, is_ramadan FROM weeks WHERE term_id = :term_id AND week_id <> :week_id');
+        $otherStmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
+        $others = $otherStmt->fetchAll();
+        foreach ($others as $row) {
+            $wid = (int)($row['week_id'] ?? 0);
+            if ($wid <= 0) {
+                continue;
+            }
+            $rawLabel = (string)($row['label'] ?? '');
+            $n = 0;
+            if (preg_match('/(\d+)/', $rawLabel, $mm)) {
+                $n = (int)$mm[1];
+            }
+            if ($n <= 0) {
+                continue;
+            }
+            $isPrepFlag = (int)($row['is_prep'] ?? 0) === 1;
+            $newOtherLabel = $isPrepFlag ? ('Prep Week ' . $n) : ('Week ' . $n);
+            if ($newOtherLabel !== $rawLabel) {
+                $upd = $pdo->prepare('UPDATE weeks SET label = :label WHERE week_id = :week_id');
+                $upd->execute([':label' => $newOtherLabel, ':week_id' => $wid]);
+            }
+        }
+    }
 
     $pdo->commit();
 

@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, formatWeekLabelWithRange } = window.dmportal || {};
 
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
@@ -205,7 +205,8 @@
         const opt = document.createElement("option");
         opt.value = String(w.week_id);
         const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-        opt.textContent = String(w.label || `Week ${w.week_id}`) + prepTag + (w.status === "active" ? " (active)" : "");
+        const wk = formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`);
+        opt.textContent = wk + prepTag + (w.status === "active" ? " (active)" : "");
         if (w.status === "active") opt.selected = true;
         weekSel.appendChild(opt);
       }
