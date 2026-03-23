@@ -561,4 +561,173 @@
   window.dmportal.doesItemMatchPageFilters = doesItemMatchPageFilters;
   window.dmportal.getEffectivePageFilters = getEffectivePageFilters;
   window.dmportal.initPageFiltersUI = initPageFiltersUI;
+
+  // -----------------------------
+  // TOAST NOTIFICATIONS
+  // -----------------------------
+  let toastContainer = null;
+  let toastCounter = 0;
+
+  function getOrCreateToastContainer() {
+    if (!toastContainer) {
+      toastContainer = document.createElement("div");
+      toastContainer.id = "toastContainer";
+      toastContainer.className = "toast-container";
+      document.body.appendChild(toastContainer);
+    }
+    return toastContainer;
+  }
+
+  function showToast(message, type = "info", duration = 4000) {
+    const container = getOrCreateToastContainer();
+    const toastId = ++toastCounter;
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.dataset.toastId = toastId;
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "assertive");
+
+    const icon = document.createElement("span");
+    icon.className = "toast-icon";
+    icon.innerHTML = getToastIcon(type);
+
+    const text = document.createElement("span");
+    text.className = "toast-message";
+    text.textContent = message;
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "toast-close";
+    closeBtn.setAttribute("aria-label", "Close notification");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.addEventListener("click", () => removeToast(toast));
+
+    toast.appendChild(icon);
+    toast.appendChild(text);
+    toast.appendChild(closeBtn);
+
+    container.appendChild(toast);
+
+    // Trigger reflow for animation
+    void toast.offsetWidth;
+    toast.classList.add("toast-visible");
+
+    // Auto-remove after duration
+    if (duration > 0) {
+      setTimeout(() => {
+        removeToast(toast);
+      }, duration);
+    }
+
+    return toastId;
+  }
+
+  function getToastIcon(type) {
+    switch (type) {
+      case "success": return "\u2713"; // checkmark
+      case "error": return "\u26A0"; // warning sign
+      case "info":
+      default: return "\u2139"; // info symbol
+    }
+  }
+
+  function removeToast(toast) {
+    toast.classList.remove("toast-visible");
+    toast.classList.add("toast-hiding");
+    setTimeout(() => {
+      toast.remove();
+      // Clean up container if empty
+      if (toastContainer && toastContainer.children.length === 0) {
+        toastContainer.remove();
+        toastContainer = null;
+      }
+    }, 200);
+  }
+
+  function showSuccess(message, duration = 4000) {
+    return showToast(message, "success", duration);
+  }
+
+  function showError(message, duration = 5000) {
+    return showToast(message, "error", duration);
+  }
+
+  function showInfo(message, duration = 4000) {
+    return showToast(message, "info", duration);
+  }
+
+  function clearAllToasts() {
+    if (toastContainer) {
+      toastContainer.innerHTML = "";
+      toastContainer = null;
+    }
+  }
+
+  window.dmportal.showToast = showToast;
+  window.dmportal.showSuccess = showSuccess;
+  window.dmportal.showError = showError;
+  window.dmportal.showInfo = showInfo;
+  window.dmportal.clearAllToasts = clearAllToasts;
+
+  // -----------------------------
+  // EMPTY STATE RENDERER
+  // -----------------------------
+  function renderEmptyState(container, options = {}) {
+    const {
+      icon = "\u{1F4DD}", // default: memo icon
+      title = "No data available",
+      subtitle = "",
+      ctaText = "",
+      ctaHref = "",
+      ctaOnClick = null,
+      className = ""
+    } = options;
+
+    const emptyState = document.createElement("div");
+    emptyState.className = `empty-state ${className}`;
+    emptyState.setAttribute("role", "status");
+    emptyState.setAttribute("aria-live", "polite");
+
+    const iconEl = document.createElement("div");
+    iconEl.className = "empty-state-icon";
+    iconEl.setAttribute("aria-hidden", "true");
+    iconEl.textContent = icon;
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "empty-state-title";
+    titleEl.textContent = title;
+
+    const subtitleEl = document.createElement("p");
+    subtitleEl.className = "empty-state-subtitle";
+    subtitleEl.textContent = subtitle;
+
+    emptyState.appendChild(iconEl);
+    emptyState.appendChild(titleEl);
+    emptyState.appendChild(subtitleEl);
+
+    if (ctaText && (ctaHref || ctaOnClick)) {
+      const ctaEl = document.createElement("a");
+      ctaEl.className = "btn btn-secondary empty-state-cta";
+      ctaEl.textContent = ctaText;
+      if (ctaHref) {
+        ctaEl.href = ctaHref;
+      }
+      if (ctaOnClick) {
+        ctaEl.addEventListener("click", ctaOnClick);
+      }
+      emptyState.appendChild(ctaEl);
+    }
+
+    // Clear container and append empty state
+    container.innerHTML = "";
+    container.appendChild(emptyState);
+
+    return emptyState;
+  }
+
+  function clearEmptyState(container) {
+    container.innerHTML = "";
+  }
+
+  window.dmportal.renderEmptyState = renderEmptyState;
+  window.dmportal.clearEmptyState = clearEmptyState;
 })();

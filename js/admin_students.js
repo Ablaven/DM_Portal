@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, escapeHtml, setStatusById } = window.dmportal || {};
+  const { fetchJson, escapeHtml, setStatusById, renderEmptyState, showSuccess, showError, showInfo } = window.dmportal || {};
 
   const state = { students: [] };
 
@@ -33,9 +33,19 @@
     });
 
     if (!filtered.length) {
-      list.innerHTML = '<div class="muted">No students found.</div>';
+      renderEmptyState(list, {
+        icon: "\u{1F393}",
+        title: q || year ? "No students found" : "No students yet",
+        subtitle: q || year ? "Try adjusting your search or year filter." : "Get started by adding your first student using the form above.",
+        ctaText: (q || year) ? "" : "Refresh students",
+        ctaOnClick: (q || year) ? null : () => { loadStudents().then(renderStudentsList); },
+        className: "admin-students-empty"
+      });
       return;
     }
+
+    // Clear any existing empty state when there are results
+    list.querySelectorAll(".empty-state").forEach(el => el.remove());
 
     list.innerHTML = "";
     for (const s of filtered) {
@@ -121,10 +131,12 @@
       const payload = await fetchJson("php/update_student.php", { method: "POST", body: fd });
       if (!payload.success) throw new Error(payload.error || "Failed to update student.");
       setStatusById("studentEditStatus", "Saved.", "success");
+      showSuccess("Student updated successfully!", 3500);
       closeStudentEditModal();
       await loadStudents();
     } catch (err) {
       setStatusById("studentEditStatus", err.message || "Failed to update student.", "error");
+      showError(err.message || "Failed to update student.", 5000);
     }
   }
 
@@ -140,10 +152,12 @@
         const payload = await fetchJson("php/add_student.php", { method: "POST", body: fd });
         if (!payload.success) throw new Error(payload.error || "Failed to add student.");
         setStatusById("studentStatus", "Saved.", "success");
+        showSuccess("Student added successfully!", 3500);
         form.reset();
         await loadStudents();
       } catch (err) {
         setStatusById("studentStatus", err.message || "Failed to add student.", "error");
+        showError(err.message || "Failed to add student.", 5000);
       }
     });
 
@@ -182,9 +196,11 @@
           const payload = await fetchJson("php/delete_student.php", { method: "POST", body: fd });
           if (!payload.success) throw new Error(payload.error || "Failed to delete student.");
           setStatusById("adminStudentsStatus", "Deleted.", "success");
+          showSuccess("Student deleted successfully!", 3500);
           await loadStudents();
         } catch (err) {
           setStatusById("adminStudentsStatus", err.message || "Failed to delete student.", "error");
+          showError(err.message || "Failed to delete student.", 5000);
         }
       }
     });
