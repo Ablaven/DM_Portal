@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, applyGlobalFiltersToCourses, getGlobalFilters, setGlobalFilters, initPageFiltersUI } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, applyGlobalFiltersToCourses, getGlobalFilters, setGlobalFilters, initPageFiltersUI, renderEmptyState, showSuccess, showError, showInfo } = window.dmportal || {};
 
   const state = {
     doctors: [],
@@ -111,6 +111,7 @@ async function handleCourseCreateSubmit(e) {
     }
 
     setStatusById("status", `Course added (ID: ${payload.data.course_id}).`, "success");
+    showSuccess(`Course "${escapeHtml(fd.get("course_name") || "")}" added successfully!`, 3500);
 
     // Preserve these selections across consecutive additions (admin adds many courses)
     const preservedYear = String(fd.get("year_level") || "");
@@ -144,6 +145,7 @@ async function handleCourseCreateSubmit(e) {
     await maybeInitAdminCourseList(true);
   } catch (err) {
     setStatusById("status", err.message, "error");
+    showError(err.message, 5000);
   }
 }
 
@@ -626,9 +628,28 @@ function renderAdminCoursesList(filter = "") {
   });
 
   if (!courses.length) {
-    list.innerHTML = `<div class=\"muted\">No matching courses.</div>`;
+    if (q) {
+      renderEmptyState(list, {
+        icon: "\u{1F50D}",
+        title: "No matching courses",
+        subtitle: "Try adjusting your search or filters to find what you're looking for.",
+        className: "admin-courses-empty"
+      });
+    } else {
+      renderEmptyState(list, {
+        icon: "\u{1F4DA}",
+        title: "No courses yet",
+        subtitle: "Get started by adding your first course using the form above.",
+        ctaText: "Refresh courses",
+        ctaOnClick: () => { loadCourses().then(() => renderAdminCoursesList(filter)); },
+        className: "admin-courses-empty"
+      });
+    }
     return;
   }
+
+  // Clear any existing empty state when there are results
+  list.querySelectorAll(".empty-state").forEach(el => el.remove());
 
   list.innerHTML = "";
   for (const c of courses) {
@@ -900,9 +921,11 @@ async function saveCourseEditModal() {
     await loadCourses();
     renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
     setStatusById("adminCoursesStatus", "Updated.", "success");
+    showSuccess("Course updated successfully!", 3500);
     closeCourseEditModal();
   } catch (err) {
     setStatusById("courseEditStatus", err.message, "error");
+    showError(err.message, 5000);
   }
 }
 
@@ -1576,9 +1599,11 @@ function renderCourseProgressList(courses) {
             await loadCourses();
             renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
             setStatusById("adminCoursesStatus", "Saved.", "success");
+            showSuccess("Doctor assignment saved!", 3000);
           }
         } catch (err) {
           setStatusById("adminCoursesStatus", err.message, "error");
+          showError(err.message, 5000);
           await loadCourses();
           renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
         }
@@ -1597,8 +1622,10 @@ function renderCourseProgressList(courses) {
           await loadCourses();
           renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
           setStatusById("adminCoursesStatus", "Saved.", "success");
+          showSuccess("Course hours updated!", 3000);
         } catch (err) {
           setStatusById("adminCoursesStatus", err.message, "error");
+          showError(err.message, 5000);
           await loadCourses();
           renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
         }
@@ -1624,9 +1651,11 @@ function renderCourseProgressList(courses) {
             await loadCourses();
             renderAdminCoursesList(document.getElementById("courseSearch")?.value || "");
             setStatusById("adminCoursesStatus", "Deleted.", "success");
+            showSuccess("Course deleted successfully!", 3500);
           }
         } catch (err) {
           setStatusById("adminCoursesStatus", err.message, "error");
+          showError(err.message, 5000);
         }
       });
     })();

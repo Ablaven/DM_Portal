@@ -11,6 +11,10 @@
     triggerBackgroundDownload,
     buildMailtoHref,
     buildWhatsAppSendUrl,
+    renderEmptyState,
+    showSuccess,
+    showError,
+    showInfo,
   } = window.dmportal || {};
 
   const state = { doctors: [], weeks: [], doctorTypes: ["Egyptian", "French"] };
@@ -59,9 +63,19 @@
     });
 
     if (!filtered.length) {
-      list.innerHTML = '<div class="muted">No doctors found.</div>';
+      renderEmptyState(list, {
+        icon: "\u{1F468}\u200D\u2695\uFE0F}",
+        title: q ? "No doctors found" : "No doctors yet",
+        subtitle: q ? "Try adjusting your search terms." : "Get started by adding your first doctor using the form above.",
+        ctaText: q ? "" : "Refresh doctors",
+        ctaOnClick: q ? null : () => { loadDoctors().then(renderDoctorsList); },
+        className: "admin-doctors-empty"
+      });
       return;
     }
+
+    // Clear any existing empty state when there are results
+    list.querySelectorAll(".empty-state").forEach(el => el.remove());
 
     list.innerHTML = "";
     for (const d of filtered) {
@@ -192,6 +206,7 @@
           await saveDoctorYearColors(doctorId, yearColors);
         }
         setStatusById("doctorStatus", "Saved.", "success");
+        showSuccess("Doctor added successfully!", 3500);
         form.reset();
         const typeSelect = document.getElementById("doctor_type");
         if (typeSelect) typeSelect.value = "Egyptian";
@@ -199,6 +214,7 @@
         renderDoctorsList();
       } catch (err) {
         setStatusById("doctorStatus", err.message || "Failed to add doctor.", "error");
+        showError(err.message || "Failed to add doctor.", 5000);
       }
     });
 
@@ -248,10 +264,12 @@
           const payload = await fetchJson("php/delete_doctor.php", { method: "POST", body: fd });
           if (!payload.success) throw new Error(payload.error || "Failed to delete doctor.");
           setStatusById("adminDoctorsStatus", "Deleted.", "success");
+          showSuccess("Doctor deleted successfully!", 3500);
           await loadDoctors();
           renderDoctorsList();
         } catch (err) {
           setStatusById("adminDoctorsStatus", err.message || "Failed to delete doctor.", "error");
+          showError(err.message || "Failed to delete doctor.", 5000);
         }
       }
     });

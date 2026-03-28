@@ -11,6 +11,9 @@
     initPageFiltersUI,
     applyPageFiltersToCourses,
     doesItemMatchPageFilters,
+    showSuccess,
+    showError,
+    renderEmptyState,
   } = window.dmportal || {};
 
   let CATEGORIES = [];
@@ -95,9 +98,18 @@
     function renderConfig(items) {
       configBody.innerHTML = "";
       if (!items.length) {
-        addEmptyRow();
+        renderEmptyState(configBody, {
+          icon: "\u{1F4DD}",
+          title: "No evaluation items",
+          subtitle: "Get started by adding your first evaluation item using the Add button above.",
+          ctaText: "Add item",
+          ctaOnClick: () => appendConfigRow({ category: "participation", label: "", weight: "" }),
+          className: "evaluation-config-empty"
+        });
         return;
       }
+      // Clear any existing empty state when there are results
+      configBody.querySelectorAll(".empty-state").forEach(el => el.remove());
       items.forEach((item) => appendConfigRow(item));
     }
 
@@ -562,9 +574,11 @@
         }
         setGradesStatus("Grades saved successfully.", true);
         showAlert("Grades saved successfully.", true);
+        showSuccess("Grades saved successfully!", 3500);
       } catch (err) {
         if (err.message !== "Invalid grade") {
           setGradesStatus(err.message || "Failed to save grades.", false);
+          showError(err.message || "Failed to save grades.", 5000);
         }
       }
     });

@@ -141,20 +141,69 @@ if (!$statements) {
     exit;
 }
 
+$replaceExisting = isset($_POST['replace_existing']) && (string)$_POST['replace_existing'] === '1';
+
+/**
+ * Parse `CREATE TABLE`/`CREATE TABLE IF NOT EXISTS` for a bare table name (backtick or unquoted).
+ */
+function dmportal_create_table_name_from_statement(string $statement): ?string
+{
+    $s = trim($statement);
+    if (!preg_match('/^CREATE\s+TABLE\s+/i', $s)) {
+        return null;
+    }
+    if (preg_match('/^CREATE\s+TEMPORARY\s+TABLE\s+/i', $s)) {
+        return null;
+    }
+    $s = (string)preg_replace('/^CREATE\s+TABLE\s+/i', '', $s);
+    $s = trim($s);
+    $s = (string)preg_replace('/^IF\s+NOT\s+EXISTS\s+/i', '', $s);
+    $s = trim($s);
+    if (preg_match('/^`([^`]+)`/', $s, $m)) {
+        return $m[1];
+    }
+    if (preg_match('/^([a-zA-Z0-9_]+)/', $s, $m)) {
+        return $m[1];
+    }
+
+    return null;
+}
+
 $errors = [];
-foreach ($statements as $statement) {
+try {
+    $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+    foreach ($statements as $statement) {
+        try {
+            if ($replaceExisting) {
+                $tbl = dmportal_create_table_name_from_statement($statement);
+                if ($tbl !== null && $tbl !== '') {
+                    $pdo->exec('DROP TABLE IF EXISTS `' . str_replace('`', '``', $tbl) . '`');
+                }
+            }
+            $pdo->exec($statement);
+        } catch (Throwable $e) {
+            $errors[] = $e->getMessage();
+            break;
+        }
+    }
+} finally {
     try {
-        $pdo->exec($statement);
-    } catch (Throwable $e) {
-        $errors[] = $e->getMessage();
-        break;
+        $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
+    } catch (Throwable $_) {
+        // ignore
     }
 }
 
 if ($errors) {
     http_response_code(500);
     header('Content-Type: text/plain; charset=utf-8');
-    echo "Import failed:\n" . $errors[0];
+    $hint = '';
+    if (stripos($errors[0], 'already exists') !== false && !$replaceExisting) {
+        $hint = "\n\nTip: Check \"Replace existing tables\" on the Admin Panel import form "
+            . 'when your .sql file has CREATE TABLE but no DROP (common for phpMyAdmin / schema-only dumps). '
+            . 'Importing into an empty database does not require that option.';
+    }
+    echo "Import failed:\n" . $errors[0] . $hint;
     exit;
 }
 
