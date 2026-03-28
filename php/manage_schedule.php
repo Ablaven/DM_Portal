@@ -341,57 +341,110 @@ try {
         bad_request('Student timetable conflict: another lecture for the same Program/Year/Semester already exists in this slot.');
     }
 
-    // If slot was empty OR course changed, ensure the course has enough remaining hours.
-    // Remaining hours = total_hours - scheduled_slots*1.5 (excluding cancelled days)
-    if ((!$existing || $existingCourseId !== $courseId) && $countsTowardsHours === 1) {
-        // total hours
-        $total = isset($courseRow['total_hours']) ? (float)$courseRow['total_hours'] : (float)$courseRow['course_hours'];
-
-        // count scheduled slots for this course (exclude cancellations)
-        // doctor_slot_cancellations is optional; if missing, fall back to day-cancellation-only logic.
+    // If slot was empty OR course changed, ensure remaining hours allow this assignment.
+    // When course_doctor_hours has rows for the course, cap by that doctor's split (matches get_courses.php).
+    // Otherwise use course-level remaining: total_hours − scheduled slot hours (excluding cancellations).
+    if ((!$existing || $existingCourseId !== $courseId) && $countsTowardsHours === 1 && !$isZeroHourCourse) {
+        $hasSplitHours = false;
+        $doctorAllocated = 0.0;
         try {
-            $cntStmt = $pdo->prepare(
-                "SELECT COUNT(*) AS c
-                 FROM doctor_schedules s
-                 LEFT JOIN doctor_week_cancellations cw
-                   ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
-                 LEFT JOIN doctor_slot_cancellations cs
-                   ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
-                 WHERE s.course_id = :course_id
-                   AND s.counts_towards_hours = 1
-                   AND cw.cancellation_id IS NULL
-                   AND cs.slot_cancellation_id IS NULL"
-            );
-            $cntStmt->execute([':course_id' => $courseId]);
-            $countRow = $cntStmt->fetch();
+            $splitCx = $pdo->prepare('SELECT COUNT(*) FROM course_doctor_hours WHERE course_id = :course_id');
+            $splitCx->execute([':course_id' => $courseId]);
+            $hasSplitHours = ((int)$splitCx->fetchColumn()) > 0;
+            if ($hasSplitHours) {
+                $allocStmt = $pdo->prepare(
+                    'SELECT allocated_hours FROM course_doctor_hours WHERE course_id = :course_id AND doctor_id = :doctor_id LIMIT 1'
+                );
+                $allocStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+                $allocRow = $allocStmt->fetch();
+                $doctorAllocated = $allocRow ? (float)$allocRow['allocated_hours'] : 0.0;
+            }
         } catch (PDOException $e) {
             if ((int)($e->errorInfo[1] ?? 0) !== 1146) {
                 throw $e;
             }
-            $cntStmt = $pdo->prepare(
-                "SELECT COUNT(*) AS c
-                 FROM doctor_schedules s
-                 LEFT JOIN doctor_week_cancellations cw
-                   ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
-                 WHERE s.course_id = :course_id
-                   AND s.counts_towards_hours = 1
-                   AND cw.cancellation_id IS NULL"
-            );
-            $cntStmt->execute([':course_id' => $courseId]);
-            $countRow = $cntStmt->fetch();
-        }
-        $scheduledSlots = (int)($countRow['c'] ?? 0);
-
-        // if we are overwriting the same slot, do not double-count it
-        if ($existing && $existingCourseId === $courseId) {
-            // no-op
+            $hasSplitHours = false;
         }
 
-        // Remaining must cover the amount this save will deduct.
-        $remaining = $total - ($scheduledSlots * $slotHours);
-        if ($remaining < $deductHours) {
-            safe_rollback($pdo);
-            bad_request('Not enough remaining hours for this course (including extra minutes).');
+        if ($hasSplitHours) {
+            try {
+                $doneStmt = $pdo->prepare(
+                    "SELECT COALESCE(SUM(1.5 + COALESCE(s.extra_minutes, 0) / 60), 0) AS done_h
+                     FROM doctor_schedules s
+                     LEFT JOIN doctor_week_cancellations cw
+                       ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
+                     LEFT JOIN doctor_slot_cancellations cs
+                       ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
+                     WHERE s.course_id = :course_id
+                       AND s.doctor_id = :doctor_id
+                       AND s.counts_towards_hours = 1
+                       AND cw.cancellation_id IS NULL
+                       AND cs.slot_cancellation_id IS NULL"
+                );
+                $doneStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+            } catch (PDOException $e) {
+                if ((int)($e->errorInfo[1] ?? 0) !== 1146) {
+                    throw $e;
+                }
+                $doneStmt = $pdo->prepare(
+                    "SELECT COALESCE(SUM(1.5 + COALESCE(s.extra_minutes, 0) / 60), 0) AS done_h
+                     FROM doctor_schedules s
+                     LEFT JOIN doctor_week_cancellations cw
+                       ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
+                     WHERE s.course_id = :course_id
+                       AND s.doctor_id = :doctor_id
+                       AND s.counts_towards_hours = 1
+                       AND cw.cancellation_id IS NULL"
+                );
+                $doneStmt->execute([':course_id' => $courseId, ':doctor_id' => $doctorId]);
+            }
+            $doneHours = (float)($doneStmt->fetch()['done_h'] ?? 0);
+            $remainingDoctor = max(0.0, round($doctorAllocated - $doneHours, 2));
+            if ($remainingDoctor + 1e-6 < $deductHours) {
+                safe_rollback($pdo);
+                bad_request('Not enough remaining hours for this doctor on this course (split allocation).');
+            }
+        } else {
+            $total = isset($courseRow['total_hours']) ? (float)$courseRow['total_hours'] : (float)$courseRow['course_hours'];
+
+            try {
+                $cntStmt = $pdo->prepare(
+                    "SELECT COUNT(*) AS c
+                     FROM doctor_schedules s
+                     LEFT JOIN doctor_week_cancellations cw
+                       ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
+                     LEFT JOIN doctor_slot_cancellations cs
+                       ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
+                     WHERE s.course_id = :course_id
+                       AND s.counts_towards_hours = 1
+                       AND cw.cancellation_id IS NULL
+                       AND cs.slot_cancellation_id IS NULL"
+                );
+                $cntStmt->execute([':course_id' => $courseId]);
+                $countRow = $cntStmt->fetch();
+            } catch (PDOException $e) {
+                if ((int)($e->errorInfo[1] ?? 0) !== 1146) {
+                    throw $e;
+                }
+                $cntStmt = $pdo->prepare(
+                    "SELECT COUNT(*) AS c
+                     FROM doctor_schedules s
+                     LEFT JOIN doctor_week_cancellations cw
+                       ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
+                     WHERE s.course_id = :course_id
+                       AND s.counts_towards_hours = 1
+                       AND cw.cancellation_id IS NULL"
+                );
+                $cntStmt->execute([':course_id' => $courseId]);
+                $countRow = $cntStmt->fetch();
+            }
+            $scheduledSlots = (int)($countRow['c'] ?? 0);
+
+            $remaining = $total - ($scheduledSlots * $slotHours);
+            if ($remaining + 1e-6 < $deductHours) {
+                safe_rollback($pdo);
+                bad_request('Not enough remaining hours for this course (including extra minutes).');
+            }
         }
     }
 
