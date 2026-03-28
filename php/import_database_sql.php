@@ -141,45 +141,52 @@ if (!$statements) {
     exit;
 }
 
-$replaceExisting = isset($_POST['replace_existing']) && (string)$_POST['replace_existing'] === '1';
+// Default: wipe all tables/views in current DB, then run dump (avoids 1050 + errno 150). Opt out via admin_panel.
+$replaceExisting = !isset($_POST['skip_drop_before_create']) || (string)$_POST['skip_drop_before_create'] !== '1';
 
 /**
- * Parse `CREATE TABLE`/`CREATE TABLE IF NOT EXISTS` for a bare table name (backtick or unquoted).
+ * Drop every view and base table in the connection's current database (FOREIGN_KEY_CHECKS should be off).
+ * Needed for full restores: dropping only tables that appear early in the dump (e.g. admins) leaves other
+ * existing tables (portal_users, audit_log, …) with FK metadata pointing at the parent and can cause
+ * errno 150 "Foreign key constraint is incorrectly formed" on CREATE TABLE.
  */
-function dmportal_create_table_name_from_statement(string $statement): ?string
+function dmportal_wipe_current_database(PDO $pdo): void
 {
-    $s = trim($statement);
-    if (!preg_match('/^CREATE\s+TABLE\s+/i', $s)) {
-        return null;
+    $db = $pdo->query('SELECT DATABASE()')->fetchColumn();
+    if ($db === false || $db === null || (string)$db === '') {
+        return;
     }
-    if (preg_match('/^CREATE\s+TEMPORARY\s+TABLE\s+/i', $s)) {
-        return null;
-    }
-    $s = (string)preg_replace('/^CREATE\s+TABLE\s+/i', '', $s);
-    $s = trim($s);
-    $s = (string)preg_replace('/^IF\s+NOT\s+EXISTS\s+/i', '', $s);
-    $s = trim($s);
-    if (preg_match('/^`([^`]+)`/', $s, $m)) {
-        return $m[1];
-    }
-    if (preg_match('/^([a-zA-Z0-9_]+)/', $s, $m)) {
-        return $m[1];
-    }
+    $qSchema = $pdo->quote((string)$db);
 
-    return null;
+    foreach (['VIEW', 'BASE TABLE'] as $tableType) {
+        $qType = $pdo->quote($tableType);
+        $stmt = $pdo->query(
+            'SELECT TABLE_NAME FROM information_schema.TABLES '
+            . "WHERE TABLE_SCHEMA = {$qSchema} AND TABLE_TYPE = {$qType}"
+        );
+        if (!$stmt) {
+            continue;
+        }
+        $names = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($names as $name) {
+            $ident = '`' . str_replace('`', '``', (string)$name) . '`';
+            if ($tableType === 'VIEW') {
+                $pdo->exec("DROP VIEW IF EXISTS {$ident}");
+            } else {
+                $pdo->exec("DROP TABLE IF EXISTS {$ident}");
+            }
+        }
+    }
 }
 
 $errors = [];
 try {
     $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
+    if ($replaceExisting) {
+        dmportal_wipe_current_database($pdo);
+    }
     foreach ($statements as $statement) {
         try {
-            if ($replaceExisting) {
-                $tbl = dmportal_create_table_name_from_statement($statement);
-                if ($tbl !== null && $tbl !== '') {
-                    $pdo->exec('DROP TABLE IF EXISTS `' . str_replace('`', '``', $tbl) . '`');
-                }
-            }
             $pdo->exec($statement);
         } catch (Throwable $e) {
             $errors[] = $e->getMessage();
@@ -199,9 +206,14 @@ if ($errors) {
     header('Content-Type: text/plain; charset=utf-8');
     $hint = '';
     if (stripos($errors[0], 'already exists') !== false && !$replaceExisting) {
-        $hint = "\n\nTip: Check \"Replace existing tables\" on the Admin Panel import form "
-            . 'when your .sql file has CREATE TABLE but no DROP (common for phpMyAdmin / schema-only dumps). '
-            . 'Importing into an empty database does not require that option.';
+        $hint = "\n\nTip: Leave \"Skip DROP before CREATE\" unchecked (default). You checked it but your "
+            . 'database already has tables — either import into an empty database or leave skip unchecked '
+            . 'so each CREATE is preceded by DROP TABLE IF EXISTS.';
+    } elseif (stripos($errors[0], 'errno: 150') !== false
+        || stripos($errors[0], 'Foreign key constraint is incorrectly formed') !== false) {
+        $hint = "\n\nTip: errno 150 often means leftover tables still had foreign keys to parents that were "
+            . 'recreated. Leave \"Skip DROP\" unchecked (default): the importer clears all tables/views in '
+            . 'this database first, then applies the dump.';
     }
     echo "Import failed:\n" . $errors[0] . $hint;
     exit;

@@ -509,11 +509,15 @@
 
   setStatusById("scheduleStatus", "Loading…");
   await loadSchedule(doctorId);
+  await loadCourses();
+  renderCoursesSidebar();
+  await loadHoursRemainingPanel();
   await refreshUnavailability();
   await refreshAvailability();
   renderScheduleMetaHint();
   renderScheduleGrid();
   updateDoctorExportShareLinks();
+  populateModalCourses();
   setStatusById("scheduleStatus", "");
   }
 
@@ -1290,7 +1294,10 @@
   }
 
   async function loadCourses() {
-  const payload = await fetchJson("php/get_courses.php");
+  const qs = new URLSearchParams();
+  if (state.activeDoctorId) qs.set("doctor_id", String(state.activeDoctorId));
+  const url = qs.toString() ? `php/get_courses.php?${qs.toString()}` : "php/get_courses.php";
+  const payload = await fetchJson(url);
   if (!payload.success) throw new Error(payload.error || "Failed to load courses");
   state.courses = payload.data || [];
   }
@@ -1490,6 +1497,13 @@
       const v = e.target.value;
       if (!v) {
         state.activeDoctorId = null;
+        try {
+          await loadCourses();
+          renderCoursesSidebar();
+          await loadHoursRemainingPanel();
+        } catch {
+          /* ignore */
+        }
         renderScheduleMetaHint();
         renderScheduleGrid();
         updateDoctorExportShareLinks();

@@ -45,9 +45,11 @@ $importStatus = $_GET['import_status'] ?? '';
             <input id="importSqlFile" name="sql_file" type="file" accept=".sql" required />
             <button class="btn btn-secondary" type="submit">Upload</button>
           </div>
-          <label class="chk" style="display:block; margin-top:8px; max-width:520px;">
-            <input type="checkbox" name="replace_existing" value="1" />
-            Replace existing tables (runs <code style="font-size:0.8rem;">DROP TABLE IF EXISTS</code> before each <code style="font-size:0.8rem;">CREATE TABLE</code>). Use when importing over a database that already has portal tables, or when your <code style="font-size:0.8rem;">.sql</code> file does not include <code style="font-size:0.8rem;">DROP</code> statements.
+          <label class="chk" style="display:block; margin-top:8px;"
+            title="Leave unchecked for normal imports. The importer drops all tables and views in the database from .env, then runs your file. Avoids foreign-key errors when old tables referenced recreated ones. Check only if the database is empty or your dump already includes DROP statements.">
+            <?php /* Opt-out: default = wipe DB + import (see import_database_sql.php). */ ?>
+            <input type="checkbox" name="skip_drop_before_create" value="1" />
+            Skip full database wipe
           </label>
         </form>
         <?php if ($importStatus === 'success') : ?>
