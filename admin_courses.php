@@ -17,7 +17,7 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Course Management</title>
-  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/style.css?v=20260407b" />
 </head>
 <body>
   <?php render_portal_navbar('admin_courses.php'); ?>
@@ -295,7 +295,7 @@ auth_require_roles(['admin','management']);
 
   <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/admin_courses.js?v=20260228g"></script>
+  <script src="js/admin_courses.js?v=20260407b"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAdminCoursesPage?.();

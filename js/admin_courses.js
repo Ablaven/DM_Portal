@@ -162,11 +162,13 @@ function doctorOptionsHtml(selectedId) {
 // Checkbox multi-select (Course edit modal)
 // -----------------------------
 let editDoctorsSelectedIds = [];
+let editDoctorsFilterText = "";
 
 // -----------------------------
 // Checkbox multi-select (Add Course form)
 // -----------------------------
 let createDoctorsSelectedIds = [];
+let createDoctorsFilterText = "";
 
 function setCreateDoctorsSelectedIds(ids) {
   createDoctorsSelectedIds = Array.from(new Set((ids || []).map((x) => Number(x)).filter((n) => !Number.isNaN(n) && n > 0)));
@@ -195,11 +197,29 @@ function renderCreateDoctorsMenu() {
   if (!menu) return;
 
   const selected = new Set(createDoctorsSelectedIds.map((x) => String(x)));
+  const allDoctors = state.doctors || [];
   menu.innerHTML = "";
 
-  for (const d of state.doctors || []) {
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "multi-select-search-wrap";
+  const search = document.createElement("input");
+  search.type = "text";
+  search.className = "multi-select-search";
+  search.placeholder = "Search doctor name...";
+  search.value = createDoctorsFilterText;
+  searchWrap.appendChild(search);
+  menu.appendChild(searchWrap);
+
+  const empty = document.createElement("div");
+  empty.className = "multi-select-empty";
+  empty.textContent = "No matching doctors.";
+  empty.style.display = "none";
+  menu.appendChild(empty);
+
+  for (const d of allDoctors) {
     const row = document.createElement("label");
     row.className = "multi-select-item";
+    row.dataset.doctorName = String(d.full_name || "").toLowerCase();
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -226,6 +246,22 @@ function renderCreateDoctorsMenu() {
     row.appendChild(text);
     menu.appendChild(row);
   }
+
+  const applyFilter = () => {
+    createDoctorsFilterText = String(search.value || "");
+    const q = createDoctorsFilterText.trim().toLowerCase();
+    let visible = 0;
+    menu.querySelectorAll(".multi-select-item").forEach((row) => {
+      const name = String(row.dataset.doctorName || "");
+      const show = !q || name.includes(q);
+      row.style.display = show ? "" : "none";
+      if (show) visible += 1;
+    });
+    empty.style.display = visible ? "none" : "";
+  };
+
+  search.addEventListener("input", applyFilter);
+  applyFilter();
 }
 
 function wireCreateDoctorsMultiSelectUI() {
@@ -245,6 +281,10 @@ function wireCreateDoctorsMultiSelectUI() {
     const isOpen = wrap.classList.toggle("open");
     btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
     if (hostCard) hostCard.classList.toggle("multi-select-host-open", isOpen);
+    if (isOpen) {
+      const inp = wrap.querySelector(".multi-select-search");
+      if (inp) inp.focus();
+    }
   });
 
   document.addEventListener("click", (e) => {
@@ -260,6 +300,7 @@ function initCreateDoctorsMultiSelect(defaultDoctorId) {
   // Start with the existing select default if present
   const initial = defaultDoctorId ? [Number(defaultDoctorId)] : [];
   setCreateDoctorsSelectedIds(initial);
+  createDoctorsFilterText = "";
 
   wireCreateDoctorsMultiSelectUI();
   renderCreateDoctorsMenu();
@@ -300,11 +341,29 @@ function renderEditDoctorsMenu() {
   if (!menu) return;
 
   const selected = new Set(editDoctorsSelectedIds.map((x) => String(x)));
+  const allDoctors = state.doctors || [];
   menu.innerHTML = "";
 
-  for (const d of state.doctors || []) {
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "multi-select-search-wrap";
+  const search = document.createElement("input");
+  search.type = "text";
+  search.className = "multi-select-search";
+  search.placeholder = "Search doctor name...";
+  search.value = editDoctorsFilterText;
+  searchWrap.appendChild(search);
+  menu.appendChild(searchWrap);
+
+  const empty = document.createElement("div");
+  empty.className = "multi-select-empty";
+  empty.textContent = "No matching doctors.";
+  empty.style.display = "none";
+  menu.appendChild(empty);
+
+  for (const d of allDoctors) {
     const row = document.createElement("label");
     row.className = "multi-select-item";
+    row.dataset.doctorName = String(d.full_name || "").toLowerCase();
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -328,6 +387,22 @@ function renderEditDoctorsMenu() {
     row.appendChild(text);
     menu.appendChild(row);
   }
+
+  const applyFilter = () => {
+    editDoctorsFilterText = String(search.value || "");
+    const q = editDoctorsFilterText.trim().toLowerCase();
+    let visible = 0;
+    menu.querySelectorAll(".multi-select-item").forEach((row) => {
+      const name = String(row.dataset.doctorName || "");
+      const show = !q || name.includes(q);
+      row.style.display = show ? "" : "none";
+      if (show) visible += 1;
+    });
+    empty.style.display = visible ? "none" : "";
+  };
+
+  search.addEventListener("input", applyFilter);
+  applyFilter();
 }
 
 function wireEditDoctorsMultiSelectUI() {
@@ -347,6 +422,10 @@ function wireEditDoctorsMultiSelectUI() {
     const isOpen = wrap.classList.toggle("open");
     btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
     if (hostCard) hostCard.classList.toggle("multi-select-host-open", isOpen);
+    if (isOpen) {
+      const inp = wrap.querySelector(".multi-select-search");
+      if (inp) inp.focus();
+    }
   });
 
   // Close when clicking outside
@@ -366,6 +445,7 @@ function initEditDoctorsMultiSelect(course) {
   const ids = parseDoctorIdsCsv(course?.doctor_ids);
   const initial = ids.length ? ids : (course?.doctor_id ? [Number(course.doctor_id)] : []);
   setEditDoctorsSelectedIds(initial);
+  editDoctorsFilterText = "";
 
   wireEditDoctorsMultiSelectUI();
   renderEditDoctorsMenu();

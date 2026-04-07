@@ -2467,19 +2467,41 @@ html[data-theme="light"] .slot.available-slot {
   border-radius: 14px;
   box-shadow: 0 22px 60px rgba(0,0,0,0.55);
   padding: 8px;
-  max-height: 260px;
+  max-height: min(65vh, 520px);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 760px) {
   .multi-select-menu {
-    max-height: 50vh;
+    max-height: 65vh;
   }
 }
 
 .multi-select.open .multi-select-menu {
   display: block;
+}
+
+.multi-select-search-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--dropdown-bg);
+  padding: 4px 4px 8px;
+}
+
+.multi-select-search {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.multi-select-empty {
+  color: var(--text-dim);
+  padding: 10px 12px;
 }
 
 .multi-select-item {
