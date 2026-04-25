@@ -103,9 +103,9 @@ if ($role === 'teacher') {
     window.AVAILABILITY_ROLE = <?php echo json_encode($role); ?>;
     window.AVAILABILITY_IS_ADMIN = <?php echo json_encode($role === 'admin' || $role === 'management'); ?>;
   </script>
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/availability.js?v=20260228g"></script>
+  <script src="js/core.js?v=20260425a"></script>
+  <script src="js/navbar.js?v=20260425a"></script>
+  <script src="js/availability.js?v=20260425a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAvailabilityView?.({

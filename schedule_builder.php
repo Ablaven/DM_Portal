@@ -294,9 +294,9 @@ auth_require_roles(['admin','management']);
     </div>
   </div>
 
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/schedule_builder.js?v=20260228g"></script>
+  <script src="js/core.js?v=20260425a"></script>
+  <script src="js/navbar.js?v=20260425a"></script>
+  <script src="js/schedule_builder.js?v=20260425a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initScheduleBuilder?.();

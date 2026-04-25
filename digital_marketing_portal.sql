@@ -1,6 +1,6 @@
 -- Digital Marketing Portal SQL Export
 -- Database: digital_marketing_portal
--- Generated: 2026-04-25 11:32:51 UTC
+-- Generated: 2026-04-25 12:11:53 UTC
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
