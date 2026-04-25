@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const { fetchJson, setStatusById, escapeHtml, formatWeekLabelWithRange } = window.dmportal || {};
+  const { fetchJson, setStatusById, escapeHtml, formatWeekLabelWithRange, formatWeekDisplayLabel } = window.dmportal || {};
 
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
@@ -231,9 +231,9 @@
       for (const w of availabilityState.weeks) {
         const opt = document.createElement("option");
         opt.value = w.week_id;
-        const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-        const wk = formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`);
-        opt.textContent = `${wk}${prepTag}${w.status === "active" ? " (active)" : ""}`;
+        opt.textContent = formatWeekDisplayLabel
+          ? formatWeekDisplayLabel(w)
+          : (formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`));
         weekSel.appendChild(opt);
       }
       if (availabilityState.activeWeekId) weekSel.value = String(availabilityState.activeWeekId);

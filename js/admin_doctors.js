@@ -15,6 +15,7 @@
     showSuccess,
     showError,
     showInfo,
+    formatWeekDisplayLabel,
   } = window.dmportal || {};
 
   const state = { doctors: [], weeks: [], doctorTypes: ["Egyptian", "French"] };
@@ -281,8 +282,7 @@
       for (const w of state.weeks) {
         const opt = document.createElement("option");
         opt.value = w.week_id;
-        const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-        opt.textContent = `${w.label}${prepTag}${w.status === "active" ? " (active)" : ""}`;
+        opt.textContent = formatWeekDisplayLabel ? formatWeekDisplayLabel(w) : String(w.label || `Week ${w.week_id}`);
         weekSel.appendChild(opt);
       }
     }

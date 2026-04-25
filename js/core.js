@@ -536,12 +536,29 @@
     const label = String(w.label || `Week ${w.week_id || ""}`).trim();
     const start = formatIsoDateMDY(w.start_date);
     let end = formatIsoDateMDY(w.end_date);
+    const startDt = w.start_date ? new Date(`${String(w.start_date).trim()}T00:00:00`) : null;
+    let endDt = w.end_date ? new Date(`${String(w.end_date).trim()}T00:00:00`) : null;
+    const hasStartDt = !!(startDt && !Number.isNaN(startDt.getTime()));
+    const hasEndDt = !!(endDt && !Number.isNaN(endDt.getTime()));
     if (start && !end && w.start_date) {
+      end = addDaysIso(w.start_date, 6);
+    }
+    if (hasStartDt && (!hasEndDt || endDt < startDt)) {
       end = addDaysIso(w.start_date, 6);
     }
     if (start && end) return `${label} (${start} ~ ${end})`;
     if (start) return `${label} (${start})`;
     return label;
+  }
+
+  function formatWeekDisplayLabel(week) {
+    const w = week || {};
+    const base = formatWeekLabelWithRange(w);
+    const tags = [];
+    if (Number(w.is_prep || 0) === 1) tags.push("prep");
+    if (Number(w.is_ramadan || 0) === 1) tags.push("ramadan");
+    if (String(w.status || "").toLowerCase() === "active") tags.push("active");
+    return tags.length ? `${base} (${tags.join(", ")})` : base;
   }
 
   window.dmportal.fetchJson = fetchJson;
@@ -551,6 +568,7 @@
   window.dmportal.parseDoctorIdsCsv = parseDoctorIdsCsv;
   window.dmportal.formatHours = formatHours;
   window.dmportal.formatWeekLabelWithRange = formatWeekLabelWithRange;
+  window.dmportal.formatWeekDisplayLabel = formatWeekDisplayLabel;
   window.dmportal.getPageFilters = getPageFilters;
   window.dmportal.setPageFilters = setPageFilters;
   window.dmportal.getGlobalFilters = getGlobalFilters;

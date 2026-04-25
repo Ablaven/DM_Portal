@@ -18,6 +18,7 @@
     initPageFiltersUI,
     doesItemMatchGlobalFilters,
     formatWeekLabelWithRange,
+    formatWeekDisplayLabel,
   } = window.dmportal || {};
 
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
@@ -330,9 +331,9 @@
         for (const w of doctorState.weeks) {
           const opt = document.createElement("option");
           opt.value = w.week_id;
-          const prepTag = Number(w.is_prep || 0) === 1 ? " (prep)" : "";
-          const wk = formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`);
-          opt.textContent = `${wk}${prepTag}${w.status === "active" ? " (active)" : ""}`;
+          opt.textContent = formatWeekDisplayLabel
+            ? formatWeekDisplayLabel(w)
+            : (formatWeekLabelWithRange ? formatWeekLabelWithRange(w) : String(w.label || `Week ${w.week_id}`));
           weekSel.appendChild(opt);
         }
         if (doctorState.activeWeekId) weekSel.value = String(doctorState.activeWeekId);

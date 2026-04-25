@@ -77,6 +77,37 @@ function dmportal_get_active_term_id(PDO $pdo, int $semester = 0, int $academicY
         return $termId;
     }
 
+    // If no active term exists in the active academic year for this semester,
+    // fallback to any active term for the same semester across years.
+    if ($semester > 0) {
+        $stmt = $pdo->prepare(
+            "SELECT term_id
+             FROM terms
+             WHERE status = 'active' AND semester = :semester
+             ORDER BY term_id DESC
+             LIMIT 1"
+        );
+        $stmt->execute([':semester' => $semester]);
+        $termId = (int)($stmt->fetchColumn() ?: 0);
+        if ($termId > 0) {
+            return $termId;
+        }
+
+        // Final semester-aware fallback: latest term for the semester.
+        $stmt = $pdo->prepare(
+            "SELECT term_id
+             FROM terms
+             WHERE semester = :semester
+             ORDER BY term_id DESC
+             LIMIT 1"
+        );
+        $stmt->execute([':semester' => $semester]);
+        $termId = (int)($stmt->fetchColumn() ?: 0);
+        if ($termId > 0) {
+            return $termId;
+        }
+    }
+
     $fallback = (int)$pdo->query('SELECT term_id FROM terms ORDER BY term_id ASC LIMIT 1')->fetchColumn();
     return $fallback > 0 ? $fallback : 1;
 }
@@ -302,16 +333,32 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
 
 function dmportal_format_date_mdy(?string $isoDate): string
 {
+    $dt = dmportal_parse_iso_date_ymd($isoDate);
+    if ($dt instanceof DateTimeImmutable) {
+        return $dt->format('n/j/Y');
+    }
     $s = trim((string)$isoDate);
+    return $s;
+}
+
+function dmportal_parse_iso_date_ymd(?string $date): ?DateTimeImmutable
+{
+    $s = trim((string)$date);
     if ($s === '') {
-        return '';
+        return null;
     }
-    try {
-        $d = new DateTimeImmutable($s . ' 00:00:00');
-        return $d->format('n/j/Y');
-    } catch (Throwable $e) {
-        return $s;
+
+    // Keep only YYYY-MM-DD part and parse strictly so malformed/non-ISO dates
+    // do not get auto-reinterpreted into unexpected values.
+    $ymd = substr($s, 0, 10);
+    $dt = DateTimeImmutable::createFromFormat('!Y-m-d', $ymd);
+    if (!$dt) {
+        return null;
     }
+    if ($dt->format('Y-m-d') !== $ymd) {
+        return null;
+    }
+    return $dt;
 }
 
 /**
@@ -331,17 +378,18 @@ function dmportal_week_label_with_range(?array $wk, int $fallbackWeekId = 0): st
     $startIso = $wk ? (string)($wk['start_date'] ?? '') : '';
     $endIso = $wk ? (string)($wk['end_date'] ?? '') : '';
 
-    $start = dmportal_format_date_mdy($startIso);
-    $end = dmportal_format_date_mdy($endIso);
+    $startDt = dmportal_parse_iso_date_ymd($startIso);
+    $endDt = dmportal_parse_iso_date_ymd($endIso);
 
-    if ($start !== '' && $end === '' && trim($startIso) !== '') {
-        try {
-            $d = new DateTimeImmutable($startIso . ' 00:00:00');
-            $end = $d->modify('+6 days')->format('n/j/Y');
-        } catch (Throwable $e) {
-            $end = '';
+    // If end date is missing/invalid/reversed, normalize to a 7-day range.
+    if ($startDt instanceof DateTimeImmutable) {
+        if (!$endDt || $endDt < $startDt) {
+            $endDt = $startDt->modify('+6 days');
         }
     }
+
+    $start = $startDt ? $startDt->format('n/j/Y') : dmportal_format_date_mdy($startIso);
+    $end = $endDt ? $endDt->format('n/j/Y') : dmportal_format_date_mdy($endIso);
 
     if ($start !== '' && $end !== '') {
         return trim($label . ' (' . $start . ' ~ ' . $end . ')');

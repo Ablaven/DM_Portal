@@ -40,8 +40,12 @@ try {
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
     if ($isPrep === 0) {
-        // Close any existing active week for this term
+        // ACTIVE or RAMADAN creation: close any currently active week in this term.
         $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id");
+        $stmt->execute([':term_id' => $termId]);
+    } else {
+        // PREP creation: only one prep marker per term.
+        $stmt = $pdo->prepare("UPDATE weeks SET is_prep = 0 WHERE term_id = :term_id");
         $stmt->execute([':term_id' => $termId]);
     }
 
@@ -58,11 +62,9 @@ try {
             }
         }
     }
-    if ($isRamadan === 1) {
-        $label = 'Ramadan Week ' . $next;
-    } else {
-        $label = ($isPrep === 1 ? 'Prep Week ' : 'Week ') . $next;
-    }
+    // Keep canonical labels as "Week N". Type/status are represented by flags,
+    // not by embedding words like "Prep"/"Ramadan" in the label itself.
+    $label = 'Week ' . $next;
 
     $status = $isPrep === 1 ? 'closed' : 'active';
 
@@ -79,6 +81,10 @@ try {
 
     if ($isRamadan === 1) {
         $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
+        $stmt->execute([':term_id' => $termId, ':week_id' => $newWeekId]);
+    } else {
+        // Creating a normal active/prep week should not leave stale Ramadan flags.
+        $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id = :week_id');
         $stmt->execute([':term_id' => $termId, ':week_id' => $newWeekId]);
     }
 

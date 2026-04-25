@@ -57,18 +57,20 @@ $stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_
 
     $isPrep = $weekType === 'PREP' ? 1 : 0;
     $isRamadan = $weekType === 'RAMADAN' ? 1 : 0;
-    // RAMADAN weeks behave like ACTIVE weeks (same scheduling behaviour, only timing differs in exports).
+    // RAMADAN behaves like ACTIVE for scheduling, but keeps its own flag for timing UI/exports.
     $newStatus = ($weekType === 'ACTIVE' || $weekType === 'RAMADAN') ? 'active' : 'closed';
 
-    if ($weekType === 'ACTIVE' || $weekType === 'RAMADAN') {
-        // Close any other active week in this term when making a week active/ramadan.
-        $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id AND week_id <> :week_id");
+    // Keep one holder for each state in a term and ensure selected week's state wins.
+    if ($weekType === 'ACTIVE') {
+        $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()), is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id AND (status='active' OR is_ramadan=1)");
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
-    }
-
-    if ($weekType === 'RAMADAN') {
-        // Only one Ramadan week per term: clear flag from all others in this term.
+    } elseif ($weekType === 'RAMADAN') {
+        $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE term_id = :term_id AND week_id <> :week_id AND status='active'");
+        $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
         $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
+        $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
+    } elseif ($weekType === 'PREP') {
+        $stmt = $pdo->prepare('UPDATE weeks SET is_prep = 0 WHERE term_id = :term_id AND week_id <> :week_id');
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
 
@@ -82,13 +84,9 @@ $stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_
         // Fallback: keep existing label if we cannot parse a number.
         $newLabel = $label;
     } else {
-        if ($weekType === 'PREP') {
-            $newLabel = 'Prep Week ' . $num;
-        } elseif ($weekType === 'RAMADAN') {
-            $newLabel = 'Ramadan Week ' . $num;
-        } else {
-            $newLabel = 'Week ' . $num;
-        }
+        // Keep canonical labels as "Week N". Type/status are represented by
+        // flags and status fields, not label wording.
+        $newLabel = 'Week ' . $num;
     }
 
     $update = $pdo->prepare('UPDATE weeks SET label = :label, is_prep = :is_prep, is_ramadan = :is_ramadan, status = :status WHERE week_id = :week_id');
@@ -100,11 +98,10 @@ $stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_
         ':week_id' => $weekId,
     ]);
 
-    // If we just marked this week as RAMADAN, also normalize labels for all
-    // *other* weeks in the term so they no longer contain stale "Ramadan"/"Prep"
-    // wording that doesn't match their flags.
-    if ($weekType === 'RAMADAN') {
-        $otherStmt = $pdo->prepare('SELECT week_id, label, is_prep, is_ramadan FROM weeks WHERE term_id = :term_id AND week_id <> :week_id');
+    // Normalize labels for all other weeks in the term so stale historical
+    // wording ("Prep Week", "Ramadan Week") is not kept in labels.
+    if (true) {
+        $otherStmt = $pdo->prepare('SELECT week_id, label FROM weeks WHERE term_id = :term_id AND week_id <> :week_id');
         $otherStmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
         $others = $otherStmt->fetchAll();
         foreach ($others as $row) {
@@ -120,8 +117,7 @@ $stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_
             if ($n <= 0) {
                 continue;
             }
-            $isPrepFlag = (int)($row['is_prep'] ?? 0) === 1;
-            $newOtherLabel = $isPrepFlag ? ('Prep Week ' . $n) : ('Week ' . $n);
+            $newOtherLabel = 'Week ' . $n;
             if ($newOtherLabel !== $rawLabel) {
                 $upd = $pdo->prepare('UPDATE weeks SET label = :label WHERE week_id = :week_id');
                 $upd->execute([':label' => $newOtherLabel, ':week_id' => $wid]);
