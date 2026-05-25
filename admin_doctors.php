@@ -196,9 +196,9 @@ auth_require_roles(['admin','management']);
 
   </main>
 
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/admin_doctors.js?v=20260228g"></script>
+  <script src="js/core.js?v=20260425a"></script>
+  <script src="js/navbar.js?v=20260425a"></script>
+  <script src="js/admin_doctors.js?v=20260425a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAdminDoctorsPage?.();

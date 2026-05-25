@@ -36,7 +36,7 @@ $isTeacher = $role === 'teacher';
         <div>
           <h2>Details</h2>
         </div>
-        <div class="filter-bar">
+        <div class="filter-bar report-filters-grid" style="flex-wrap:wrap;">
           <div class="field">
             <label for="hoursReportYearFilter">Academic Year</label>
             <select id="hoursReportYearFilter" class="navlink">
@@ -54,7 +54,21 @@ $isTeacher = $role === 'teacher';
               <option value="2">Sem 2</option>
             </select>
           </div>
-          <button id="hoursReportRefresh" class="btn btn-secondary" type="button">Refresh</button>
+          <?php if (!$isTeacher) : ?>
+          <div class="field">
+            <label for="hoursReportDoctorFilter">Professor</label>
+            <select id="hoursReportDoctorFilter" class="navlink">
+              <option value="">Select professor…</option>
+            </select>
+          </div>
+          <?php endif; ?>
+          <div class="page-actions">
+            <button id="hoursReportRefresh" class="btn btn-secondary" type="button">Refresh</button>
+            <?php if (!$isTeacher) : ?>
+            <button id="exportHoursReportSummaryXls" class="btn btn-secondary" type="button">Export Professors Totals</button>
+            <?php endif; ?>
+            <button id="exportHoursReportDetailXls" class="btn btn-secondary" type="button">Export Professor Detail</button>
+          </div>
         </div>
       </div>
 
@@ -66,10 +80,13 @@ $isTeacher = $role === 'teacher';
 
   <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/hours_report.js?v=20260228g"></script>
+  <script src="js/hours_report.js?v=20260523a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
-    window.dmportal?.initHoursReportPage?.();
+    window.dmportal?.initHoursReportPage?.({
+      isTeacher: <?php echo $isTeacher ? 'true' : 'false'; ?>,
+      teacherDoctorId: <?php echo $isTeacher ? (int)($u['doctor_id'] ?? 0) : 0; ?>,
+    });
   </script>
 </body>
 </html>

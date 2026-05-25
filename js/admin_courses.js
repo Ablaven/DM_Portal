@@ -1647,6 +1647,10 @@ function renderCourseProgressList(courses) {
         await maybeInitAdminCourseList(true);
       });
 
+      document.getElementById("exportProgramCatalogXls")?.addEventListener("click", () => {
+        window.location.href = "php/export_program_catalog_xls.php";
+      });
+
       document.getElementById("courseSearch")?.addEventListener("input", (e) => {
         renderAdminCoursesList(e.target.value || "");
       });

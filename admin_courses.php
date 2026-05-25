@@ -161,6 +161,7 @@ auth_require_roles(['admin','management']);
               <label for="courseSearch">Search</label>
               <input id="courseSearch" type="text" placeholder="Search by name/program…" />
             </div>
+            <button id="exportProgramCatalogXls" class="btn btn-secondary" type="button">Export Program Catalog</button>
           </div>
         </div>
       </div>
@@ -295,7 +296,7 @@ auth_require_roles(['admin','management']);
 
   <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/admin_courses.js?v=20260407b"></script>
+  <script src="js/admin_courses.js?v=20260523b"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAdminCoursesPage?.();

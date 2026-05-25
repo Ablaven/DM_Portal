@@ -68,12 +68,24 @@
     `;
   }
 
-  async function initHoursReportPage() {
+  function buildFilterQueryString() {
+    const f = getEffectivePageFilters();
+    const qs = new URLSearchParams();
+    if (f.year_level) qs.set("year_level", String(f.year_level));
+    if (f.semester) qs.set("semester", String(f.semester));
+    return qs;
+  }
+
+  async function initHoursReportPage(options = {}) {
     const root = document.getElementById("hoursReportRoot");
     if (!root) return;
 
+    const isTeacher = Boolean(options.isTeacher);
+    const teacherDoctorId = Number(options.teacherDoctorId || 0);
+
     const status = document.getElementById("hoursReportStatus");
     const refreshBtn = document.getElementById("hoursReportRefresh");
+    const doctorSelect = document.getElementById("hoursReportDoctorFilter");
 
     function setStatus(msg, type) {
       if (!status) return;
@@ -91,11 +103,30 @@
       root.innerHTML = doctors.map(renderDoctorCard).join("");
     }
 
+    async function loadDoctorsDropdown() {
+      if (!doctorSelect || isTeacher) return;
+      try {
+        const payload = await fetchJson("php/get_doctors.php");
+        if (!payload?.success) return;
+        const doctors = Array.isArray(payload?.data) ? payload.data : (payload?.data?.doctors || []);
+        const current = doctorSelect.value;
+        doctorSelect.innerHTML = '<option value="">Select professor…</option>';
+        doctors.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = String(d.doctor_id);
+          opt.textContent = d.full_name || `Doctor #${d.doctor_id}`;
+          doctorSelect.appendChild(opt);
+        });
+        if (current && [...doctorSelect.options].some((o) => o.value === current)) {
+          doctorSelect.value = current;
+        }
+      } catch {
+        // Non-fatal; detail export still works if user knows doctor id from UI cards
+      }
+    }
+
     async function load() {
-      const f = getEffectivePageFilters();
-      const qs = new URLSearchParams();
-      if (f.year_level) qs.set("year_level", String(f.year_level));
-      if (f.semester) qs.set("semester", String(f.semester));
+      const qs = buildFilterQueryString();
       setStatus("Loading…");
       try {
         const url = "php/get_hours_report.php" + (qs.toString() ? `?${qs.toString()}` : "");
@@ -116,6 +147,23 @@
     window.addEventListener("dmportal:pageFiltersChanged", load);
     refreshBtn?.addEventListener("click", load);
 
+    document.getElementById("exportHoursReportSummaryXls")?.addEventListener("click", () => {
+      const qs = buildFilterQueryString();
+      window.location.href = `php/export_hours_report_summary_xls.php?${qs.toString()}`;
+    });
+
+    document.getElementById("exportHoursReportDetailXls")?.addEventListener("click", () => {
+      const doctorId = isTeacher ? teacherDoctorId : Number(doctorSelect?.value || 0);
+      if (!doctorId) {
+        setStatus("Select a professor first.", "error");
+        return;
+      }
+      const qs = buildFilterQueryString();
+      qs.set("doctor_id", String(doctorId));
+      window.location.href = `php/export_hours_report_detail_xls.php?${qs.toString()}`;
+    });
+
+    await loadDoctorsDropdown();
     await load();
   }
 
