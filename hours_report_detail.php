@@ -68,6 +68,7 @@ $isTeacher = $role === 'teacher';
             <button id="exportHoursReportSummaryXls" class="btn btn-secondary" type="button">Export Professors Totals</button>
             <?php endif; ?>
             <button id="exportHoursReportDetailXls" class="btn btn-secondary" type="button">Export Professor Detail</button>
+            <button id="exportHoursReportCustomXls" class="btn btn-secondary" type="button">Custom Export</button>
           </div>
         </div>
       </div>
@@ -78,9 +79,59 @@ $isTeacher = $role === 'teacher';
     </section>
   </main>
 
+  <!-- Custom export modal -->
+  <div id="hoursReportCustomExportModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="hoursReportCustomExportTitle" style="width:min(760px, 94vw);">
+      <div class="modal-header">
+        <h3 id="hoursReportCustomExportTitle">Custom Export</h3>
+        <button class="btn btn-small btn-secondary" type="button" data-close="1">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="muted mb-12">Select professors and year/semester combinations, then export one workbook (one sheet per professor).</div>
+
+        <?php if (!$isTeacher) : ?>
+        <div class="field">
+          <label>Doctors</label>
+          <div class="filter-bar" style="justify-content:flex-start; gap:10px; padding:0; margin-top:6px;">
+            <input id="hoursReportCustomDoctorSearch" class="navlink" type="text" placeholder="Search doctors…" style="min-width:220px;" />
+            <button id="hoursReportCustomDoctorsSelectAll" class="btn btn-secondary btn-small" type="button">Select all</button>
+            <button id="hoursReportCustomDoctorsClear" class="btn btn-secondary btn-small" type="button">Clear</button>
+          </div>
+          <div id="hoursReportCustomDoctors" class="grid-2 custom-export-list"></div>
+          <small class="hint">Pick one or more professors.</small>
+        </div>
+        <?php endif; ?>
+
+        <div class="field">
+          <label>Year / Semester</label>
+          <div class="filter-bar" style="justify-content:flex-start; gap:10px; padding:0; margin-top:6px;">
+            <button id="hoursReportCustomYearSemSelectAll" class="btn btn-secondary btn-small" type="button">Select all</button>
+            <button id="hoursReportCustomYearSemClear" class="btn btn-secondary btn-small" type="button">Clear</button>
+          </div>
+          <div id="hoursReportCustomYearSem" class="grid-2 custom-export-list">
+            <label class="chk"><input type="checkbox" value="1-1" /> Year 1 / Sem 1</label>
+            <label class="chk"><input type="checkbox" value="1-2" /> Year 1 / Sem 2</label>
+            <label class="chk"><input type="checkbox" value="2-1" /> Year 2 / Sem 1</label>
+            <label class="chk"><input type="checkbox" value="2-2" /> Year 2 / Sem 2</label>
+            <label class="chk"><input type="checkbox" value="3-1" /> Year 3 / Sem 1</label>
+            <label class="chk"><input type="checkbox" value="3-2" /> Year 3 / Sem 2</label>
+          </div>
+          <small class="hint">You can export multiple year/semester combinations in one file.</small>
+        </div>
+
+        <div id="hoursReportCustomExportStatus" class="status" role="status" aria-live="polite"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close="1">Cancel</button>
+        <button id="hoursReportCustomExportRun" class="btn" type="button">Export</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/core.js?v=20260228g"></script>
   <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/hours_report.js?v=20260523a"></script>
+  <script src="js/hours_report.js?v=20260528a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initHoursReportPage?.({

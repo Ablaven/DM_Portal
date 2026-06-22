@@ -7,14 +7,12 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
+require_once __DIR__ . '/_slot_time_helpers.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
 require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
-
-// Returns scheduled slots for Attendance grid.
-// - Admin/Management: returns all schedules for selected week/year.
-// - Teacher: returns only schedules belonging to their own doctor_id.
 
 function bad_request(string $m): void {
     http_response_code(400);
@@ -32,10 +30,8 @@ try {
 
     $pdo = get_pdo();
 
-    // Backward compatible: ensure the attendance_records table matches the schedule-based schema.
     dmportal_ensure_attendance_records_table($pdo);
-
-    // Ensure optional per-year doctor color table exists.
+    dmportal_ensure_attendance_sessions_table($pdo);
     dmportal_ensure_doctor_year_colors_table($pdo);
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
@@ -51,12 +47,15 @@ try {
         $weekId = (int)$wk['week_id'];
     }
 
+    $wkStmt = $pdo->prepare('SELECT week_id, start_date, is_ramadan FROM weeks WHERE week_id = :id LIMIT 1');
+    $wkStmt->execute([':id' => $weekId]);
+    $weekRow = $wkStmt->fetch();
+    $weekStartDate = $weekRow ? (string)($weekRow['start_date'] ?? '') : '';
+    $isRamadan = $weekRow && (int)($weekRow['is_ramadan'] ?? 0) === 1;
+
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
 
-    // In normal mode, teachers are restricted to their own doctor_id.
-    // In override mode (allowed_pages explicitly set), we still enforce ownership for attendance.
-    // (This endpoint protects student attendance data.)
     $doctorFilterId = null;
     if ($role === 'teacher') {
         $did = (int)($u['doctor_id'] ?? 0);
@@ -94,7 +93,19 @@ try {
     $stmt->execute($params);
     $rows = $stmt->fetchAll();
 
-    // grid[day][slot] = {multiple:boolean, items:[...]}
+    $sessionMap = [];
+    $sessStmt = $pdo->prepare(
+        'SELECT ash.schedule_id, ash.hours_counted
+         FROM attendance_sessions ash
+         JOIN doctor_schedules s ON s.schedule_id = ash.schedule_id
+         WHERE s.week_id = :week_id AND ash.term_id = :term_id'
+    );
+    $sessStmt->execute([':week_id' => $weekId, ':term_id' => $termId]);
+    foreach ($sessStmt->fetchAll() as $sr) {
+        $sessionMap[(int)$sr['schedule_id']] = (int)$sr['hours_counted'];
+    }
+
+    $nowCairo = dmportal_cairo_now();
     $grid = [];
     foreach ($rows as $r) {
         $day = (string)$r['day_of_week'];
@@ -105,8 +116,19 @@ try {
             $grid[$day][$key] = ['multiple' => false, 'items' => []];
         }
 
+        $scheduleId = (int)$r['schedule_id'];
+        $windowState = $weekStartDate !== ''
+            ? dmportal_schedule_window_state_from_meta($weekStartDate, $isRamadan, $day, $slot, $nowCairo)
+            : 'ended';
+
+        $sessionExists = array_key_exists($scheduleId, $sessionMap);
+        $session = $sessionExists
+            ? ['hours_counted' => $sessionMap[$scheduleId]]
+            : null;
+        $flags = dmportal_attendance_access_flags($role, $windowState, $session);
+
         $grid[$day][$key]['items'][] = [
-            'schedule_id' => (int)$r['schedule_id'],
+            'schedule_id' => $scheduleId,
             'course_id' => (int)$r['course_id'],
             'course_name' => (string)$r['course_name'],
             'course_type' => (string)$r['course_type'],
@@ -116,6 +138,10 @@ try {
             'doctor_id' => (int)$r['doctor_id'],
             'doctor_name' => (string)($r['doctor_name'] ?? ''),
             'doctor_color' => (string)($r['doctor_color'] ?? ''),
+            'lecture_window_state' => (string)$flags['lecture_window_state'],
+            'attendance_taken' => (bool)$flags['attendance_taken'],
+            'can_open_attendance' => (bool)$flags['can_open_attendance'],
+            'can_take_attendance' => (bool)$flags['can_take_attendance'],
         ];
 
         if (count($grid[$day][$key]['items']) > 1) {

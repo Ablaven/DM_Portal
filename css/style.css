@@ -2699,6 +2699,40 @@ html[data-theme="light"] .slot.available-slot {
   border-bottom: 1px solid var(--card-border);
 }
 
+/* Hours report custom export modal checkbox styling */
+#hoursReportCustomExportModal .custom-export-list {
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.25);
+  max-height: 260px;
+  overflow: auto;
+}
+
+#hoursReportCustomExportModal .custom-export-list label.chk {
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background 120ms ease;
+}
+
+#hoursReportCustomExportModal .custom-export-list label.chk:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+#hoursReportCustomExportModal .chk {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+#hoursReportCustomExportModal .chk input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--accent);
+}
+
 #attendanceModal .schedule-grid tbody tr td {
   border-bottom: 1px solid var(--card-border);
   border-right: 1px solid var(--card-border);

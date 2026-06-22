@@ -106,6 +106,10 @@ try {
     $styleMap[] = [0 => $xlsx->styleHeaderSmall(), 1 => $xlsx->styleCellSmallBold()];
     $rowHeights[] = 22;
 
+    $rows[] = $padRow(['Done hours rule', 'Only lectures with attendance saved during the Cairo lecture window'], $totalCols);
+    $styleMap[] = [0 => $xlsx->styleHeaderSmall(), 1 => $xlsx->styleCellSmallBold()];
+    $rowHeights[] = 22;
+
     $rows[] = $padRow([], $totalCols);
     $styleMap[] = array_fill(0, $totalCols, $xlsx->styleCellSmallBold());
     $rowHeights[] = 18;
@@ -168,7 +172,7 @@ try {
     $totalStyle[0] = $xlsx->styleCellSmallBoldLeft();
     $styleMap[] = $totalStyle;
 
-    $freezeTopRows = 7;
+    $freezeTopRows = 8;
 
     $xlsx->addSheet(
         'Hours Detail',

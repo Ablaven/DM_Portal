@@ -6,6 +6,8 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_course_hours_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
 
 auth_require_roles(['admin', 'teacher'], true);
 
@@ -44,6 +46,12 @@ try {
     $hasWeekCancellations = $touchTable('doctor_week_cancellations');
     $hasSlotCancellations = $touchTable('doctor_slot_cancellations');
     $hasSchedules = $touchTable('doctor_schedules');
+    $hasAttendanceSessions = $touchTable('attendance_sessions');
+
+    if ($hasSchedules && !$hasAttendanceSessions) {
+        dmportal_ensure_attendance_sessions_table($pdo);
+        $hasAttendanceSessions = $touchTable('attendance_sessions');
+    }
 
     $hJoin = $hasCourseDoctorHours ? 'LEFT JOIN course_doctor_hours h ON h.course_id = c.course_id AND h.doctor_id = d.doctor_id' : 'LEFT JOIN (SELECT NULL AS course_id, NULL AS doctor_id, NULL AS allocated_hours) h ON 1=0';
 
@@ -55,21 +63,8 @@ try {
         ? "LEFT JOIN doctor_slot_cancellations cs\n            ON cs.week_id = s.week_id\n           AND cs.doctor_id = s.doctor_id\n           AND cs.day_of_week = s.day_of_week\n           AND cs.slot_number = s.slot_number"
         : "LEFT JOIN (SELECT NULL AS slot_cancellation_id, NULL AS week_id, NULL AS doctor_id, NULL AS day_of_week, NULL AS slot_number) cs ON 1=0";
 
-    $doneSubquery = $hasSchedules ? "
-          SELECT
-            s.doctor_id,
-            s.course_id,
-            COUNT(*) AS done_slots,
-            SUM(COALESCE(s.extra_minutes,0)) AS done_extra_minutes
-          FROM doctor_schedules s
-          $weekCancelJoin
-          $slotCancelJoin
-          WHERE s.counts_towards_hours = 1
-            AND cw.cancellation_id IS NULL
-            AND cs.slot_cancellation_id IS NULL
-          GROUP BY s.doctor_id, s.course_id
-        " : "
-          SELECT NULL AS doctor_id, NULL AS course_id, 0 AS done_slots
+    $doneSubquery = ($hasSchedules && $hasAttendanceSessions) ? dmportal_done_hours_subquery_sql($weekCancelJoin, $slotCancelJoin) : "
+          SELECT NULL AS doctor_id, NULL AS course_id, 0 AS done_slots, 0 AS done_extra_minutes
         ";
 
     $allocJoin = $hasCourseDoctorHours

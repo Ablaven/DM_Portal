@@ -48,11 +48,28 @@
   setStatusById("attendanceModalStatus", "");
   }
 
-  function renderAttendanceGrid(grid, onSlotClick) {
+  function lectureWindowLabel(state) {
+    if (state === "active") return "Lecture in progress";
+    if (state === "ended") return "Lecture ended";
+    if (state === "upcoming") return "Not yet open";
+    return "";
+  }
+
+  function scheduleStatusLabel(sched) {
+    if (!sched) return "";
+    if (sched.hours_counted || sched.attendance_taken) return "Attendance recorded";
+    if (sched.lecture_window_state === "active") return "Lecture in progress";
+    if (sched.lecture_window_state === "ended") return "Lecture ended \u2014 attendance locked";
+    if (sched.lecture_window_state === "upcoming") return "Opens at scheduled Cairo time";
+    return "";
+  }
+
+  function renderAttendanceGrid(grid, onSlotClick, options = {}) {
   const body = document.getElementById("attendanceScheduleBody");
   if (!body) return;
 
-  // Match the Student Schedule UI: same days/slots and the same slot header + slot card markup.
+  const { isAdmin = false } = options || {};
+
   body.innerHTML = "";
 
   for (const slot of SLOTS) {
@@ -73,28 +90,42 @@
         cell.innerHTML = `<div class="slot-title">\u2014</div><div class="slot-sub">Empty</div>`;
         cell.style.cursor = "default";
       } else {
+        const first = items[0];
+        const canOpen = isAdmin || items.some((it) => it.can_open_attendance !== false);
+        const windowState = first?.lecture_window_state || "";
+        const taken = items.some((it) => it.attendance_taken);
+
         cell.classList.add("filled");
-        cell.style.cursor = "pointer";
+        if (!canOpen) {
+          cell.classList.add("attendance-slot-locked");
+          cell.style.cursor = "not-allowed";
+          cell.style.opacity = "0.72";
+        } else {
+          cell.style.cursor = "pointer";
+        }
 
         if (assigned.multiple) {
-          const first = items[0];
-          // Use the same "Multiple" visual as Student Schedule.
           cell.innerHTML = `<div class="slot-title">Multiple</div><div class="slot-sub">Same slot</div>`;
           if (first?.doctor_color) {
             cell.style.background = first.doctor_color + "22";
             cell.style.borderColor = first.doctor_color + "88";
           }
-          cell.addEventListener("click", () => onSlotClick(day, slot, first, items));
+          if (canOpen) {
+            cell.addEventListener("click", () => onSlotClick(day, slot, first, items));
+          }
         } else {
           const one = items[0];
           const room = one.room_code ? `Room ${escapeHtml(one.room_code)}` : "";
-          const line2 = `${escapeHtml(one.doctor_name || "")} &middot; ${escapeHtml(makeCourseLabel(one.course_type, one.subject_code))}${room ? " &middot; " + room : ""}`;
+          const statusHint = !isAdmin && (taken || windowState) ? ` &middot; ${escapeHtml(taken ? "Recorded" : lectureWindowLabel(windowState))}` : "";
+          const line2 = `${escapeHtml(one.doctor_name || "")} &middot; ${escapeHtml(makeCourseLabel(one.course_type, one.subject_code))}${room ? " &middot; " + room : ""}${statusHint}`;
           cell.innerHTML = `<div class="slot-title">${escapeHtml(one.course_name || "")}</div><div class="slot-sub">${line2}</div>`;
           if (one?.doctor_color) {
             cell.style.background = one.doctor_color + "22";
             cell.style.borderColor = one.doctor_color + "88";
           }
-          cell.addEventListener("click", () => onSlotClick(day, slot, one, [one]));
+          if (canOpen) {
+            cell.addEventListener("click", () => onSlotClick(day, slot, one, [one]));
+          }
         }
       }
 
@@ -106,11 +137,19 @@
   }
   }
 
+  function updateAttendanceSaveState(scheduleMeta, isAdmin) {
+    const saveBtn = document.getElementById("attendanceSaveChanges");
+    if (!saveBtn) return;
+    const locked = !isAdmin && scheduleMeta && scheduleMeta.lecture_window_state === "ended";
+    saveBtn.disabled = Boolean(locked);
+  }
+
   function renderAttendanceModalRows(items, filterText, options = {}) {
   const body = document.getElementById("attendanceModalBody");
   if (!body) return;
 
-  const { isAdmin = false } = options || {};
+  const { isAdmin = false, schedule = null } = options || {};
+  const scheduleLocked = !isAdmin && schedule && schedule.lecture_window_state === "ended";
   const q = String(filterText || "").trim().toLowerCase();
   const filtered = (items || []).filter((s) => {
     if (!q) return true;
@@ -133,7 +172,7 @@
     const status = String(s.attendance_status || "").toUpperCase();
     const isPresent = status === "PRESENT";
     const hasStatus = status === "PRESENT" || status === "ABSENT";
-    const isLocked = !isAdmin && Boolean(s.attendance_locked);
+    const isLocked = scheduleLocked || (!isAdmin && Boolean(s.attendance_locked));
 
     // Default is unchecked => Absent
     tr.innerHTML = `
@@ -154,7 +193,7 @@
   }
 
   async function initAttendancePage() {
-  let currentCtx = null; // {schedule_id:number, items:[]}
+  let currentCtx = null; // {schedule_id:number, items:[], schedule:object}
   let latestGrid = {};
   const me = meCache || (await authFetchMe());
   const role = String(me?.role || "").toLowerCase();
@@ -249,13 +288,16 @@
             return;
           }
 
-          currentCtx = { schedule_id: Number(chosen.schedule_id), items: [] };
-          setStatusById("attendanceModalStatus", "");
-
-          const meta = document.getElementById("attendanceModalMeta");
-          if (meta) {
-            meta.innerHTML = `<strong>${escapeHtml(chosen.course_name || "")}</strong> &middot; Year ${escapeHtml(chosen.year_level)}${chosen.room_code ? ` &middot; Room ${escapeHtml(chosen.room_code)}` : ""}`;
+          if (!isAdmin && chosen.can_open_attendance === false) {
+            const hint = chosen.lecture_window_state === "upcoming"
+              ? "This lecture is not open yet (Cairo time)."
+              : "Attendance is locked for this lecture.";
+            setStatusById("attendanceStatus", hint, "error");
+            return;
           }
+
+          currentCtx = { schedule_id: Number(chosen.schedule_id), items: [], schedule: null };
+          setStatusById("attendanceModalStatus", "");
 
           openAttendanceModal();
           setStatusById("attendanceModalStatus", "Loading students...");
@@ -263,20 +305,36 @@
           const attPayload = await fetchJson(`php/get_attendance.php?schedule_id=${encodeURIComponent(chosen.schedule_id)}`);
           if (!attPayload.success) throw new Error(attPayload.error || "Failed to load attendance");
 
+          const scheduleMeta = attPayload.data?.schedule || {};
+          currentCtx.schedule = scheduleMeta;
           currentCtx.items = attPayload.data?.items || [];
-          renderAttendanceModalRows(currentCtx.items, "", { isAdmin });
+
+          if (!isAdmin && scheduleMeta.can_open_attendance === false) {
+            closeAttendanceModal();
+            setStatusById("attendanceStatus", "Attendance is not available for this lecture.", "error");
+            return;
+          }
+
+          const meta = document.getElementById("attendanceModalMeta");
+          const statusLabel = scheduleStatusLabel(scheduleMeta);
+          if (meta) {
+            meta.innerHTML = `<strong>${escapeHtml(scheduleMeta.course_name || chosen.course_name || "")}</strong> &middot; Year ${escapeHtml(scheduleMeta.year_level ?? chosen.year_level)}${scheduleMeta.room_code || chosen.room_code ? ` &middot; Room ${escapeHtml(scheduleMeta.room_code || chosen.room_code)}` : ""}${statusLabel ? ` &middot; <span class="muted">${escapeHtml(statusLabel)}</span>` : ""}`;
+          }
+
+          renderAttendanceModalRows(currentCtx.items, "", { isAdmin, schedule: scheduleMeta });
           dirtyStudents.clear();
+          updateAttendanceSaveState(scheduleMeta, isAdmin);
           setStatusById("attendanceModalStatus", "");
 
           const searchEl = document.getElementById("attendanceStudentSearch");
           if (searchEl) {
             searchEl.value = "";
-            searchEl.oninput = () => renderAttendanceModalRows(currentCtx.items, searchEl.value || "", { isAdmin });
+            searchEl.oninput = () => renderAttendanceModalRows(currentCtx.items, searchEl.value || "", { isAdmin, schedule: scheduleMeta });
           }
         } catch (err) {
           setStatusById("attendanceModalStatus", err.message || "Failed to load attendance", "error");
         }
-      });
+      }, { isAdmin });
 
       setStatusById("attendanceStatus", "");
     }
@@ -327,9 +385,9 @@
       if (!studentId || !currentCtx?.schedule_id) return;
 
       if (!isAdmin) {
-        const target = (currentCtx.items || []).find((x) => Number(x.student_id) === studentId);
-        if (target?.attendance_locked) {
-          inp.checked = String(target.attendance_status || "").toUpperCase() === "PRESENT";
+        const sched = currentCtx?.schedule || {};
+        if (sched.lecture_window_state === "ended") {
+          inp.checked = String((currentCtx.items || []).find((x) => Number(x.student_id) === studentId)?.attendance_status || "").toUpperCase() === "PRESENT";
           return;
         }
       }
@@ -346,6 +404,10 @@
         setStatusById("attendanceModalStatus", "Open a slot first.", "error");
         return;
       }
+      if (!isAdmin && currentCtx.schedule?.lecture_window_state === "ended") {
+        setStatusById("attendanceModalStatus", "Attendance is locked for this lecture.", "error");
+        return;
+      }
       const targets = (currentCtx.items || []).map((x) => Number(x.student_id)).filter((n) => n > 0);
       if (!targets.length) {
         setStatusById("attendanceModalStatus", "No students to update.", "error");
@@ -353,7 +415,7 @@
       }
 
       for (const it of currentCtx.items || []) it.attendance_status = toStatus;
-      renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin });
+      renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin, schedule: currentCtx.schedule });
       for (const sid of targets) dirtyStudents.add(sid);
       setStatusById("attendanceModalStatus", `Marked ${targets.length}. Remember to save.`, "warn");
     }
@@ -384,6 +446,11 @@
       }
 
       if (!isAdmin) {
+        const sched = currentCtx.schedule || {};
+        if (sched.lecture_window_state === "ended") {
+          setStatusById("attendanceModalStatus", "Attendance is locked for this lecture.", "error");
+          return;
+        }
         for (const it of currentCtx.items || []) {
           const status = String(it?.attendance_status || "").toUpperCase();
           it.attendance_status = status === "PRESENT" ? "PRESENT" : "ABSENT";
@@ -402,12 +469,17 @@
         }
 
         dirtyStudents.clear();
-        if (!isAdmin) {
-          for (const it of currentCtx.items || []) {
-            it.attendance_locked = true;
-          }
-          renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin });
+
+        const attPayload = await fetchJson(`php/get_attendance.php?schedule_id=${encodeURIComponent(currentCtx.schedule_id)}`);
+        if (attPayload.success) {
+          currentCtx.schedule = attPayload.data?.schedule || currentCtx.schedule;
+          currentCtx.items = attPayload.data?.items || currentCtx.items;
+        } else if (!isAdmin && currentCtx.schedule) {
+          currentCtx.schedule.attendance_taken = true;
         }
+
+        renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin, schedule: currentCtx.schedule });
+        updateAttendanceSaveState(currentCtx.schedule, isAdmin);
         setStatusById("attendanceModalStatus", `Saved ${targets.length}.`, "success");
       } catch (err) {
         setStatusById("attendanceModalStatus", err.message || "Save failed", "error");
@@ -460,16 +532,19 @@
           }
 
           if (nextSlot) {
-            currentCtx = { schedule_id: Number(nextSlot.schedule_id), items: [] };
-            const meta = document.getElementById("attendanceModalMeta");
-            if (meta) {
-              meta.innerHTML = `<strong>${escapeHtml(nextSlot.course_name || "")}</strong> &middot; Year ${escapeHtml(nextSlot.year_level)}${nextSlot.room_code ? ` &middot; Room ${escapeHtml(nextSlot.room_code)}` : ""}`;
-            }
+            currentCtx = { schedule_id: Number(nextSlot.schedule_id), items: [], schedule: null };
             setStatusById("attendanceModalStatus", "Loading students...");
             const attPayload = await fetchJson(`php/get_attendance.php?schedule_id=${encodeURIComponent(nextSlot.schedule_id)}`);
             if (!attPayload.success) throw new Error(attPayload.error || "Failed to load attendance");
+            currentCtx.schedule = attPayload.data?.schedule || null;
             currentCtx.items = attPayload.data?.items || [];
-            renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin });
+            const meta = document.getElementById("attendanceModalMeta");
+            const statusLabel = scheduleStatusLabel(currentCtx.schedule);
+            if (meta) {
+              meta.innerHTML = `<strong>${escapeHtml(nextSlot.course_name || "")}</strong> &middot; Year ${escapeHtml(nextSlot.year_level)}${nextSlot.room_code ? ` &middot; Room ${escapeHtml(nextSlot.room_code)}` : ""}${statusLabel ? ` &middot; <span class="muted">${escapeHtml(statusLabel)}</span>` : ""}`;
+            }
+            renderAttendanceModalRows(currentCtx.items, document.getElementById("attendanceStudentSearch")?.value || "", { isAdmin, schedule: currentCtx.schedule });
+            updateAttendanceSaveState(currentCtx.schedule, isAdmin);
             dirtyStudents.clear();
             setStatusById("attendanceModalStatus", "");
           }

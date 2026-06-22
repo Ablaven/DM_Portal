@@ -7,13 +7,10 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
 require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_login(true);
-
-// Returns students for a given schedule_id + their attendance status.
-// - Admin/Management: can access any schedule.
-// - Teacher: can only access schedules that belong to their doctor_id.
 
 function bad_request(string $m): void {
     http_response_code(400);
@@ -27,10 +24,9 @@ try {
 
     $pdo = get_pdo();
 
-    // Backward compatible: ensure the attendance_records table matches the schedule-based schema.
     dmportal_ensure_attendance_records_table($pdo);
+    dmportal_ensure_attendance_sessions_table($pdo);
 
-    // Load schedule meta (and enforce ownership if teacher)
     $stmt = $pdo->prepare(
         'SELECT s.schedule_id, s.week_id, s.doctor_id, s.day_of_week, s.slot_number, s.room_code,
                 c.course_id, c.course_name, c.year_level,
@@ -62,8 +58,9 @@ try {
     }
 
     $yearLevel = (int)$sched['year_level'];
+    $termId = dmportal_get_term_id_for_week($pdo, (int)$sched['week_id']);
+    $access = dmportal_attendance_meta_for_schedule($pdo, $scheduleId, $role);
 
-    // Student list for that year (program not filtered; this portal is Digital Marketing)
     $studentsStmt = $pdo->prepare(
         'SELECT student_id, full_name, email, student_code
          FROM students
@@ -72,9 +69,6 @@ try {
     );
     $studentsStmt->execute([':y' => $yearLevel]);
     $students = $studentsStmt->fetchAll();
-
-    // Attendance status for schedule
-    $termId = dmportal_get_term_id_for_week($pdo, (int)$sched['week_id']);
 
     $attStmt = $pdo->prepare(
         'SELECT student_id, status
@@ -87,7 +81,8 @@ try {
         $map[(string)$r['student_id']] = (string)$r['status'];
     }
 
-    // Merge
+    $studentLocked = $role === 'teacher' && (bool)$access['attendance_locked'];
+
     $items = [];
     foreach ($students as $s) {
         $sid = (int)$s['student_id'];
@@ -97,6 +92,7 @@ try {
             'email' => (string)($s['email'] ?? ''),
             'student_code' => (string)($s['student_code'] ?? ''),
             'attendance_status' => $map[(string)$sid] ?? null,
+            'attendance_locked' => $studentLocked,
         ];
     }
 
@@ -115,6 +111,12 @@ try {
                 'year_level' => (int)$sched['year_level'],
                 'doctor_id' => (int)$sched['doctor_id'],
                 'doctor_name' => (string)($sched['doctor_name'] ?? ''),
+                'lecture_window_state' => (string)$access['lecture_window_state'],
+                'attendance_locked' => (bool)$access['attendance_locked'],
+                'can_take_attendance' => (bool)$access['can_take_attendance'],
+                'can_open_attendance' => (bool)$access['can_open_attendance'],
+                'hours_counted' => (bool)$access['hours_counted'],
+                'attendance_taken' => (bool)$access['attendance_taken'],
             ],
             'items' => $items,
         ],

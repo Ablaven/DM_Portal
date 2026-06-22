@@ -128,7 +128,7 @@ auth_require_login();
 
   <script src="js/core.js?v=20260425a"></script>
   <script src="js/navbar.js?v=20260425a"></script>
-  <script src="js/attendance.js?v=20260425a"></script>
+  <script src="js/attendance.js?v=20260622a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAttendancePage?.();

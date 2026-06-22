@@ -6,6 +6,8 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_course_hours_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
 
 auth_require_login(true);
 $u = auth_current_user();
@@ -32,6 +34,7 @@ if ($doctorId <= 0) {
 
 try {
     $pdo = get_pdo();
+    dmportal_ensure_attendance_sessions_table($pdo);
 
     // Verify doctor exists
     $chk = $pdo->prepare('SELECT doctor_id, full_name FROM doctors WHERE doctor_id = :id');
@@ -50,23 +53,14 @@ try {
          FROM courses c
          JOIN course_doctors cd ON cd.course_id = c.course_id AND cd.doctor_id = :doctor_id
          LEFT JOIN (
-           SELECT s.course_id,
-                  COUNT(*) AS scheduled_slots,
-                  SUM(1.5) AS scheduled_base_hours,
-                  SUM(COALESCE(s.extra_minutes,0) / 60) AS scheduled_extra_hours
-           FROM doctor_schedules s
-           LEFT JOIN doctor_week_cancellations cw
-             ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
-           LEFT JOIN doctor_slot_cancellations cs
-             ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
-           WHERE cw.cancellation_id IS NULL
-             AND cs.slot_cancellation_id IS NULL
-             AND s.counts_towards_hours = 1
-           GROUP BY s.course_id
+           " . dmportal_done_hours_course_subquery_sql('s.doctor_id = :doctor_id_done') . "
          ) x ON x.course_id = c.course_id
          ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC"
     );
-    $stmt->execute([':doctor_id' => $doctorId]);
+    $stmt->execute([
+        ':doctor_id' => $doctorId,
+        ':doctor_id_done' => $doctorId,
+    ]);
 
     echo json_encode([
         'success' => true,

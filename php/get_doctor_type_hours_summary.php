@@ -7,6 +7,8 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_doctor_schema_helpers.php';
+require_once __DIR__ . '/_course_hours_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
 
 // Admin dashboard access
 auth_require_roles(['admin', 'management'], true);
@@ -20,6 +22,7 @@ function bad_request(string $m): void {
 try {
     $pdo = get_pdo();
     dmportal_ensure_doctor_type_column($pdo);
+    dmportal_ensure_attendance_sessions_table($pdo);
 
     $year = isset($_GET['year_level']) ? (int)$_GET['year_level'] : null;
     $semester = isset($_GET['semester']) ? (int)$_GET['semester'] : null;
@@ -91,6 +94,9 @@ try {
                 COUNT(*) AS done_slots,
                 SUM(COALESCE(s.extra_minutes, 0)) AS done_extra_minutes
          FROM doctor_schedules s
+         JOIN weeks w_h ON w_h.week_id = s.week_id
+         JOIN attendance_sessions ash
+           ON ash.term_id = w_h.term_id AND ash.schedule_id = s.schedule_id AND ash.hours_counted = 1
          JOIN courses c ON c.course_id = s.course_id
          " . ($where ? ($where . ' AND') : 'WHERE') . " s.course_id IS NOT NULL
            AND s.counts_towards_hours = 1

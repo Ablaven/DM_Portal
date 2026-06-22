@@ -6,63 +6,14 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/_course_hours_helpers.php';
+require_once __DIR__ . '/_attendance_session_helpers.php';
 
 auth_require_roles(['admin', 'management'], true);
 
-/**
- * Scheduled hours per course (all doctors) — course-level remaining.
- *
- * @param string $courseAlias Table alias for courses (e.g. "c" or "c0")
- * @param string $joinAlias   Alias for the joined aggregate subquery
- */
-function dmportal_schedule_hours_join_xall(string $courseAlias, string $joinAlias = 'xall'): string
-{
-    return '
-         LEFT JOIN (
-           SELECT s.course_id,
-                  SUM(1.5) AS scheduled_base_hours,
-                  SUM(COALESCE(s.extra_minutes,0) / 60) AS scheduled_extra_hours
-           FROM doctor_schedules s
-           LEFT JOIN doctor_week_cancellations cw
-             ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
-           LEFT JOIN doctor_slot_cancellations cs
-             ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
-           WHERE cw.cancellation_id IS NULL
-             AND cs.slot_cancellation_id IS NULL
-             AND s.counts_towards_hours = 1
-           GROUP BY s.course_id
-         ) ' . $joinAlias . ' ON ' . $joinAlias . '.course_id = ' . $courseAlias . '.course_id';
-}
-
-/**
- * Scheduled hours per (course_id, doctor_id) for split-hour remaining.
- *
- * @param string $courseAlias  Table alias for courses
- * @param string $placeholder  Bound PDO placeholder for doctor_id (e.g. ":doctor_id_xdoc")
- * @param string $joinAlias    Alias for the joined aggregate subquery
- */
-function dmportal_schedule_hours_join_xdoc(string $courseAlias, string $placeholder, string $joinAlias = 'xdoc'): string
-{
-    return '
-         LEFT JOIN (
-           SELECT s.course_id,
-                  s.doctor_id,
-                  SUM(1.5) AS scheduled_base_hours,
-                  SUM(COALESCE(s.extra_minutes,0) / 60) AS scheduled_extra_hours
-           FROM doctor_schedules s
-           LEFT JOIN doctor_week_cancellations cw
-             ON cw.week_id = s.week_id AND cw.doctor_id = s.doctor_id AND cw.day_of_week = s.day_of_week
-           LEFT JOIN doctor_slot_cancellations cs
-             ON cs.week_id = s.week_id AND cs.doctor_id = s.doctor_id AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
-           WHERE cw.cancellation_id IS NULL
-             AND cs.slot_cancellation_id IS NULL
-             AND s.counts_towards_hours = 1
-           GROUP BY s.course_id, s.doctor_id
-         ) ' . $joinAlias . ' ON ' . $joinAlias . '.course_id = ' . $courseAlias . '.course_id AND ' . $joinAlias . '.doctor_id = ' . $placeholder;
-}
-
 try {
     $pdo = get_pdo();
+    dmportal_ensure_attendance_sessions_table($pdo);
 
     $doctorId = isset($_GET['doctor_id']) ? (int)$_GET['doctor_id'] : 0;
 
