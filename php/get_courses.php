@@ -15,6 +15,10 @@ try {
     $pdo = get_pdo();
     dmportal_ensure_attendance_sessions_table($pdo);
 
+    // Scope done hours to the active term so a new academic year starts at 0.
+    require_once __DIR__ . '/_term_helpers.php';
+    $activeTermId = dmportal_get_active_term_id($pdo);
+
     $doctorId = isset($_GET['doctor_id']) ? (int)$_GET['doctor_id'] : 0;
 
     $hasCdh = false;
@@ -35,8 +39,7 @@ try {
         : 'LEFT JOIN (SELECT NULL AS course_id, 0 AS alloc_cnt) ha ON 1=0';
 
     if ($doctorId <= 0) {
-        $stmt = $pdo->query(
-            'SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
+        $allSql = 'SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
                     c.course_type, c.subject_code, c.total_hours,
                     c.coefficient,
                     c.default_room_code,
@@ -55,9 +58,10 @@ try {
                LEFT JOIN doctors d2 ON d2.doctor_id = cd.doctor_id
                GROUP BY cd.course_id
              ) agg ON agg.course_id = c.course_id
-             ' . dmportal_schedule_hours_join_xall('c', 'xall') . '
-             ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC'
-        );
+             ' . dmportal_schedule_hours_join_xall('c', 'xall', $activeTermId) . '
+             ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC';
+        $stmt = $pdo->prepare($allSql);
+        $stmt->execute([]);
         $rows = $stmt->fetchAll();
     } else {
         $remSub = '
@@ -84,8 +88,8 @@ try {
             ) cd_cnt ON cd_cnt.course_id = c0.course_id
             ' . $hJoinC0 . '
             ' . $allocJoinC0 . '
-            ' . dmportal_schedule_hours_join_xall('c0', 'xall_r') . '
-            ' . dmportal_schedule_hours_join_xdoc('c0', ':doctor_id_xdoc', 'xdoc') . '
+            ' . dmportal_schedule_hours_join_xall('c0', 'xall_r', $activeTermId) . '
+            ' . dmportal_schedule_hours_join_xdoc('c0', ':doctor_id_xdoc', 'xdoc', $activeTermId) . '
         ';
 
         $stmt = $pdo->prepare(

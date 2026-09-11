@@ -124,7 +124,7 @@ auth_require_roles(['admin']);
 
     <!-- Edit User modal -->
     <div id="userEditModal" class="modal" aria-hidden="true">
-      <div class="modal-backdrop" data-close="1"></div>
+      <div class="modal-backdrop" data-close="1"></div> 
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userEditTitle" style="width:min(900px,98vw);">
         <div class="modal-header">
           <h3 id="userEditTitle">Edit User</h3>

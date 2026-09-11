@@ -38,7 +38,10 @@ try {
         exit;
     }
 
-    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, 0);
+    require_once __DIR__ . '/_term_helpers.php';
+    $activeTermId = dmportal_get_active_term_id($pdo);
+
+    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, 0, $activeTermId);
 
     echo json_encode(['success' => true, 'data' => ['doctors' => $doctors]]);
 } catch (Throwable $e) {

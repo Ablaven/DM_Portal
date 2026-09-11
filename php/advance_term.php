@@ -24,6 +24,7 @@ try {
 
     $pdo = get_pdo();
     dmportal_ensure_terms_table($pdo);
+    dmportal_ensure_weeks_prep_column($pdo); // ensure schema before any transaction
 
     $activeTermId = dmportal_get_active_term_id($pdo);
     $stmt = $pdo->prepare('SELECT term_id, semester, academic_year_id FROM terms WHERE term_id = :term_id');
@@ -40,9 +41,18 @@ try {
     }
 
     if ($currentSemester === 1) {
-        $nextTermId = dmportal_get_or_create_term($pdo, $academicYearId, 2, 'Semester 2');
-        dmportal_set_active_term($pdo, $nextTermId);
-        $weekId = dmportal_reset_weeks_for_term($pdo, $nextTermId, $startDate !== '' ? $startDate : null, false);
+        $pdo->beginTransaction();
+        try {
+            $nextTermId = dmportal_get_or_create_term($pdo, $academicYearId, 2, 'Semester 2');
+            dmportal_set_active_term($pdo, $nextTermId);
+            $weekId = dmportal_reset_weeks_for_term($pdo, $nextTermId, $startDate !== '' ? $startDate : null, false);
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
 
         echo json_encode([
             'success' => true,
