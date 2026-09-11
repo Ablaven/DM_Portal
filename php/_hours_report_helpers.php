@@ -43,7 +43,8 @@ function dmportal_fetch_hours_report(
     int $yearLevel,
     int $semester,
     int $doctorScopeId = 0,
-    int $singleDoctorId = 0
+    int $singleDoctorId = 0,
+    int $termId = 0
 ): array {
     $touchTable = static function (string $table) use ($pdo): bool {
         try {
@@ -90,7 +91,7 @@ function dmportal_fetch_hours_report(
         ? "LEFT JOIN doctor_slot_cancellations cs\n            ON cs.week_id = s.week_id\n           AND cs.doctor_id = s.doctor_id\n           AND cs.day_of_week = s.day_of_week\n           AND cs.slot_number = s.slot_number"
         : "LEFT JOIN (SELECT NULL AS slot_cancellation_id, NULL AS week_id, NULL AS doctor_id, NULL AS day_of_week, NULL AS slot_number) cs ON 1=0";
 
-    $doneSubquery = ($hasSchedules && $hasAttendanceSessions) ? dmportal_done_hours_subquery_sql($weekCancelJoin, $slotCancelJoin) : "
+    $doneSubquery = ($hasSchedules && $hasAttendanceSessions) ? dmportal_done_hours_subquery_sql($weekCancelJoin, $slotCancelJoin, $termId) : "
           SELECT NULL AS doctor_id, NULL AS course_id, 0 AS done_slots, 0 AS done_extra_minutes
         ";
 

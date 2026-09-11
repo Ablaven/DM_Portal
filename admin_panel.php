@@ -230,10 +230,10 @@ $importStatus = $_GET['import_status'] ?? '';
     <!-- Reset Weeks modal (built by JS) -->
   </main>
 
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/admin_terms.js?v=20260228g"></script>
-  <script src="js/admin_advance.js?v=20260228g"></script>
+  <script src="js/core.js?v=20260912a"></script>
+  <script src="js/navbar.js?v=20260912a"></script>
+  <script src="js/admin_terms.js?v=20260912a"></script>
+  <script src="js/admin_advance.js?v=20260912a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
   </script>

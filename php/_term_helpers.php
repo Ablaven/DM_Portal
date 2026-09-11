@@ -6,6 +6,12 @@ require_once __DIR__ . '/_schema.php';
 
 function dmportal_ensure_terms_table(PDO $pdo): void
 {
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+
     dmportal_ensure_schema_version($pdo);
 
     $pdo->exec(
@@ -198,8 +204,6 @@ function dmportal_create_term(PDO $pdo, string $label, int $semester, ?string $s
 
 function dmportal_reset_weeks_for_term(PDO $pdo, int $termId, ?string $startDate, bool $useTransaction = true): int
 {
-    dmportal_ensure_weeks_prep_column($pdo);
-
     if ($useTransaction) {
         $pdo->beginTransaction();
     }

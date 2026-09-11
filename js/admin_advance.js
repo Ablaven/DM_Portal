@@ -128,8 +128,8 @@
         body: new URLSearchParams({ start_date: wizStartDate, advance_mode: "auto" }),
       });
       if (!res.success) throw new Error(res.error || "Advance failed.");
-      setStatusById("wizStep0Status", "Semester 2 is now active. Week 1 has been created.", "success");
       resetToStep0();
+      setStatusById("wizStep0Status", "Semester 2 is now active. Week 1 has been created.", "success");
       document.dispatchEvent(new CustomEvent("dmportal:terms-updated"));
     } catch (err) {
       setStatusById("wizStep2aStatus", err.message || "Advance failed.", "error");
@@ -266,14 +266,20 @@
           student_actions: JSON.stringify({ advance: [], repeat: students.map((s) => Number(s.student_id)), graduate: [] }),
         });
       } else if (preset === "advance_all") {
-        const allAdvance = students.map((s) => ({
-          student_id: Number(s.student_id),
-          year_level: Math.min((Number(s.year_level) || 1) + 1, 3),
-        }));
+        const allAdvance = [];
+        const allGraduate = [];
+        students.forEach((s) => {
+          const cur = Number(s.year_level) || 1;
+          if (cur >= 3) {
+            allGraduate.push(Number(s.student_id));
+          } else {
+            allAdvance.push({ student_id: Number(s.student_id), year_level: cur + 1 });
+          }
+        });
         body = new URLSearchParams({
           start_date:      wizStartDate,
           advance_mode:    "custom",
-          student_actions: JSON.stringify({ advance: allAdvance, repeat: [], graduate: [] }),
+          student_actions: JSON.stringify({ advance: allAdvance, repeat: [], graduate: allGraduate }),
         });
       } else if (preset === "custom") {
         body = new URLSearchParams({
@@ -294,8 +300,8 @@
       if (!res.success) throw new Error(res.error || "Advance failed.");
 
       students = [];
-      setStatusById("wizStep0Status", "New academic year started. Week 1 has been created and students have been updated.", "success");
       resetToStep0();
+      setStatusById("wizStep0Status", "New academic year started. Week 1 has been created and students have been updated.", "success");
       document.dispatchEvent(new CustomEvent("dmportal:terms-updated"));
     } catch (err) {
       setStatusById("wizStep3bStatus", err.message || "Advance failed.", "error");
