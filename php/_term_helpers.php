@@ -302,10 +302,10 @@ function dmportal_auto_advance_students(PDO $pdo): void
     $stmt = $pdo->query('SELECT MAX(year_level) FROM students');
     $maxYear = (int)($stmt->fetchColumn() ?: 3);
 
-    $graduate = $pdo->prepare('UPDATE students SET year_level = 0 WHERE year_level >= :max_year');
+    $graduate = $pdo->prepare('UPDATE students SET year_level = 0, semester = 0 WHERE year_level >= :max_year');
     $graduate->execute([':max_year' => $maxYear]);
 
-    $advance = $pdo->prepare('UPDATE students SET year_level = year_level + 1 WHERE year_level > 0 AND year_level < :max_year');
+    $advance = $pdo->prepare('UPDATE students SET year_level = year_level + 1, semester = 1 WHERE year_level > 0 AND year_level < :max_year');
     $advance->execute([':max_year' => $maxYear]);
 }
 
@@ -319,7 +319,7 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
         $studentId = (int)($row['student_id'] ?? 0);
         $newLevel = (int)($row['year_level'] ?? 0);
         if ($studentId > 0 && $newLevel > 0) {
-            $stmt = $pdo->prepare('UPDATE students SET year_level = :year_level WHERE student_id = :student_id');
+            $stmt = $pdo->prepare('UPDATE students SET year_level = :year_level, semester = 1 WHERE student_id = :student_id');
             $stmt->execute([':year_level' => $newLevel, ':student_id' => $studentId]);
         }
     }
@@ -329,7 +329,7 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
     foreach ($graduate as $studentId) {
         $studentId = (int)$studentId;
         if ($studentId > 0) {
-            $stmt = $pdo->prepare('UPDATE students SET year_level = 0 WHERE student_id = :student_id');
+            $stmt = $pdo->prepare('UPDATE students SET year_level = 0, semester = 0 WHERE student_id = :student_id');
             $stmt->execute([':student_id' => $studentId]);
         }
     }
@@ -403,3 +403,4 @@ function dmportal_week_label_with_range(?array $wk, int $fallbackWeekId = 0): st
     }
     return $label;
 }
+

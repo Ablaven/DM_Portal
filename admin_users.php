@@ -79,7 +79,7 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="attendance_report.php" /> Attendance Report</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="student_dashboard.php" /> Student Dashboard Page</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="profile.php" /> Profile</label>
-            </div>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="lectures.php" /> Lecture Materials</label>
             <small class="hint">Leave all unchecked to use role defaults (teacher→doctor.php, student→students.php). Admin always has full access.</small>
           </div>
         </div>
@@ -180,7 +180,7 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" value="attendance_report.php" /> Attendance Report</label>
               <label class="chk"><input type="checkbox" value="student_dashboard.php" /> Student Dashboard Page</label>
               <label class="chk"><input type="checkbox" value="profile.php" /> Profile</label>
-            </div>
+              <label class="chk"><input type="checkbox" value="lectures.php" /> Lecture Materials</label>
             <small class="hint">Leave all unchecked to use role defaults. Admin always has full access.</small>
           </div>
 
@@ -221,3 +221,6 @@ auth_require_roles(['admin']);
   </script>
 </body>
 </html>
+
+
+

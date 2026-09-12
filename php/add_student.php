@@ -27,8 +27,8 @@ $studentCode = trim((string)($_POST['student_code'] ?? ''));
 
 $program = normalize_program((string)($_POST['program'] ?? ''));
 $yearLevel = normalize_year_level((int)($_POST['year_level'] ?? 0));
-// students apply to both semesters
-$semester = 0;
+// Default to semester 1 for new students
+$semester = 1;
 
 if ($fullName === '') bad_request('full_name is required.');
 if ($email === '') bad_request('email is required.');
@@ -47,7 +47,7 @@ try {
         ':student_code' => $studentCode,
         ':program' => $program,
         ':year_level' => $yearLevel,
-        ':semester' => 0,
+        ':semester' => $semester,
     ];
 
     $placeholders = array_map(fn($f) => ':' . $f, $fields);
@@ -69,3 +69,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to add student.']);
 }
+

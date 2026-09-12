@@ -4669,6 +4669,7 @@ html[data-theme='light'] .data-table tbody td {
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.2;
+  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

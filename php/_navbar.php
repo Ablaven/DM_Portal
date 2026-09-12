@@ -31,6 +31,7 @@ function render_portal_navbar(string $activePage): void
         'evaluation_reports.php',
         'attendance_report.php',
         'student_dashboard.php',
+        'lectures.php',
     ];
     $adminDropdownActive = in_array($activePage, $adminPages, true);
 
@@ -60,17 +61,14 @@ function render_portal_navbar(string $activePage): void
         auth_render_nav_link('doctor.php', 'My Schedule', $activePage);
     }
 
+    // Lectures — accessible to teachers, students, admins, and management.
+    // auth_render_nav_link will check access permissions internally.
+    auth_render_nav_link('lectures.php', 'Lectures', $activePage);
+
     // My Dashboard (student_dashboard.php) — students with a student_id.
     $studentId = (int)($u['student_id'] ?? 0);
     if ($role !== 'admin' && $role !== 'management' && $studentId > 0) {
         auth_render_nav_link('student_dashboard.php', 'My Dashboard', $activePage);
-    }
-
-    // My Lectures — external link, teachers/doctors only.
-    $doctorId = (int)($u['doctor_id'] ?? 0);
-    if ($role === 'teacher' || $doctorId > 0) {
-        $lecturesUrl = 'https://sherifrostom9-boop.github.io/DM-Lectures/';
-        echo '<a class="navlink" href="' . htmlspecialchars($lecturesUrl, ENT_QUOTES) . '" target="_blank" rel="noopener">My Lectures</a>';
     }
 
     auth_render_nav_link('profile.php', 'Profile', $activePage);
@@ -114,6 +112,9 @@ function render_portal_navbar(string $activePage): void
         }
         if (auth_can_access_page('admin_users.php')) {
             $ddItem('admin_users.php', '🔑', 'User Accounts', 'Logins & permissions', $activePage === 'admin_users.php');
+        }
+        if (auth_can_access_page('lectures.php')) {
+            $ddItem('lectures.php', '🗂️', 'Lectures', 'Upload & manage lecture materials', $activePage === 'lectures.php');
         }
 
         // ─ Section: Tools (admin only) ───────────────────────────────────────

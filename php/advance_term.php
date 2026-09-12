@@ -46,6 +46,10 @@ try {
             $nextTermId = dmportal_get_or_create_term($pdo, $academicYearId, 2, 'Semester 2');
             dmportal_set_active_term($pdo, $nextTermId);
             $weekId = dmportal_reset_weeks_for_term($pdo, $nextTermId, $startDate !== '' ? $startDate : null, false);
+
+            // Update all students to semester 2
+            $stmt = $pdo->prepare('UPDATE students SET semester = 2 WHERE semester = 1');
+            $stmt->execute();
             $pdo->commit();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
@@ -120,3 +124,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Failed to advance semester/year.']);
 }
+
