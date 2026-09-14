@@ -105,17 +105,23 @@
 
   function renderDoctorHoursCard(doctor) {
     const totals = doctor.totals || {};
-    const allocT = Number(totals.allocated_hours || 0);
+    const totalT = Number(totals.total_hours || 0);
+    const assignedT = Number(totals.assigned_hours || 0);
     const doneT = Number(totals.done_hours || 0);
-    const remT = Number(totals.remaining_hours || 0);
-    const pct = allocT > 0 ? Math.max(0, Math.min(100, (doneT / allocT) * 100)) : 0;
+    const remT = totalT - doneT; // Remaining = Total - Done
+    const pct = totalT > 0 ? Math.max(0, Math.min(100, (doneT / totalT) * 100)) : 0;
 
     const courseRows = (doctor.courses || [])
-      .filter((course) => Number(course?.remaining_hours || 0) > 0)
-      .map((course) => {
-        const alloc = Number(course.allocated_hours || 0);
+      .filter((course) => {
+        const total = Number(course.total_hours || 0);
         const done = Number(course.done_hours || 0);
-        const rem = Number(course.remaining_hours || 0);
+        return total - done > 0; // Show if remaining > 0
+      })
+      .map((course) => {
+        const total = Number(course.total_hours || 0);
+        const assigned = Number(course.assigned_hours || 0);
+        const done = Number(course.done_hours || 0);
+        const rem = total - done;
         const title = String(course.course_name || "(Unnamed course)");
         const metaParts = [];
         if (course.program) metaParts.push(course.program);
@@ -131,15 +137,17 @@
                 <div class="course-progress-title">${escapeHtml(title)}</div>
                 <div class="course-progress-meta">${escapeHtml(meta)}</div>
               </div>
-              <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
+              <span class="muted">${formatHours(done)}h / ${formatHours(total)}h</span>
             </div>
             <div class="course-progress-bar" aria-label="Course progress">
-              <div class="course-progress-fill" style="width:${alloc > 0 ? ((done / alloc) * 100).toFixed(2) : 0}%"></div>
+              <div class="course-progress-fill" style="width:${total > 0 ? ((done / total) * 100).toFixed(2) : 0}%"></div>
             </div>
-            <div class="course-progress-legend">
+            <div class="course-progress-legend" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+              <span class="badge" style="background:var(--surface-2);">Total: ${formatHours(total)}h</span>
+              <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assigned)}h</span>
               <span class="badge badge-success">Done: ${formatHours(done)}h</span>
               <span class="badge badge-danger">Remaining: ${formatHours(rem)}h</span>
-              <span class="muted">${alloc > 0 ? Math.round((done / alloc) * 100) : 0}%</span>
+              <span class="muted">${total > 0 ? Math.round((done / total) * 100) : 0}%</span>
             </div>
           </div>
         `;
@@ -153,13 +161,14 @@
             <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
             <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
           </div>
-          <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
+          <span class="muted">${formatHours(doneT)}h / ${formatHours(totalT)}h</span>
         </div>
         <div class="course-progress-bar" aria-label="Doctor progress">
           <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
         </div>
-        <div class="course-progress-legend">
-          <span class="badge">Allocated: ${formatHours(allocT)}h</span>
+        <div class="course-progress-legend" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+          <span class="badge" style="background:var(--surface-2);">Total: ${formatHours(totalT)}h</span>
+          <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assignedT)}h</span>
           <span class="badge badge-success">Done: ${formatHours(doneT)}h</span>
           <span class="badge badge-danger">Remaining: ${formatHours(remT)}h</span>
           <span class="muted">${pct.toFixed(0)}%</span>
@@ -193,7 +202,7 @@
       const ordered = doctors
         .map((doc) => ({
           ...doc,
-          remaining: Number(doc?.totals?.remaining_hours || 0),
+          remaining: (Number(doc?.totals?.total_hours || 0) - Number(doc?.totals?.done_hours || 0)),
         }))
         .filter((doc) => doc.remaining > 0)
         .sort((a, b) => b.remaining - a.remaining);
@@ -223,8 +232,10 @@
   const filtered = getFilteredCoursesForUI().filter((course) => {
     const type = String(course?.course_type || "").toUpperCase();
     const total = Number(course?.total_hours ?? 0);
+    const assigned = Number(course?.assigned_hours ?? 0);
+    const schedulableRemaining = total - assigned;
     const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
-    return isZeroHour || Number(course?.remaining_hours || 0) > 0;
+    return isZeroHour || schedulableRemaining > 0;
   });
   if (!filtered.length) {
     list.innerHTML = `<div class="muted">No courses found for the selected filters.</div>`;
@@ -256,8 +267,10 @@
     {
       const type = String(c.course_type || "").toUpperCase();
       const total = Number(c?.total_hours ?? 0);
+      const assigned = Number(c?.assigned_hours ?? 0);
+      const schedulableRemaining = Math.max(0, total - assigned);
       const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
-      badge.textContent = type === "ZH" ? "ZH" : (isZeroHour ? "0h" : `${formatHours(c.remaining_hours)}h`);
+      badge.textContent = type === "ZH" ? "ZH" : (isZeroHour ? "0h" : `${formatHours(schedulableRemaining)}h`);
     }
 
     top.appendChild(left);
@@ -313,25 +326,31 @@
   nameSel.innerHTML = `<option value="">Select a course</option>`;
 
   for (const c of courses) {
+    // Calculate schedulable remaining (Total - Assigned)
+    const total = Number(c?.total_hours ?? 0);
+    const assigned = Number(c?.assigned_hours ?? 0);
+    const schedulableRemaining = Math.max(0, total - assigned);
+    const type = String(c.course_type || "").toUpperCase();
+    const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
+
     // Course Code dropdown
     const optCode = document.createElement("option");
     optCode.value = String(c.course_id);
-    // NOTE: course codes may be duplicated, so include type + year/sem + name for clarity.
     const codeLabel = String(c.subject_code || "").trim();
-    optCode.textContent = codeLabel
-      ? `${makeCourseLabel(c.course_type, c.subject_code)} • Year ${c.year_level} Sem ${c.semester} • ${c.course_name}`
+    const codeText = codeLabel
+      ? `${makeCourseLabel(c.course_type, c.subject_code)} • Y${c.year_level} S${c.semester} • ${c.course_name}`
       : `(ID ${c.course_id})`;
+    optCode.textContent = isZeroHour
+      ? `${codeText} [Zero Hours]`
+      : `${codeText} (${formatHours(schedulableRemaining)}h left)`;
     codeSel.appendChild(optCode);
 
     // Course Name dropdown
     const optName = document.createElement("option");
     optName.value = String(c.course_id);
-    const type = String(c.course_type || "").toUpperCase();
-    const total = Number(c?.total_hours ?? 0);
-    const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
     optName.textContent = isZeroHour
       ? `${courseDisplayLine(c)} [Zero Hours]`
-      : `${courseDisplayLine(c)} (${formatHours(c.remaining_hours)}h left)`;
+      : `${courseDisplayLine(c)} (${formatHours(schedulableRemaining)}h left)`;
     nameSel.appendChild(optName);
   }
 
@@ -1529,45 +1548,118 @@
     document.getElementById("startWeekBtn")?.addEventListener("click", async () => {
       const d = document.getElementById("weekStartDate")?.value;
       if (!d) {
-        setStatusById("scheduleStatus", "Pick a start date first.", "error");
+        setStatusById("weekManagementStatus", "Pick a start date first.", "error");
         return;
       }
-      const fd = new FormData();
-      fd.append("start_date", d);
       const weekType = document.getElementById("weekTypeSelect")?.value || "ACTIVE";
-      fd.append("week_type", weekType);
-      await fetchJson("php/start_week.php", { method: "POST", body: fd });
-      await loadWeeks();
-      renderWeeksSelect();
-      if (state.activeDoctorId) {
-        await loadSchedule(state.activeDoctorId);
-        await refreshUnavailability();
-        await refreshAvailability();
-        renderScheduleMetaHint();
-        renderScheduleGrid();
+      
+      try {
+        setStatusById("weekManagementStatus", `Creating ${weekType.toLowerCase()} week...`);
+        const fd = new FormData();
+        fd.append("start_date", d);
+        fd.append("week_type", weekType);
+        
+        // Make the request
+        const response = await fetch("php/start_week.php", { 
+          method: "POST", 
+          body: fd 
+        });
+        
+        // Log HTTP status
+        console.log("HTTP Status:", response.status, response.statusText);
+        console.log("Response OK?:", response.ok);
+        
+        // Parse JSON response
+        let payload;
+        try {
+          payload = await response.json();
+        } catch (jsonErr) {
+          console.error("JSON parse error:", jsonErr);
+          const text = await response.text();
+          console.error("Response text:", text);
+          throw new Error("Server returned invalid response.");
+        }
+        
+        // Log for debugging
+        console.log("Start week response payload:", payload);
+        
+        // Check if backend explicitly said success (ignore HTTP status, trust payload)
+        if (payload && payload.success === true) {
+          // SUCCESS PATH
+          console.log("Success! Week ID:", payload.data?.week_id);
+          
+          // Reload weeks list
+          await loadWeeks();
+          renderWeeksSelect();
+          
+          // Auto-select the newly created week
+          const newWeekId = payload.data?.week_id;
+          if (newWeekId) {
+            state.activeWeekId = Number(newWeekId);
+            const weekSelect = document.getElementById("weekSelect");
+            if (weekSelect) weekSelect.value = String(newWeekId);
+          }
+          
+          // Refresh schedule display if doctor selected
+          if (state.activeDoctorId) {
+            await loadSchedule(state.activeDoctorId);
+            await refreshUnavailability();
+            await refreshAvailability();
+            renderScheduleMetaHint();
+            renderScheduleGrid();
+          }
+          
+          const weekLabel = payload.data?.label || "Week";
+          setStatusById("weekManagementStatus", `✓ ${weekLabel} created (${weekType})`, "success");
+          
+          // Clear the date input for next use
+          const dateInput = document.getElementById("weekStartDate");
+          if (dateInput) dateInput.value = "";
+          
+        } else {
+          // FAILURE PATH
+          const errorMsg = payload?.error || "Failed to create week.";
+          console.error("Backend returned failure. Error:", errorMsg);
+          console.error("Full payload:", payload);
+          throw new Error(errorMsg);
+        }
+        
+      } catch (err) {
+        console.error("Caught error in startWeekBtn handler:", err);
+        console.error("Error stack:", err.stack);
+        setStatusById("weekManagementStatus", "✗ " + (err.message || "Failed to start week."), "error");
       }
     });
 
     document.getElementById("updateWeekTypeBtn")?.addEventListener("click", async () => {
       if (!state.activeWeekId) {
-        setStatusById("scheduleStatus", "Pick a week first.", "error");
+        setStatusById("weekManagementStatus", "Pick a week first.", "error");
         return;
       }
       const value = document.getElementById("weekTypeUpdate")?.value || "";
       if (!value) {
-        setStatusById("scheduleStatus", "Choose a week type to apply.", "error");
+        setStatusById("weekManagementStatus", "Choose a week type to apply.", "error");
         return;
       }
       try {
-        setStatusById("scheduleStatus", "Updating week type...");
+        setStatusById("weekManagementStatus", "Updating week type...");
         const fd = new FormData();
         fd.append("week_id", String(state.activeWeekId));
         fd.append("week_type", value);
         const payload = await fetchJson("php/set_week_type.php", { method: "POST", body: fd });
-        if (!payload?.success) throw new Error(payload?.error || "Failed to update week.");
+        
+        if (!payload || typeof payload.success === 'undefined') {
+          throw new Error("Invalid response from server.");
+        }
+        
+        if (!payload.success) {
+          throw new Error(payload.error || "Failed to update week.");
+        }
+        
         document.getElementById("weekTypeUpdate").value = "";
         await loadWeeks();
         renderWeeksSelect();
+        
         if (state.activeDoctorId) {
           await loadSchedule(state.activeDoctorId);
           await refreshUnavailability();
@@ -1575,16 +1667,43 @@
           renderScheduleMetaHint();
           renderScheduleGrid();
         }
-        setStatusById("scheduleStatus", "Week updated.", "success");
+        
+        setStatusById("weekManagementStatus", "Week type updated successfully.", "success");
       } catch (err) {
-        setStatusById("scheduleStatus", err.message || "Failed to update week.", "error");
+        console.error("Failed to update week type:", err);
+        setStatusById("weekManagementStatus", err.message || "Failed to update week.", "error");
       }
     });
 
     document.getElementById("stopWeekBtn")?.addEventListener("click", async () => {
-      await fetchJson("php/stop_week.php", { method: "POST", body: new FormData() });
-      await loadWeeks();
-      renderWeeksSelect();
+      try {
+        setStatusById("weekManagementStatus", "Stopping active week...");
+        const payload = await fetchJson("php/stop_week.php", { method: "POST", body: new FormData() });
+        
+        if (!payload || typeof payload.success === 'undefined') {
+          throw new Error("Invalid response from server.");
+        }
+        
+        if (!payload.success) {
+          throw new Error(payload.error || "Failed to stop week.");
+        }
+        
+        await loadWeeks();
+        renderWeeksSelect();
+        
+        if (state.activeDoctorId) {
+          await loadSchedule(state.activeDoctorId);
+          await refreshUnavailability();
+          await refreshAvailability();
+          renderScheduleMetaHint();
+          renderScheduleGrid();
+        }
+        
+        setStatusById("weekManagementStatus", "Active week stopped successfully.", "success");
+      } catch (err) {
+        console.error("Failed to stop week:", err);
+        setStatusById("weekManagementStatus", err.message || "Failed to stop week.", "error");
+      }
     });
 
     document.getElementById("exportDoctorXls")?.addEventListener("click", () => {
@@ -1598,6 +1717,11 @@
       const qs = new URLSearchParams();
       if (state.activeWeekId) qs.set("week_id", String(state.activeWeekId));
       window.location.href = `php/export_all_doctors_week_xls.php?${qs.toString()}`;
+    });
+
+    document.getElementById("exportPrepWeeksXls")?.addEventListener("click", () => {
+      const qs = new URLSearchParams();
+      window.location.href = `php/export_prep_weeks_xls.php?${qs.toString()}`;
     });
 
     // Unavailability add/remove

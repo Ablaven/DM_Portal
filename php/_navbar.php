@@ -61,9 +61,11 @@ function render_portal_navbar(string $activePage): void
         auth_render_nav_link('doctor.php', 'My Schedule', $activePage);
     }
 
-    // Lectures — accessible to teachers, students, admins, and management.
-    // auth_render_nav_link will check access permissions internally.
-    auth_render_nav_link('lectures.php', 'Lectures', $activePage);
+    // Lectures — show in primary navbar for ALL roles except admin/management
+    // (admin/management see it in the Admin dropdown instead)
+    if ($role === 'teacher' || $role === 'student') {
+        auth_render_nav_link('lectures.php', 'Lectures', $activePage);
+    }
 
     // My Dashboard (student_dashboard.php) — students with a student_id.
     $studentId = (int)($u['student_id'] ?? 0);

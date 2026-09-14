@@ -62,6 +62,7 @@ auth_require_roles(['admin','management']);
               </select>
               <button id="updateWeekTypeBtn" class="btn btn-secondary btn-small" type="button">Apply</button>
             </div>
+            <div id="weekManagementStatus" class="status" role="status" aria-live="polite" style="margin-top: 8px;"></div>
           </div>
           <div class="page-actions">
             <button id="exportDoctorXls" class="btn btn-secondary" type="button">Export Doctor (.xlsx)</button>
@@ -73,6 +74,7 @@ auth_require_roles(['admin','management']);
             </a>
           </div>
           <button id="exportAllDoctorsXls" class="btn btn-secondary" type="button">Export All Doctors (.xlsx)</button>
+          <button id="exportPrepWeeksXls" class="btn btn-secondary" type="button">Export Prep Weeks (.xlsx)</button>
           <button id="refreshSchedule" class="btn btn-secondary" type="button">Refresh</button>
         </div>
       </header>
@@ -294,9 +296,9 @@ auth_require_roles(['admin','management']);
     </div>
   </div>
 
-  <script src="js/core.js?v=20260425a"></script>
-  <script src="js/navbar.js?v=20260425a"></script>
-  <script src="js/schedule_builder.js?v=20260425a"></script>
+  <script src="js/core.js?v=20260914a"></script>
+  <script src="js/navbar.js?v=20260914a"></script>
+  <script src="js/schedule_builder.js?v=20260914a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initScheduleBuilder?.();

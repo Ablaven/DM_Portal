@@ -129,7 +129,7 @@ try {
          LEFT JOIN course_doctors cd ON cd.course_id = c.course_id
          LEFT JOIN doctors d2 ON d2.doctor_id = cd.doctor_id
          LEFT JOIN (
-           ' . dmportal_done_hours_course_subquery_sql() . '
+           ' . dmportal_done_hours_course_subquery_sql('', $termId) . '
          ) x ON x.course_id = c.course_id
          $whereSql
          GROUP BY c.course_id

@@ -32,22 +32,20 @@ $isRamadan = $weekType === 'RAMADAN' ? 1 : 0;
 
 try {
     $pdo = get_pdo();
-    $pdo->beginTransaction();
-
+    
+    // Run schema helpers
     dmportal_ensure_weeks_prep_column($pdo);
     dmportal_ensure_weeks_ramadan_column($pdo);
-
+    
+    // Get term ID
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
     if ($isPrep === 0) {
         // ACTIVE or RAMADAN creation: close any currently active week in this term.
         $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE status='active' AND term_id = :term_id");
         $stmt->execute([':term_id' => $termId]);
-    } else {
-        // PREP creation: only one prep marker per term.
-        $stmt = $pdo->prepare("UPDATE weeks SET is_prep = 0 WHERE term_id = :term_id");
-        $stmt->execute([':term_id' => $termId]);
     }
+    // PREP weeks: Allow multiple prep weeks simultaneously (no constraint)
 
     // Compute next label per term using the existing label numbers
     $stmt = $pdo->prepare("SELECT label FROM weeks WHERE term_id = :term_id ORDER BY week_id DESC");
@@ -88,8 +86,9 @@ try {
         $stmt->execute([':term_id' => $termId, ':week_id' => $newWeekId]);
     }
 
-    $pdo->commit();
-    echo json_encode([
+    http_response_code(200);
+    
+    $response = [
         'success' => true,
         'data' => [
             'week_id' => $newWeekId,
@@ -98,9 +97,12 @@ try {
             'is_prep' => $isPrep,
             'is_ramadan' => $isRamadan,
         ],
-    ]);
+    ];
+    
+    echo json_encode($response);
+    exit;
 } catch (Throwable $e) {
-    if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
-    echo json_encode(['success'=>false,'error'=>'Failed to start week.']);
+    error_log("start_week.php error: " . $e->getMessage());
+    echo json_encode(['success'=>false,'error'=>'Failed to start week: ' . $e->getMessage()]);
 }

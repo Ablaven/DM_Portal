@@ -64,6 +64,52 @@ function dmportal_schedule_hours_join_xall(string $courseAlias, string $joinAlia
 }
 
 /**
+ * Scheduled hours per (course_id, doctor_id) for assigned hours (no attendance required).
+ *
+ * @param string $courseAlias  Table alias for courses
+ * @param string $placeholder  Bound PDO placeholder for doctor_id (e.g. ":doctor_id_xdoc")
+ * @param string $joinAlias    Alias for the joined aggregate subquery
+ */
+function dmportal_schedule_hours_join_xdoc_assigned(string $courseAlias, string $placeholder, string $joinAlias = 'xdoc', int $termId = 0): string
+{
+    $termFilter = $termId > 0 ? ' AND w_h.term_id = ' . $termId : '';
+    return '
+         LEFT JOIN (
+           SELECT s.course_id,
+                  s.doctor_id,
+                  SUM(1.5) AS scheduled_base_hours,
+                  SUM(COALESCE(s.extra_minutes,0) / 60) AS scheduled_extra_hours
+           FROM doctor_schedules s
+           JOIN weeks w_h ON w_h.week_id = s.week_id' . $termFilter . '
+           ' . dmportal_schedule_cancel_joins_sql() . '
+           WHERE' . dmportal_schedule_hours_base_where_sql() . '
+           GROUP BY s.course_id, s.doctor_id
+         ) ' . $joinAlias . ' ON ' . $joinAlias . '.course_id = ' . $courseAlias . '.course_id AND ' . $joinAlias . '.doctor_id = ' . $placeholder;
+}
+
+/**
+ * Scheduled hours per course (all doctors) for assigned hours (no attendance required).
+ *
+ * @param string $courseAlias Table alias for courses (e.g. "c" or "c0")
+ * @param string $joinAlias   Alias for the joined aggregate subquery
+ */
+function dmportal_schedule_hours_join_xall_assigned(string $courseAlias, string $joinAlias = 'xall', int $termId = 0): string
+{
+    $termFilter = $termId > 0 ? ' AND w_h.term_id = ' . $termId : '';
+    return '
+         LEFT JOIN (
+           SELECT s.course_id,
+                  SUM(1.5) AS scheduled_base_hours,
+                  SUM(COALESCE(s.extra_minutes,0) / 60) AS scheduled_extra_hours
+           FROM doctor_schedules s
+           JOIN weeks w_h ON w_h.week_id = s.week_id' . $termFilter . '
+           ' . dmportal_schedule_cancel_joins_sql() . '
+           WHERE' . dmportal_schedule_hours_base_where_sql() . '
+           GROUP BY s.course_id
+         ) ' . $joinAlias . ' ON ' . $joinAlias . '.course_id = ' . $courseAlias . '.course_id';
+}
+
+/**
  * Scheduled hours per (course_id, doctor_id) for split-hour remaining.
  *
  * @param string $courseAlias  Table alias for courses
@@ -131,4 +177,28 @@ function dmportal_done_hours_course_subquery_sql(string $extraWhere = '', int $t
         . dmportal_attendance_confirmed_join_sql($termId) . '
            WHERE' . $where . '
            GROUP BY s.course_id';
+}
+
+/**
+ * Assigned hours subquery (all scheduled slots, including not-yet-done).
+ * Returns (doctor_id, course_id, assigned_slots, assigned_hours).
+ */
+function dmportal_assigned_hours_subquery_sql(string $weekCancelJoin, string $slotCancelJoin, int $termId = 0): string
+{
+    $termFilter = $termId > 0 ? ' AND w_h.term_id = ' . $termId : '';
+    return "
+          SELECT
+            s.doctor_id,
+            s.course_id,
+            COUNT(*) AS assigned_slots,
+            SUM(1.5 + COALESCE(s.extra_minutes,0) / 60) AS assigned_hours
+          FROM doctor_schedules s
+          JOIN weeks w_h ON w_h.week_id = s.week_id$termFilter
+          $weekCancelJoin
+          $slotCancelJoin
+          WHERE s.counts_towards_hours = 1
+            AND cw.cancellation_id IS NULL
+            AND cs.slot_cancellation_id IS NULL
+          GROUP BY s.doctor_id, s.course_id
+        ";
 }

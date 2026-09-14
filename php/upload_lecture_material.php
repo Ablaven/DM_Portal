@@ -132,11 +132,11 @@ try {
 }
 
 // ─── Ensure upload directory exists ──────────────────────────────────────────
-if (!dmportal_ensure_upload_dir($courseId)) {
+if (!dmportal_ensure_upload_dir($pdo, $courseId)) {
     upload_error(500, 'Unable to create upload directory.');
 }
 
-$storedPath = dmportal_get_stored_file_path($courseId, $storedFilename);
+$storedPath = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
 
 // ─── Move uploaded file to storage ───────────────────────────────────────────
 if (!move_uploaded_file($tmpPath, $storedPath)) {

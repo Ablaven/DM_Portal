@@ -103,7 +103,7 @@ if ($role === 'teacher') {
 // Resolve stored file path
 // ---------------------------------------------------------------------------
 $storedFilename = (string)$material['stored_filename'];
-$filePath = dmportal_get_stored_file_path($courseId, $storedFilename);
+$filePath = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
 
 if (!is_file($filePath)) {
     http_response_code(404);

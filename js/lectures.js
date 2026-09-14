@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const {
@@ -755,58 +755,63 @@
       return;
     }
 
-    // 3. Build UI shell: filter controls + table
+    // 3. Build UI shell with schedule builder style: main-header + panel + filter-bar + table
     root.innerHTML = [
-      '<div class="lm-admin-header" style="margin-bottom:1.25rem;">',
-        '<h1 class="page-title" style="margin-bottom:.75rem;">Lecture Materials</h1>',
+      '<header class="main-header" style="margin-bottom:16px;">',
+        '<div>',
+          '<h2>Lecture Materials</h2>',
+          '<p class="muted">Manage all uploaded lecture files across courses, years, and semesters.</p>',
+        "</div>",
+      "</header>",
 
-        // ── Filter controls ──────────────────────────────────────────────────
-        '<div class="lm-filters" style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;" role="group" aria-label="Filter materials">',
-          '<div class="lm-filter-group">',
-            '<label class="form-label" for="lmFilterYear">Year Level</label>',
-            '<select id="lmFilterYear" class="form-control form-control-sm" aria-label="Filter by year level">',
-              '<option value="All">All</option>',
+      '<section class="panel">',
+        // ── Filter bar (schedule builder style) ──────────────────────────────
+        '<div class="filter-bar" role="group" aria-label="Filter materials">',
+          '<div class="field">',
+            '<label class="muted" style="font-size:0.85rem;" for="lmFilterYear">Academic Year</label>',
+            '<select id="lmFilterYear" class="navlink" aria-label="Filter by year level">',
+              '<option value="All">All Years</option>',
               '<option value="1">Year 1</option>',
               '<option value="2">Year 2</option>',
               '<option value="3">Year 3</option>',
             "</select>",
           "</div>",
-          '<div class="lm-filter-group">',
-            '<label class="form-label" for="lmFilterSem">Semester</label>',
-            '<select id="lmFilterSem" class="form-control form-control-sm" aria-label="Filter by semester">',
-              '<option value="All">All</option>',
-              '<option value="1">Semester 1</option>',
-              '<option value="2">Semester 2</option>',
+          '<div class="field">',
+            '<label class="muted" style="font-size:0.85rem;" for="lmFilterSem">Semester</label>',
+            '<select id="lmFilterSem" class="navlink" aria-label="Filter by semester">',
+              '<option value="All">All Sem</option>',
+              '<option value="1">Sem 1</option>',
+              '<option value="2">Sem 2</option>',
             "</select>",
           "</div>",
-          '<div class="lm-filter-group" style="flex:1;min-width:200px;">',
-            '<label class="form-label" for="lmFilterSearch">Search</label>',
-            '<input id="lmFilterSearch" class="form-control form-control-sm" type="text"',
-              ' placeholder="Filename or course name…" autocomplete="off"',
+          '<div class="field" style="flex:1;min-width:200px;">',
+            '<label class="muted" style="font-size:0.85rem;" for="lmFilterSearch">Search</label>',
+            '<input id="lmFilterSearch" class="navlink" type="text"',
+              ' placeholder="Filename or course…" autocomplete="off"',
               ' aria-label="Search materials by filename or course name" />',
           "</div>",
         "</div>",
-      "</div>",
 
-      // ── Materials table ──────────────────────────────────────────────────────
-      '<div class="lm-table-wrap" style="overflow-x:auto;">',
-        '<table class="data-table lm-admin-table" style="width:100%;" role="table" aria-label="All lecture materials">',
-          "<thead>",
-            "<tr>",
-              '<th scope="col">Filename</th>',
-              '<th scope="col">Type</th>',
-              '<th scope="col">Size</th>',
-              '<th scope="col">Course</th>',
-              '<th scope="col">Year</th>',
-              '<th scope="col">Sem</th>',
-              '<th scope="col">Uploader</th>',
-              '<th scope="col">Uploaded</th>',
-              '<th scope="col">Actions</th>',
-            "</tr>",
-          "</thead>",
-          '<tbody id="lmAdminTbody"></tbody>',
-        "</table>",
-      "</div>",
+        // ── Materials table ──────────────────────────────────────────────────────
+        '<div class="schedule-wrap" style="margin-top:16px;">',
+          '<table class="data-table schedule-grid" style="width:100%;" role="table" aria-label="All lecture materials">',
+            "<thead>",
+              "<tr>",
+                '<th scope="col">Filename</th>',
+                '<th scope="col">Type</th>',
+                '<th scope="col">Size</th>',
+                '<th scope="col">Course</th>',
+                '<th scope="col">Year</th>',
+                '<th scope="col">Sem</th>',
+                '<th scope="col">Uploader</th>',
+                '<th scope="col">Uploaded</th>',
+                '<th scope="col">Actions</th>',
+              "</tr>",
+            "</thead>",
+            '<tbody id="lmAdminTbody"></tbody>',
+          "</table>",
+        "</div>",
+      "</section>",
     ].join("");
 
     const tbody       = document.getElementById("lmAdminTbody");

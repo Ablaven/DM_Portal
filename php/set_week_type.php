@@ -62,17 +62,18 @@ $stmt = $pdo->prepare('SELECT week_id, label, status, is_prep, is_ramadan, term_
 
     // Keep one holder for each state in a term and ensure selected week's state wins.
     if ($weekType === 'ACTIVE') {
+        // Close all other active/ramadan weeks (only one active week allowed)
         $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()), is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id AND (status='active' OR is_ramadan=1)");
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     } elseif ($weekType === 'RAMADAN') {
+        // Close all other active weeks
         $stmt = $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE term_id = :term_id AND week_id <> :week_id AND status='active'");
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
+        // Clear other ramadan flags (only one ramadan week)
         $stmt = $pdo->prepare('UPDATE weeks SET is_ramadan = 0 WHERE term_id = :term_id AND week_id <> :week_id');
         $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
-    } elseif ($weekType === 'PREP') {
-        $stmt = $pdo->prepare('UPDATE weeks SET is_prep = 0 WHERE term_id = :term_id AND week_id <> :week_id');
-        $stmt->execute([':term_id' => $termId, ':week_id' => $weekId]);
     }
+    // PREP weeks: Allow multiple prep weeks simultaneously (no constraint to clear other prep flags)
 
     // Derive numeric part from existing label (first integer we find).
     $label = (string)($week['label'] ?? '');

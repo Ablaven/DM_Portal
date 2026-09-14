@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_hours_report_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 
 function bad_request(string $message): void
@@ -114,6 +115,7 @@ try {
     }
 
     $pdo = get_pdo();
+    $activeTermId = dmportal_get_active_term_id($pdo);
 
     // Resolve names for sheet naming + ordering.
     $placeholders = implode(',', array_fill(0, count($doctorIds), '?'));
@@ -216,7 +218,7 @@ try {
             $styleMap[] = array_fill(0, $totalCols, $xlsx->styleHeaderSmall());
             $rowHeights[] = 24;
 
-            $report = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, $doctorId);
+            $report = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, $doctorId, $activeTermId);
             $doctor = $report[0] ?? ['courses' => [], 'totals' => ['allocated_hours' => 0, 'done_hours' => 0, 'remaining_hours' => 0]];
             $courses = $doctor['courses'] ?? [];
 

@@ -47,6 +47,7 @@ try {
                     d.full_name AS doctor_name,
                     agg.doctor_ids,
                     agg.doctor_names,
+                    ROUND(COALESCE(xall_assigned.scheduled_base_hours,0) + COALESCE(xall_assigned.scheduled_extra_hours,0), 2) AS assigned_hours,
                     GREATEST(0, ROUND(c.total_hours - (COALESCE(xall.scheduled_base_hours,0) + COALESCE(xall.scheduled_extra_hours,0)), 2)) AS remaining_hours
              FROM courses c
              LEFT JOIN doctors d ON d.doctor_id = c.doctor_id
@@ -58,6 +59,7 @@ try {
                LEFT JOIN doctors d2 ON d2.doctor_id = cd.doctor_id
                GROUP BY cd.course_id
              ) agg ON agg.course_id = c.course_id
+             ' . dmportal_schedule_hours_join_xall_assigned('c', 'xall_assigned', $activeTermId) . '
              ' . dmportal_schedule_hours_join_xall('c', 'xall', $activeTermId) . '
              ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC';
         $stmt = $pdo->prepare($allSql);
@@ -66,6 +68,12 @@ try {
     } else {
         $remSub = '
             SELECT c0.course_id,
+                   CASE
+                     WHEN asg.doctor_id IS NOT NULL THEN
+                       ROUND(COALESCE(xdoc_assigned.scheduled_base_hours, 0) + COALESCE(xdoc_assigned.scheduled_extra_hours, 0), 2)
+                     ELSE
+                       ROUND(COALESCE(xall_r_assigned.scheduled_base_hours,0) + COALESCE(xall_r_assigned.scheduled_extra_hours,0), 2)
+                   END AS assigned_hours,
                    CASE
                      WHEN asg.doctor_id IS NOT NULL THEN
                        GREATEST(0, ROUND(
@@ -88,7 +96,9 @@ try {
             ) cd_cnt ON cd_cnt.course_id = c0.course_id
             ' . $hJoinC0 . '
             ' . $allocJoinC0 . '
+            ' . dmportal_schedule_hours_join_xall_assigned('c0', 'xall_r_assigned', $activeTermId) . '
             ' . dmportal_schedule_hours_join_xall('c0', 'xall_r', $activeTermId) . '
+            ' . dmportal_schedule_hours_join_xdoc_assigned('c0', ':doctor_id_xdoc_assigned', 'xdoc_assigned', $activeTermId) . '
             ' . dmportal_schedule_hours_join_xdoc('c0', ':doctor_id_xdoc', 'xdoc', $activeTermId) . '
         ';
 
@@ -101,6 +111,7 @@ try {
                     d.full_name AS doctor_name,
                     agg.doctor_ids,
                     agg.doctor_names,
+                    rem.assigned_hours,
                     rem.remaining_hours
              FROM courses c
              LEFT JOIN doctors d ON d.doctor_id = c.doctor_id
@@ -119,6 +130,7 @@ try {
         );
         $bind = [
             ':doctor_id_asg' => $doctorId,
+            ':doctor_id_xdoc_assigned' => $doctorId,
             ':doctor_id_xdoc' => $doctorId,
         ];
         if ($hasCdh) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_hours_report_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 
 function bad_request(string $message): void
@@ -40,7 +41,8 @@ try {
     }
 
     $pdo = get_pdo();
-    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, 0);
+    $activeTermId = dmportal_get_active_term_id($pdo);
+    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, 0, $activeTermId);
 
     if (!$doctors) {
         bad_request('No professor hours found for the selected filters.');

@@ -87,7 +87,7 @@ try {
     }
 
     // ── Remove stored file from filesystem ───────────────────────────────────
-    $filePath = dmportal_get_stored_file_path($courseId, $storedFilename);
+    $filePath = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
 
     if (file_exists($filePath)) {
         if (!@unlink($filePath)) {

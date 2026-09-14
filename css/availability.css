@@ -1,0 +1,695 @@
+/**
+ * Availability Page Styles
+ * Design System: Apple Glass Morphism
+ * Version: 2026-12-13
+ */
+
+/* ============================================
+   AVAILABILITY CONTROLS
+   ============================================ */
+
+.availability-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  backdrop-filter: blur(20px);
+  position: relative;
+}
+
+.availability-controls::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg,
+    rgba(var(--accent-rgb), 0.06) 0%,
+    rgba(var(--accent-rgb), 0.02) 50%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.availability-filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex: 1;
+  z-index: 1;
+}
+
+.availability-filters .field {
+  min-width: 200px;
+  flex: 1;
+  margin: 0;
+}
+
+.availability-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.availability-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.availability-actions .btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ============================================
+   STATUS BAR
+   ============================================ */
+
+.availability-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  margin-bottom: 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  min-height: 48px;
+}
+
+.availability-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.availability-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.availability-stats .stat-value {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text);
+}
+
+/* ============================================
+   AVAILABILITY GRID ENHANCEMENTS
+   ============================================ */
+
+.availability-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.availability-grid thead th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem;
+  border-bottom: 2px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.availability-grid thead th.corner {
+  width: 180px;
+  text-align: left;
+  border-right: 1px solid var(--card-border);
+}
+
+.availability-grid tbody td {
+  padding: 0.5rem;
+  border: 1px solid var(--card-border);
+  background: var(--bg);
+  vertical-align: middle;
+  transition: background-color 0.2s ease;
+}
+
+.availability-grid tbody td:first-child {
+  font-weight: 600;
+  background: var(--surface-1);
+  border-right: 2px solid var(--card-border);
+  padding: 1rem;
+}
+
+.availability-grid tbody tr:hover td {
+  background: var(--surface-1);
+}
+
+.availability-grid .loading-cell {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Slot Cells */
+.availability-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  background: var(--input-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.availability-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Available State */
+.availability-slot.available {
+  background: linear-gradient(135deg,
+    rgba(var(--accent-rgb), 0.15),
+    rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+.availability-slot.available::before {
+  background: linear-gradient(135deg,
+    rgba(var(--accent-rgb), 0.1),
+    transparent);
+  opacity: 1;
+}
+
+.availability-slot.available:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--accent-rgb), 0.6);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.2);
+}
+
+/* Unavailable State */
+.availability-slot.unavailable {
+  background: var(--surface-1);
+  border-color: var(--card-border);
+  opacity: 0.6;
+}
+
+.availability-slot.unavailable:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  opacity: 1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Blocked State (unavailability period) */
+.availability-slot.blocked {
+  background: linear-gradient(135deg,
+    rgba(244, 67, 54, 0.15),
+    rgba(211, 47, 47, 0.08));
+  border-color: rgba(244, 67, 54, 0.4);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.availability-slot.blocked:hover {
+  transform: none;
+  border-color: rgba(244, 67, 54, 0.6);
+}
+
+.availability-slot.blocked .slot-status-label {
+  color: #ef5350;
+  font-weight: 700;
+}
+
+.availability-slot.blocked .slot-status-sub {
+  color: rgba(244, 67, 54, 0.8);
+}
+
+/* Multi-doctor State (Admin View) */
+.availability-slot.multi-doctor {
+  background: linear-gradient(135deg,
+    rgba(76, 175, 80, 0.15),
+    rgba(76, 175, 80, 0.08));
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.availability-slot.multi-doctor:hover {
+  transform: translateY(-4px);
+  border-color: rgba(76, 175, 80, 0.6);
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.2);
+}
+
+/* Slot Content */
+.slot-status-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.slot-status-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text);
+}
+
+.slot-status-sub {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+/* ============================================
+   LEGEND
+   ============================================ */
+
+.availability-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  margin-top: 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.legend-swatch.available {
+  background: linear-gradient(135deg,
+    rgba(var(--accent-rgb), 0.15),
+    rgba(var(--accent-rgb), 0.08));
+  border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+.legend-swatch.unavailable {
+  background: var(--surface-1);
+  border-color: var(--card-border);
+  opacity: 0.6;
+}
+
+.legend-swatch.blocked {
+  background: linear-gradient(135deg,
+    rgba(244, 67, 54, 0.15),
+    rgba(211, 47, 47, 0.08));
+  border-color: rgba(244, 67, 54, 0.4);
+}
+
+.legend-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legend-hint {
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ============================================
+   UNAVAILABILITY SECTION
+   ============================================ */
+
+#unavailabilitySection {
+  margin-top: 2rem;
+}
+
+#unavailabilitySection .card-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--surface-1);
+}
+
+#unavailabilitySection .section-heading {
+  margin: 0;
+  font-size: 1.375rem;
+}
+
+.unavailability-list {
+  padding: 1.5rem 2rem;
+}
+
+.unavailability-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.unavailability-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.unavailability-info {
+  flex: 1;
+}
+
+.unavailability-dates {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.unavailability-reason {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.unavailability-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   MODAL OVERLAYS
+   ============================================ */
+
+.modal-overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay[style*="display: flex"] {
+  opacity: 1;
+}
+
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.3);
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay[style*="display: flex"] .modal-box {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--surface-1);
+}
+
+.modal-title {
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
+}
+
+/* ============================================
+   DOCTOR LIST MODAL
+   ============================================ */
+
+.doctor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.doctor-list-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.doctor-list-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+.doctor-list-item .doctor-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,
+    rgba(var(--accent-rgb), 0.15),
+    rgba(var(--accent-rgb), 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.doctor-list-item .doctor-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+/* ============================================
+   FORM STYLES
+   ============================================ */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.9375rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
+}
+
+.form-control::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+textarea.form-control {
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .availability-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .availability-filters {
+    flex-direction: column;
+  }
+
+  .availability-actions {
+    justify-content: stretch;
+  }
+
+  .availability-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .availability-status-bar {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .availability-stats {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .availability-legend {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .legend-hint {
+    margin-left: 0;
+  }
+
+  .unavailability-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .availability-grid thead th {
+    font-size: 0.75rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .availability-slot {
+    min-height: 60px;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .slot-status-icon {
+    font-size: 1.25rem;
+  }
+
+  .slot-status-label {
+    font-size: 0.75rem;
+  }
+
+  .modal-box {
+    max-width: 95vw;
+    margin: auto;
+  }
+
+  .modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .availability-controls,
+  .availability-actions,
+  .unavailability-section,
+  .legend-hint {
+    display: none;
+  }
+
+  .availability-grid {
+    border: 1px solid #000;
+  }
+
+  .availability-grid thead th,
+  .availability-grid tbody td {
+    border: 1px solid #000;
+    padding: 0.5rem;
+  }
+
+  .availability-slot {
+    border: 1px solid #000;
+    min-height: auto;
+  }
+}

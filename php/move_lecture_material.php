@@ -84,8 +84,8 @@ try {
 
     // ─── Resolve filesystem paths ─────────────────────────────────────────────
     $storedFilename = (string)$material['stored_filename'];
-    $oldPath        = dmportal_get_stored_file_path($sourceCourseId, $storedFilename);
-    $newPath        = dmportal_get_stored_file_path($targetCourseId, $storedFilename);
+    $oldPath        = dmportal_get_stored_file_path($pdo, $sourceCourseId, $storedFilename);
+    $newPath        = dmportal_get_stored_file_path($pdo, $targetCourseId, $storedFilename);
 
     // ─── Transactional move ───────────────────────────────────────────────────
     $pdo->beginTransaction();
@@ -100,7 +100,7 @@ try {
     ]);
 
     // Step 2: Ensure target upload directory exists
-    if (!dmportal_ensure_upload_dir($targetCourseId)) {
+    if (!dmportal_ensure_upload_dir($pdo, $targetCourseId)) {
         $pdo->rollBack();
         http_response_code(500);
         echo json_encode(['success' => false, 'error' => 'Unable to create upload directory.']);

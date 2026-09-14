@@ -100,7 +100,7 @@ try {
     // Resolve file path and verify it exists
     // ─────────────────────────────────────────────────────────────────────────
     $storedFilename = (string)$material['stored_filename'];
-    $filePath       = dmportal_get_stored_file_path($courseId, $storedFilename);
+    $filePath       = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
 
     if (!is_file($filePath)) {
         json_error(404, 'File not found.');

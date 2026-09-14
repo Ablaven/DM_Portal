@@ -95,6 +95,10 @@ function dmportal_fetch_hours_report(
           SELECT NULL AS doctor_id, NULL AS course_id, 0 AS done_slots, 0 AS done_extra_minutes
         ";
 
+    $assignedSubquery = $hasSchedules ? dmportal_assigned_hours_subquery_sql($weekCancelJoin, $slotCancelJoin, $termId) : "
+          SELECT NULL AS doctor_id, NULL AS course_id, 0 AS assigned_slots, 0 AS assigned_hours
+        ";
+
     $where = [];
     if ($yearLevel > 0) {
         $where[] = 'c.year_level = :year_level';
@@ -130,6 +134,7 @@ function dmportal_fetch_hours_report(
             WHEN COALESCE(ha.alloc_cnt, 0) > 0 THEN COALESCE(h.allocated_hours, 0)
             ELSE (COALESCE(c.total_hours, 0) / GREATEST(cd.cnt, 1))
           END AS allocated_hours,
+          ROUND(COALESCE(a.assigned_hours, 0), 2) AS assigned_hours,
           ROUND(COALESCE(s.done_slots, 0) * 1.5 + (COALESCE(s.done_extra_minutes,0) / 60), 2) AS done_hours
         FROM doctors d
         JOIN (
@@ -146,6 +151,9 @@ function dmportal_fetch_hours_report(
         ) cd ON cd.course_id = c.course_id
         $hJoin
         $allocJoin
+        LEFT JOIN (
+          $assignedSubquery
+        ) a ON a.doctor_id = d.doctor_id AND a.course_id = c.course_id
         LEFT JOIN (
           $doneSubquery
         ) s ON s.doctor_id = d.doctor_id AND s.course_id = c.course_id
@@ -178,14 +186,18 @@ function dmportal_fetch_hours_report(
                 'full_name' => $r['full_name'],
                 'courses' => [],
                 'totals' => [
+                    'total_hours' => 0.0,
                     'allocated_hours' => 0.0,
+                    'assigned_hours' => 0.0,
                     'done_hours' => 0.0,
                     'remaining_hours' => 0.0,
                 ],
             ];
         }
 
+        $total = (float)($r['total_hours'] ?? 0);
         $allocated = (float)$r['allocated_hours'];
+        $assigned = (float)($r['assigned_hours'] ?? 0);
         $done = (float)$r['done_hours'];
         $remaining = max(0.0, round($allocated - $done, 2));
 
@@ -197,19 +209,25 @@ function dmportal_fetch_hours_report(
             'program' => $r['program'] ?? null,
             'year_level' => isset($r['year_level']) ? (int)$r['year_level'] : null,
             'semester' => isset($r['semester']) ? (int)$r['semester'] : null,
+            'total_hours' => round($total, 2),
             'allocated_hours' => round($allocated, 2),
+            'assigned_hours' => round($assigned, 2),
             'done_hours' => round($done, 2),
             'remaining_hours' => $remaining,
         ];
 
+        $byDoctor[$docId]['totals']['total_hours'] += $total;
         $byDoctor[$docId]['totals']['allocated_hours'] += $allocated;
+        $byDoctor[$docId]['totals']['assigned_hours'] += $assigned;
         $byDoctor[$docId]['totals']['done_hours'] += $done;
         $byDoctor[$docId]['totals']['remaining_hours'] += $remaining;
     }
 
     $doctors = array_values($byDoctor);
     foreach ($doctors as &$d) {
+        $d['totals']['total_hours'] = round((float)$d['totals']['total_hours'], 2);
         $d['totals']['allocated_hours'] = round((float)$d['totals']['allocated_hours'], 2);
+        $d['totals']['assigned_hours'] = round((float)$d['totals']['assigned_hours'], 2);
         $d['totals']['done_hours'] = round((float)$d['totals']['done_hours'], 2);
         $d['totals']['remaining_hours'] = round((float)$d['totals']['remaining_hours'], 2);
     }

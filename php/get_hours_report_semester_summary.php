@@ -8,6 +8,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_course_hours_helpers.php';
 require_once __DIR__ . '/_attendance_session_helpers.php';
+require_once __DIR__ . '/_term_helpers.php';
 
 auth_require_roles(['admin', 'teacher'], true);
 
@@ -24,6 +25,7 @@ if ($role === 'teacher') {
 
 try {
     $pdo = get_pdo();
+    $activeTermId = dmportal_get_active_term_id($pdo);
 
     $touchTable = function (string $table) use ($pdo): bool {
         try {
@@ -63,7 +65,7 @@ try {
         ? "LEFT JOIN doctor_slot_cancellations cs\n            ON cs.week_id = s.week_id\n           AND cs.doctor_id = s.doctor_id\n           AND cs.day_of_week = s.day_of_week\n           AND cs.slot_number = s.slot_number"
         : "LEFT JOIN (SELECT NULL AS slot_cancellation_id, NULL AS week_id, NULL AS doctor_id, NULL AS day_of_week, NULL AS slot_number) cs ON 1=0";
 
-    $doneSubquery = ($hasSchedules && $hasAttendanceSessions) ? dmportal_done_hours_subquery_sql($weekCancelJoin, $slotCancelJoin) : "
+    $doneSubquery = ($hasSchedules && $hasAttendanceSessions) ? dmportal_done_hours_subquery_sql($weekCancelJoin, $slotCancelJoin, $activeTermId) : "
           SELECT NULL AS doctor_id, NULL AS course_id, 0 AS done_slots, 0 AS done_extra_minutes
         ";
 
