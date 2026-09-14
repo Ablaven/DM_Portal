@@ -74,6 +74,7 @@ try {
 
     // Ensure schema exists for upgraded DBs (DDL must be outside transaction).
     dmportal_ensure_schedule_extra_minutes_column($pdo);
+    dmportal_ensure_room_code_nullable($pdo);
 
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
