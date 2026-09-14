@@ -248,7 +248,7 @@ auth_require_roles(['admin','management']);
           <label for="modal_room_code">Room / Lab</label>
           <input id="modal_room_code" type="text" placeholder="e.g. Lab A • 101" maxlength="50" />
         </div>
-        <small class="hint">Enter the room or lab name/code (required).</small>
+        <small class="hint">Enter the room or lab name/code (optional).</small>
 
         <div class="field" style="margin-top:10px;">
           <label style="display:flex; gap:10px; align-items:center;">
@@ -296,9 +296,9 @@ auth_require_roles(['admin','management']);
     </div>
   </div>
 
-  <script src="js/core.js?v=20260914c"></script>
-  <script src="js/navbar.js?v=20260914c"></script>
-  <script src="js/schedule_builder.js?v=20260914c"></script>
+  <script src="js/core.js?v=20260914d"></script>
+  <script src="js/navbar.js?v=20260914d"></script>
+  <script src="js/schedule_builder.js?v=20260914d"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initScheduleBuilder?.();

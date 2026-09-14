@@ -1088,16 +1088,12 @@
     fd.append("slot_number", slot);
     fd.append("course_id", courseId);
     const roomCode = getRoomCodeFromModal();
-    if (!roomCode) {
-      setStatusById("modalStatus", "Room is required.", "error");
-      return;
-    }
-    if (String(roomCode).length > 50) {
+    if (roomCode && String(roomCode).length > 50) {
       setStatusById("modalStatus", "Room is too long (max 50 characters).", "error");
       return;
     }
 
-    fd.append("room_code", normalizeSeparator(roomCode));
+    fd.append("room_code", normalizeSeparator(roomCode || ""));
 
     const cth = document.getElementById("modal_counts_towards_hours")?.checked ? "1" : "0";
     fd.append("counts_towards_hours", cth);
