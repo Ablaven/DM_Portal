@@ -83,11 +83,11 @@ try {
                              ELSE (COALESCE(c0.total_hours, 0) / GREATEST(cd_cnt.cnt, 1))
                            END
                          ) - (
-                           COALESCE(xdoc.scheduled_base_hours, 0) + COALESCE(xdoc.scheduled_extra_hours, 0)
+                           COALESCE(xdoc_assigned.scheduled_base_hours, 0) + COALESCE(xdoc_assigned.scheduled_extra_hours, 0)
                          ),
                        2))
                      ELSE
-                       GREATEST(0, ROUND(c0.total_hours - (COALESCE(xall_r.scheduled_base_hours,0) + COALESCE(xall_r.scheduled_extra_hours,0)), 2))
+                       GREATEST(0, ROUND(c0.total_hours - (COALESCE(xall_r_assigned.scheduled_base_hours,0) + COALESCE(xall_r_assigned.scheduled_extra_hours,0)), 2))
                    END AS remaining_hours
             FROM courses c0
             LEFT JOIN course_doctors asg ON asg.course_id = c0.course_id AND asg.doctor_id = :doctor_id_asg
@@ -97,9 +97,7 @@ try {
             ' . $hJoinC0 . '
             ' . $allocJoinC0 . '
             ' . dmportal_schedule_hours_join_xall_assigned('c0', 'xall_r_assigned', $activeTermId) . '
-            ' . dmportal_schedule_hours_join_xall('c0', 'xall_r', $activeTermId) . '
             ' . dmportal_schedule_hours_join_xdoc_assigned('c0', ':doctor_id_xdoc_assigned', 'xdoc_assigned', $activeTermId) . '
-            ' . dmportal_schedule_hours_join_xdoc('c0', ':doctor_id_xdoc', 'xdoc', $activeTermId) . '
         ';
 
         $stmt = $pdo->prepare(
@@ -131,7 +129,6 @@ try {
         $bind = [
             ':doctor_id_asg' => $doctorId,
             ':doctor_id_xdoc_assigned' => $doctorId,
-            ':doctor_id_xdoc' => $doctorId,
         ];
         if ($hasCdh) {
             $bind[':doctor_id_h'] = $doctorId;
