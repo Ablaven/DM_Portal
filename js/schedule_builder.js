@@ -231,11 +231,10 @@
   // - total_hours === 0 (legacy/explicit 0-hour course)
   const filtered = getFilteredCoursesForUI().filter((course) => {
     const type = String(course?.course_type || "").toUpperCase();
+    const remaining = Number(course?.remaining_hours ?? 0);
     const total = Number(course?.total_hours ?? 0);
-    const assigned = Number(course?.assigned_hours ?? 0);
-    const schedulableRemaining = total - assigned;
     const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
-    return isZeroHour || schedulableRemaining > 0;
+    return isZeroHour || remaining > 0;
   });
   if (!filtered.length) {
     list.innerHTML = `<div class="muted">No courses found for the selected filters.</div>`;
@@ -266,11 +265,10 @@
     badge.className = "badge badge-hours";
     {
       const type = String(c.course_type || "").toUpperCase();
+      const remaining = Number(c?.remaining_hours ?? 0);
       const total = Number(c?.total_hours ?? 0);
-      const assigned = Number(c?.assigned_hours ?? 0);
-      const schedulableRemaining = Math.max(0, total - assigned);
       const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
-      badge.textContent = type === "ZH" ? "ZH" : (isZeroHour ? "0h" : `${formatHours(schedulableRemaining)}h`);
+      badge.textContent = type === "ZH" ? "ZH" : (isZeroHour ? "0h" : `${formatHours(remaining)}h`);
     }
 
     top.appendChild(left);
@@ -326,12 +324,10 @@
   nameSel.innerHTML = `<option value="">Select a course</option>`;
 
   for (const c of courses) {
-    // Calculate schedulable remaining (Total - Assigned)
-    const total = Number(c?.total_hours ?? 0);
-    const assigned = Number(c?.assigned_hours ?? 0);
-    const schedulableRemaining = Math.max(0, total - assigned);
+    // Use remaining_hours from backend (respects split allocations)
+    const remaining = Number(c?.remaining_hours ?? 0);
     const type = String(c.course_type || "").toUpperCase();
-    const isZeroHour = type === "ZH" || (Number.isFinite(total) && total === 0);
+    const isZeroHour = type === "ZH" || (Number.isFinite(remaining) && remaining === 0 && c?.total_hours > 0);
 
     // Course Code dropdown
     const optCode = document.createElement("option");
@@ -342,7 +338,7 @@
       : `(ID ${c.course_id})`;
     optCode.textContent = isZeroHour
       ? `${codeText} [Zero Hours]`
-      : `${codeText} (${formatHours(schedulableRemaining)}h left)`;
+      : `${codeText} (${formatHours(remaining)}h left)`;
     codeSel.appendChild(optCode);
 
     // Course Name dropdown
@@ -350,7 +346,7 @@
     optName.value = String(c.course_id);
     optName.textContent = isZeroHour
       ? `${courseDisplayLine(c)} [Zero Hours]`
-      : `${courseDisplayLine(c)} (${formatHours(schedulableRemaining)}h left)`;
+      : `${courseDisplayLine(c)} (${formatHours(remaining)}h left)`;
     nameSel.appendChild(optName);
   }
 
