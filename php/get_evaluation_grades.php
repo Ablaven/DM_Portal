@@ -33,10 +33,10 @@ try {
 
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
-    $doctorId = (int)($u['doctor_id'] ?? 0);
+    $userDoctorId = (int)($u['doctor_id'] ?? 0);
 
     if ($role === 'teacher') {
-        if (!dmportal_eval_can_doctor_access_course($pdo, $doctorId, $courseId)) {
+        if (!dmportal_eval_can_doctor_access_course($pdo, $userDoctorId, $courseId)) {
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => 'Forbidden.']);
             exit;
@@ -45,10 +45,11 @@ try {
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
-    // Always use doctor_id=0 for config and grade storage so that records are shared
-    // regardless of whether an admin or a teacher created/reads them.
-    $sharedDoctorId = 0;
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $sharedDoctorId, $termId);
+    // Teachers use their own config (doctor_id = their ID)
+    // Admin/management use global config (doctor_id = 0)
+    $configDoctorId = ($role === 'teacher' && $userDoctorId > 0) ? $userDoctorId : 0;
+    
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     $items = $config['items'] ?? [];
 
     $studentsStmt = $pdo->prepare(
@@ -65,7 +66,7 @@ try {
          FROM evaluation_grades
          WHERE course_id = :course_id AND doctor_id = :doctor_id AND term_id = :term_id'
     );
-    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
+    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $configDoctorId, ':term_id' => $termId]);
     $gradeRows = $gradesStmt->fetchAll();
     $gradeMap = [];
     foreach ($gradeRows as $r) {
@@ -78,7 +79,7 @@ try {
          JOIN evaluation_grades g ON g.grade_id = gi.grade_id
          WHERE g.course_id = :course_id AND g.doctor_id = :doctor_id AND g.term_id = :term_id'
     );
-    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
+    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $configDoctorId, ':term_id' => $termId]);
     $itemScoreRows = $itemScoresStmt->fetchAll();
     $scoreMap = [];
     foreach ($itemScoreRows as $r) {

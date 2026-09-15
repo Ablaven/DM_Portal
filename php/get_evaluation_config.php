@@ -33,17 +33,40 @@ try {
 
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
-    $doctorId = (int)($u['doctor_id'] ?? 0);
+    $userDoctorId = (int)($u['doctor_id'] ?? 0);
 
-    if (!in_array($role, ['admin', 'management'], true)) {
+    // Determine which config to fetch
+    $configDoctorId = 0; // Default: global config (admin/management)
+    
+    if ($role === 'teacher') {
+        // Teachers fetch their own config
+        if ($userDoctorId <= 0) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Teacher account has no associated doctor ID.']);
+            exit;
+        }
+        
+        // Verify the teacher is assigned to this course
+        $stmt = $pdo->prepare('SELECT 1 FROM course_doctors WHERE course_id = :course_id AND doctor_id = :doctor_id');
+        $stmt->execute([':course_id' => $courseId, ':doctor_id' => $userDoctorId]);
+        if (!$stmt->fetch()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'You are not assigned to this course.']);
+            exit;
+        }
+        
+        // Fetch teacher's specific config
+        $configDoctorId = $userDoctorId;
+    } elseif (!in_array($role, ['admin', 'management'], true)) {
+        // Other roles cannot access config
         http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Configuration access is restricted to admins.']);
+        echo json_encode(['success' => false, 'error' => 'You do not have permission to view evaluation configuration.']);
         exit;
     }
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, 0, $termId);
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     $items = $config['items'] ?? [];
 
     $catStmt = $pdo->query('SELECT category_key, label FROM evaluation_categories ORDER BY sort_order ASC, category_key ASC');
@@ -58,7 +81,8 @@ try {
                 'year_level' => (int)$course['year_level'],
                 'semester' => (int)$course['semester'],
             ],
-            'doctor_id' => $doctorId,
+            'doctor_id' => $userDoctorId,
+            'config_doctor_id' => $configDoctorId,
             'term_id' => $termId,
             'items' => $items,
             'categories' => $categories,

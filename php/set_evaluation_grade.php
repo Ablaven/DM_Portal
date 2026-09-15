@@ -45,10 +45,10 @@ try {
 
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
-    $doctorId = (int)($u['doctor_id'] ?? 0);
+    $userDoctorId = (int)($u['doctor_id'] ?? 0);
 
     if ($role === 'teacher') {
-        if (!dmportal_eval_can_doctor_access_course($pdo, $doctorId, $courseId)) {
+        if (!dmportal_eval_can_doctor_access_course($pdo, $userDoctorId, $courseId)) {
             http_response_code(403);
             echo json_encode(['success' => false, 'error' => 'Forbidden.']);
             exit;
@@ -57,10 +57,11 @@ try {
 
     $termId = dmportal_get_term_id_from_request($pdo, $_POST);
 
-    // Always use doctor_id=0 for config and grade storage so that records are shared
-    // regardless of whether an admin or a teacher created/reads them.
-    $sharedDoctorId = 0;
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $sharedDoctorId, $termId);
+    // Teachers use their own config (doctor_id = their ID)
+    // Admin/management use global config (doctor_id = 0)
+    $configDoctorId = ($role === 'teacher' && $userDoctorId > 0) ? $userDoctorId : 0;
+    
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     if (!$config) {
         bad_request('Evaluation config is required before grading.');
     }
@@ -103,7 +104,7 @@ try {
     $stmt->execute([
         ':term_id' => $termId,
         ':course_id' => $courseId,
-        ':doctor_id' => $sharedDoctorId,
+        ':doctor_id' => $configDoctorId,
         ':student_id' => $studentId,
         ':attendance_score' => $attendanceScore,
         ':final_score' => $finalScore,

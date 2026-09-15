@@ -44,11 +44,34 @@ try {
 
     $u = auth_current_user();
     $role = (string)($u['role'] ?? '');
-    $doctorId = (int)($u['doctor_id'] ?? 0);
+    $userDoctorId = (int)($u['doctor_id'] ?? 0);
 
-    if (!in_array($role, ['admin', 'management'], true)) {
+    // Determine which doctor_id to use for the config
+    $configDoctorId = 0; // Default: global config (admin/management)
+    
+    if ($role === 'teacher') {
+        // Teachers can only configure their own courses
+        if ($userDoctorId <= 0) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Teacher account has no associated doctor ID.']);
+            exit;
+        }
+        
+        // Verify the teacher is assigned to this course
+        $stmt = $pdo->prepare('SELECT 1 FROM course_doctors WHERE course_id = :course_id AND doctor_id = :doctor_id');
+        $stmt->execute([':course_id' => $courseId, ':doctor_id' => $userDoctorId]);
+        if (!$stmt->fetch()) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'You are not assigned to this course.']);
+            exit;
+        }
+        
+        // Teachers save config under their doctor_id
+        $configDoctorId = $userDoctorId;
+    } elseif (!in_array($role, ['admin', 'management'], true)) {
+        // Other roles cannot configure
         http_response_code(403);
-        echo json_encode(['success' => false, 'error' => 'Configuration access is restricted to admins.']);
+        echo json_encode(['success' => false, 'error' => 'You do not have permission to configure evaluations.']);
         exit;
     }
 
@@ -85,10 +108,10 @@ try {
     $stmt->execute([
         ':term_id' => $termId,
         ':course_id' => $courseId,
-        ':doctor_id' => 0,
+        ':doctor_id' => $configDoctorId,
     ]);
 
-    $config = dmportal_eval_fetch_config($pdo, $courseId, 0, $termId);
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     if (!$config) {
         throw new RuntimeException('Failed to load evaluation config after save.');
     }

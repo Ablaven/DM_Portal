@@ -13,7 +13,12 @@ auth_require_roles(['admin','management','teacher']);
 
 $u = auth_current_user();
 $role = (string)($u['role'] ?? '');
-$canConfigure = in_array($role, ['admin', 'management'], true);
+$userId = (int)($u['user_id'] ?? 0);
+$doctorId = (int)($u['doctor_id'] ?? 0);
+
+// Teachers can now configure their own courses
+// Admin/Management can configure all courses
+$canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
 
 ?><!doctype html>
 <html lang="en">
@@ -190,15 +195,16 @@ $canConfigure = in_array($role, ['admin', 'management'], true);
     </div>
   </main>
 
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/evaluation.js?v=20260304a"></script>
+  <script src="js/core.js?v=20260914f"></script>
+  <script src="js/navbar.js?v=20260914f"></script>
+  <script src="js/evaluation.js?v=20260914f"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initEvaluationPage?.({
       canConfigure: <?php echo $canConfigure ? 'true' : 'false'; ?>,
-      doctorId: <?php echo (int)($u['doctor_id'] ?? 0); ?>,
+      doctorId: <?php echo $doctorId; ?>,
       isTeacher: <?php echo $role === 'teacher' ? 'true' : 'false'; ?>,
+      role: <?php echo json_encode($role); ?>,
     });
   </script>
 </body>

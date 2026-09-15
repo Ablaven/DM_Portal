@@ -516,11 +516,13 @@
   state.activeDoctorId = doctorId;
   renderDoctorsSelect();
 
-  try {
-  maybeAutoSetBuilderFiltersForDoctor(doctorId);
-  } catch {
-  // ignore
-  }
+  // REMOVED: Auto-filter was changing year/sem when switching doctors
+  // Users expect filters to stay the same when switching between doctors
+  // try {
+  // maybeAutoSetBuilderFiltersForDoctor(doctorId);
+  // } catch {
+  // // ignore
+  // }
 
   setStatusById("scheduleStatus", "Loading…");
   await loadSchedule(doctorId);
