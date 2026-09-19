@@ -30,7 +30,6 @@ function render_portal_navbar(string $activePage): void
         'hours_report_detail.php',
         'evaluation_reports.php',
         'attendance_report.php',
-        'student_dashboard.php',
         'lectures.php',
     ];
     $adminDropdownActive = in_array($activePage, $adminPages, true);
@@ -67,9 +66,8 @@ function render_portal_navbar(string $activePage): void
         auth_render_nav_link('lectures.php', 'Lectures', $activePage);
     }
 
-    // My Dashboard (student_dashboard.php) — students with a student_id.
-    $studentId = (int)($u['student_id'] ?? 0);
-    if ($role !== 'admin' && $role !== 'management' && $studentId > 0) {
+    // Student Dashboard - visible to students only
+    if ($role === 'student' && auth_can_access_page('student_dashboard.php')) {
         auth_render_nav_link('student_dashboard.php', 'My Dashboard', $activePage);
     }
 
@@ -146,9 +144,6 @@ function render_portal_navbar(string $activePage): void
         }
         if (auth_can_access_page('attendance_report.php')) {
             $ddItem('attendance_report.php', '✅', 'Attendance Report', 'Participation rates & history', $activePage === 'attendance_report.php');
-        }
-        if (auth_can_access_page('student_dashboard.php')) {
-            $ddItem('student_dashboard.php', '📈', 'Student Dashboard', 'Per-student performance view', $activePage === 'student_dashboard.php');
         }
 
         echo '</div>'; // .dropdown

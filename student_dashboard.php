@@ -7,147 +7,76 @@ header('Content-Type: text/html; charset=utf-8');
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
+// Student dashboard page.
 auth_require_page_access('student_dashboard.php');
-auth_require_login();
+auth_require_roles(['student']);
 
-auth_require_roles(['admin','management','student']);
+$user = auth_current_user();
+$studentId = (int)($user['student_id'] ?? 0);
 
 ?><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Dashboard</title>
+  <title>My Dashboard</title>
   <link rel="stylesheet" href="css/style.css?v=20260222d" />
 </head>
-<body class="students-view">
+<body class="student-dashboard">
   <?php render_portal_navbar('student_dashboard.php'); ?>
 
-  <main class="container container-top grades-page">
+  <main class="container container-top" role="main">
     <header class="page-header">
-      <h1 id="studentGradesTitle">Student Dashboard</h1>
-      <p id="studentGradesSubtitle" class="subtitle">Evaluation insights per student.</p>
+      <h1>Student Dashboard</h1>
+      <p class="subtitle">Your academic performance at a glance</p>
     </header>
 
-    <section class="card" id="studentDashboardVisuals" style="display:none;">
-      <div class="dashboard-card-head" style="margin-bottom:12px;">
-        <div>
-          <div class="dashboard-card-title">My Progress Insights</div>
-          <div class="dashboard-card-subtitle">Actionable highlights based on your latest results.</div>
-        </div>
-      </div>
-      <div class="dashboard-grid" id="studentDashboardInsights">
-        <div class="dashboard-card">
-          <div class="dashboard-card-title">Overall Average</div>
-          <div class="dashboard-card-subtitle">Final grades across courses</div>
-          <div class="student-insight-row">
-            <div class="dashboard-metric student-insight-value" id="studentInsightAverage">--</div>
-            <span class="student-dashboard-badge" id="studentInsightAverageBadge">--</span>
-          </div>
-          <div class="student-insight-note" id="studentInsightAverageNote">--</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-card-title">Strongest Course</div>
-          <div class="dashboard-card-subtitle">Your highest final grade</div>
-          <div class="student-insight-row">
-            <div class="dashboard-metric student-insight-value" id="studentInsightTopCourse">--</div>
-            <span class="student-dashboard-badge" id="studentInsightTopBadge">--</span>
-          </div>
-          <div class="student-insight-note" id="studentInsightTopScore">--</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-card-title">Needs Attention</div>
-          <div class="dashboard-card-subtitle">Lowest final grade</div>
-          <div class="student-insight-row">
-            <div class="dashboard-metric student-insight-value" id="studentInsightLowCourse">--</div>
-            <span class="student-dashboard-badge" id="studentInsightLowBadge">--</span>
-          </div>
-          <div class="student-insight-note" id="studentInsightLowScore">--</div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-card-title">Attendance Risk</div>
-          <div class="dashboard-card-subtitle">Courses below 12/20</div>
-          <div class="student-insight-row">
-            <div class="dashboard-metric student-insight-value" id="studentInsightAttendanceRisk">--</div>
-            <span class="student-dashboard-badge" id="studentInsightAttendanceBadge">--</span>
-          </div>
-          <div class="student-insight-note" id="studentInsightAttendanceNote">--</div>
-        </div>
-      </div>
-      <div class="dashboard-grid" id="studentDashboardTrends">
-        <div class="dashboard-card dashboard-card-wide">
-          <div class="dashboard-card-title">Trend Signals</div>
-          <div class="dashboard-card-subtitle">How your courses compare to your overall average</div>
-          <div class="student-trend-list" id="studentTrendList"></div>
-        </div>
-      </div>
-    </section>
+    <div id="dashboardStatus" class="status" role="status" aria-live="polite"></div>
 
-    <section class="card" id="studentDashboardTable">
-      <div class="schedule-header">
-        <div class="filter-bar">
-          <div class="field">
-            <label for="studentGradesYear">Year</label>
-            <select id="studentGradesYear">
-              <option value="">All</option>
-              <option value="1">Year 1</option>
-              <option value="2">Year 2</option>
-              <option value="3">Year 3</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="studentGradesSemester">Semester</label>
-            <select id="studentGradesSemester">
-              <option value="">All</option>
-              <option value="1">Sem 1</option>
-              <option value="2">Sem 2</option>
-            </select>
-          </div>
-          <div class="field" id="studentGradesAdminSelect" style="display:none;">
-            <label for="studentGradesStudentSelect">Student</label>
-            <select id="studentGradesStudentSelect">
-              <option value="">All students</option>
-            </select>
-          </div>
-          <div class="field" id="studentGradesCourseSelectWrap" style="display:none;">
-            <label for="studentGradesCourseSelect">Course</label>
-            <select id="studentGradesCourseSelect">
-              <option value="">All courses</option>
-            </select>
-          </div>
-        </div>
+    <section class="card" aria-label="Academic Performance Overview">
+      <div id="dashboardContainer">
+        <div class="dashboard-grid">
+          <!-- Grades Card -->
+          <section class="dashboard-card dashboard-card-wide" id="gradesCard" aria-labelledby="gradesCardTitle">
+            <h2 id="gradesCardTitle" class="dashboard-card-title">              <span>My Grades</span>
+            </h2>
+            <p class="dashboard-card-subtitle muted">Your performance across all courses</p>
+            <div id="gradesContent" class="dashboard-card-content" role="region" aria-live="polite">
+              <div class="loading-spinner" role="status" aria-label="Loading grades">Loading...</div>
+            </div>
+          </section>
 
-        <div class="page-actions">
-          <button id="studentGradesRefresh" class="btn btn-secondary btn-small" type="button">Refresh</button>
-          <div id="studentGradesStatus" class="status" role="status" aria-live="polite"></div>
-        </div>
-      </div>
+          <!-- Attendance Card -->
+          <section class="dashboard-card" id="attendanceCard" aria-labelledby="attendanceCardTitle">
+            <h2 id="attendanceCardTitle" class="dashboard-card-title">              <span>Attendance</span>
+            </h2>
+            <p class="dashboard-card-subtitle muted">Your class participation</p>
+            <div id="attendanceContent" class="dashboard-card-content" role="region" aria-live="polite">
+              <div class="loading-spinner" role="status" aria-label="Loading attendance">Loading...</div>
+            </div>
+          </section>
 
-      <div class="schedule-wrap" style="margin-top:12px;">
-        <div id="studentGradesCards" class="dashboard-grid" style="display:none;"></div>
-        <table class="schedule-grid" aria-label="Student dashboard list">
-          <thead>
-            <tr>
-              <th style="width:240px;" data-col="student">Student</th>
-              <th style="width:280px;" data-col="course">Course</th>
-              <th style="width:120px;" data-col="year">Year</th>
-              <th style="width:120px;" data-col="semester">Sem</th>
-              <th style="width:160px;" data-col="attendance">Attendance</th>
-              <th style="width:160px;" data-col="final">Final Grade</th>
-            </tr>
-          </thead>
-          <tbody id="studentGradesBody"></tbody>
-        </table>
+          <!-- Performance Card -->
+          <section class="dashboard-card" id="performanceCard" aria-labelledby="performanceCardTitle">
+            <h2 id="performanceCardTitle" class="dashboard-card-title">              <span>Performance Metrics</span>
+            </h2>
+            <p class="dashboard-card-subtitle muted">Overview of your academic standing</p>
+            <div id="performanceContent" class="dashboard-card-content" role="region" aria-live="polite">
+              <div class="loading-spinner" role="status" aria-label="Loading performance">Loading...</div>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   </main>
 
-  <script src="js/core.js?v=20260228g"></script>
-  <script src="js/navbar.js?v=20260228g"></script>
-  <script src="js/student_dashboard.js?v=20260228g"></script>
+  <script src="js/core.js?v=20260914a"></script>
+  <script src="js/navbar.js?v=20260914a"></script>
+  <script src="js/student_dashboard.js?v=20260914a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
-    window.dmportal?.initStudentDashboardPage?.();
+    window.dmportal?.initStudentDashboard?.();
   </script>
 </body>
 </html>
+

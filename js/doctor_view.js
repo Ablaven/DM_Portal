@@ -195,9 +195,10 @@
             cell.style.borderColor = assigned.doctor_color + "88";
           }
           const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
+          const yearSem = `Y${assigned.year_level} S${assigned.semester}`;
           cell.innerHTML = `
             <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
-            <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
+            <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""} • ${yearSem}</div>
           `;
         } else {
           cell.innerHTML = `

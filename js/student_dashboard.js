@@ -3,492 +3,444 @@
 
   const {
     fetchJson,
-    setStatusById,
     escapeHtml,
-    initPageFiltersUI,
-    getPageFilters,
+    showError,
+    showSuccess,
+    showInfo,
+    renderEmptyState,
   } = window.dmportal || {};
 
-  function initStudentDashboardPage() {
-    const body = document.getElementById("studentGradesBody");
-    const statusId = "studentGradesStatus";
-    const refreshBtn = document.getElementById("studentGradesRefresh");
+  // State management
+  const state = {
+    dashboardData: null,
+    isLoading: false,
+    retryCount: 0,
+  };
 
-    const titleEl = document.getElementById("studentGradesTitle");
-    const subtitleEl = document.getElementById("studentGradesSubtitle");
-    const adminSelectWrap = document.getElementById("studentGradesAdminSelect");
-    const studentSelect = document.getElementById("studentGradesStudentSelect");
-    const courseSelectWrap = document.getElementById("studentGradesCourseSelectWrap");
-    const courseSelect = document.getElementById("studentGradesCourseSelect");
-    const summaryWrap = document.getElementById("studentDashboardSummary");
-    const avgFinalEl = document.getElementById("studentDashboardAvgFinal");
-    const avgAttendanceEl = document.getElementById("studentDashboardAvgAttendance");
-    const coursesEl = document.getElementById("studentDashboardCourses");
-    const visualsCard = document.getElementById("studentDashboardVisuals");
-    const tableCard = document.getElementById("studentDashboardTable");
-    const tableHeaderRow = document.querySelector("#studentDashboardTable thead tr");
-    const tableWrap = document.querySelector("#studentDashboardTable table");
-    const cardsWrap = document.getElementById("studentGradesCards");
-    const insightAverage = document.getElementById("studentInsightAverage");
-    const insightAverageNote = document.getElementById("studentInsightAverageNote");
-    const insightAverageBadge = document.getElementById("studentInsightAverageBadge");
-    const insightTopCourse = document.getElementById("studentInsightTopCourse");
-    const insightTopScore = document.getElementById("studentInsightTopScore");
-    const insightTopBadge = document.getElementById("studentInsightTopBadge");
-    const insightLowCourse = document.getElementById("studentInsightLowCourse");
-    const insightLowScore = document.getElementById("studentInsightLowScore");
-    const insightLowBadge = document.getElementById("studentInsightLowBadge");
-    const insightAttendanceRisk = document.getElementById("studentInsightAttendanceRisk");
-    const insightAttendanceNote = document.getElementById("studentInsightAttendanceNote");
-    const insightAttendanceBadge = document.getElementById("studentInsightAttendanceBadge");
-    const trendList = document.getElementById("studentTrendList");
+  const MAX_RETRY_ATTEMPTS = 3;
 
-    if (!body) return;
-
-    let isAdminView = false;
-    let studentsCache = [];
-    let coursesCache = [];
-    async function loadAdminStudents() {
-      if (!studentSelect) return;
-      try {
-        const payload = await fetchJson("php/get_students.php");
-        studentsCache = payload?.data || [];
-        studentSelect.innerHTML = '<option value="">All students</option>';
-        studentsCache.forEach((s) => {
-          const opt = document.createElement("option");
-          opt.value = String(s.student_id);
-          opt.textContent = `${s.full_name} (${s.student_code || s.student_id})`;
-          studentSelect.appendChild(opt);
-        });
-      } catch (err) {
-        setStatusById?.(statusId, err.message || "Failed to load students.", "error");
-      }
+  /**
+   * Fetch dashboard data from the API
+   * @returns {Promise<Object>} Dashboard data payload
+   */
+  async function fetchDashboardData() {
+    console.log("Fetching dashboard data...");
+    const payload = await fetchJson("php/get_student_dashboard.php");
+    console.log("API Response:", payload);
+    
+    if (!payload.success) {
+      throw new Error(payload.error || "Failed to load dashboard data");
     }
-
-    function renderAdminCourses() {
-      if (!courseSelect) return;
-      const year = document.getElementById("studentGradesYear")?.value || "";
-      const sem = document.getElementById("studentGradesSemester")?.value || "";
-      const filtered = coursesCache.filter((c) => {
-        if (year && Number(c.year_level) !== Number(year)) return false;
-        if (sem && Number(c.semester) !== Number(sem)) return false;
-        return true;
-      });
-
-      const current = courseSelect.value;
-      courseSelect.innerHTML = '<option value="">All courses</option>';
-      filtered.forEach((c) => {
-        const opt = document.createElement("option");
-        opt.value = String(c.course_id);
-        opt.textContent = `${c.course_name} (Y${c.year_level} / S${c.semester})`;
-        courseSelect.appendChild(opt);
-      });
-
-      if (current && !filtered.find((c) => String(c.course_id) === String(current))) {
-        courseSelect.value = "";
-      } else if (current) {
-        courseSelect.value = current;
-      }
-    }
-
-    async function loadAdminCourses() {
-      if (!courseSelect) return;
-      try {
-        const payload = await fetchJson("php/get_evaluation_courses.php");
-        coursesCache = payload?.data || [];
-        renderAdminCourses();
-      } catch (err) {
-        setStatusById?.(statusId, err.message || "Failed to load courses.", "error");
-      }
-    }
-
-    function updateStudentSummary(items) {
-      if (!summaryWrap || !avgFinalEl || !avgAttendanceEl || !coursesEl) return {};
-
-      const scores = items
-        .map((item) => (item.final_score !== null ? Number(item.final_score) : null))
-        .filter((value) => typeof value === "number" && !Number.isNaN(value));
-      const attendanceScores = items
-        .map((item) => (item.attendance_score !== null ? Number(item.attendance_score) : null))
-        .filter((value) => typeof value === "number" && !Number.isNaN(value));
-
-      const avgFinal = scores.length ? scores.reduce((sum, v) => sum + v, 0) / scores.length : null;
-      const avgAttendance = attendanceScores.length
-        ? attendanceScores.reduce((sum, v) => sum + v, 0) / attendanceScores.length
-        : null;
-
-      if (isAdminView) {
-        avgFinalEl.textContent = avgFinal !== null ? avgFinal.toFixed(2) : "--";
-        avgAttendanceEl.textContent = avgAttendance !== null ? avgAttendance.toFixed(2) : "--";
-        coursesEl.textContent = String(items.length || 0);
-        summaryWrap.style.display = "grid";
-      } else {
-        summaryWrap.style.display = "none";
-      }
-
-      return { avgFinal, avgAttendance };
-    }
-
-    function setBadge(el, text, tone) {
-      if (!el) return;
-      el.textContent = text;
-      el.classList.remove("badge-positive", "badge-warning", "badge-negative", "badge-neutral");
-      if (tone) el.classList.add(tone);
-    }
-
-    function renderInsights(items, averages) {
-      if (!visualsCard || isAdminView) return;
-
-      const safeItems = items.filter((item) => item.course_name);
-      const withFinals = safeItems
-        .map((item) => ({
-          ...item,
-          finalScore: item.final_score !== null ? Number(item.final_score) : null,
-          attendanceScore: item.attendance_score !== null ? Number(item.attendance_score) : null,
-        }))
-        .filter((item) => typeof item.finalScore === "number" && !Number.isNaN(item.finalScore));
-
-      let avgFinal = typeof averages?.avgFinal === "number" && !Number.isNaN(averages.avgFinal) ? averages.avgFinal : null;
-      if (avgFinal === null && withFinals.length) {
-        avgFinal = withFinals.reduce((sum, item) => sum + (item.finalScore ?? 0), 0) / withFinals.length;
-      }
-
-      if (insightAverage) {
-        insightAverage.textContent = avgFinal !== null ? avgFinal.toFixed(2) : "--";
-      }
-      if (insightAverageNote) {
-        insightAverageNote.textContent = avgFinal !== null ? "Target 12+ to stay on track." : "No scores yet.";
-      }
-      if (insightAverageBadge) {
-        if (avgFinal === null) {
-          setBadge(insightAverageBadge, "No Data", "badge-neutral");
-        } else if (avgFinal >= 14) {
-          setBadge(insightAverageBadge, "On Track", "badge-positive");
-        } else if (avgFinal >= 12) {
-          setBadge(insightAverageBadge, "Stable", "badge-warning");
-        } else {
-          setBadge(insightAverageBadge, "Needs Work", "badge-negative");
-        }
-      }
-
-      const sorted = [...withFinals].sort((a, b) => (b.finalScore ?? 0) - (a.finalScore ?? 0));
-      const top = sorted.length ? sorted[0] : null;
-      const low = sorted.length > 1 ? sorted[sorted.length - 1] : null;
-
-      if (insightTopCourse) {
-        insightTopCourse.textContent = top ? top.course_name : "--";
-      }
-      if (insightTopScore) {
-        insightTopScore.textContent = top ? `Final ${top.finalScore.toFixed(2)} / 20` : "No data yet.";
-      }
-      if (insightTopBadge) {
-        setBadge(insightTopBadge, top ? "Best" : "No Data", top ? "badge-positive" : "badge-neutral");
-      }
-
-      if (insightLowCourse) {
-        insightLowCourse.textContent = low ? low.course_name : "--";
-      }
-      if (insightLowScore) {
-        insightLowScore.textContent = low ? `Final ${low.finalScore.toFixed(2)} / 20` : "Add another course to compare.";
-      }
-      if (insightLowBadge) {
-        setBadge(insightLowBadge, low ? "Focus" : "No Data", low ? "badge-negative" : "badge-neutral");
-      }
-
-      const attendanceScores = safeItems
-        .map((item) => (item.attendance_score !== null ? Number(item.attendance_score) : null))
-        .filter((value) => typeof value === "number" && !Number.isNaN(value));
-
-      const attendanceRisk = safeItems.filter((item) => {
-        const score = item.attendance_score !== null ? Number(item.attendance_score) : null;
-        return typeof score === "number" && !Number.isNaN(score) && score < 12;
-      });
-
-      if (insightAttendanceRisk) {
-        insightAttendanceRisk.textContent = attendanceScores.length ? String(attendanceRisk.length) : "--";
-      }
-      if (insightAttendanceNote) {
-        if (!attendanceScores.length) {
-          insightAttendanceNote.textContent = "Attendance data not available yet.";
-        } else if (!attendanceRisk.length) {
-          insightAttendanceNote.textContent = "Great! No risky attendance so far.";
-        } else {
-          const names = attendanceRisk.map((item) => item.course_name).slice(0, 3).join(", ");
-          insightAttendanceNote.textContent = `Improve attendance in: ${names}${attendanceRisk.length > 3 ? "..." : ""}`;
-        }
-      }
-      if (insightAttendanceBadge) {
-        if (!attendanceScores.length) {
-          setBadge(insightAttendanceBadge, "No Data", "badge-neutral");
-        } else if (!attendanceRisk.length) {
-          setBadge(insightAttendanceBadge, "Safe", "badge-positive");
-        } else if (attendanceRisk.length <= 2) {
-          setBadge(insightAttendanceBadge, "Watch", "badge-warning");
-        } else {
-          setBadge(insightAttendanceBadge, "Risk", "badge-negative");
-        }
-      }
-
-      if (trendList) {
-        trendList.innerHTML = "";
-        if (withFinals.length < 2 || avgFinal === null) {
-          trendList.innerHTML = '<div class="muted">Add at least two courses to see trends.</div>';
-        } else {
-          const trendItems = [...withFinals].map((item) => {
-            const delta = item.finalScore - avgFinal;
-            const status = delta >= 1 ? "up" : delta <= -1 ? "down" : "steady";
-            return { ...item, delta, status };
-          });
-
-          trendItems
-            .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
-            .forEach((item) => {
-              const row = document.createElement("div");
-              row.className = `student-trend-item ${item.status}`;
-              const arrow = item.status === "up" ? "▲" : item.status === "down" ? "▼" : "■";
-              const deltaText = `${arrow} ${item.delta >= 0 ? "+" : ""}${item.delta.toFixed(2)}`;
-              row.innerHTML = `
-                <div class="student-trend-course">${escapeHtml(item.course_name)}</div>
-                <div class="student-trend-score">Final ${item.finalScore.toFixed(2)} / 20</div>
-                <div class="student-trend-delta">${deltaText}</div>
-              `;
-              trendList.appendChild(row);
-            });
-        }
-      }
-    }
-
-    function applyTableColumns(showStudent, showAttendance) {
-      if (!tableHeaderRow) return;
-      const headers = tableHeaderRow.querySelectorAll("[data-col]");
-      headers.forEach((th) => {
-        const col = th.getAttribute("data-col");
-        const hideStudent = col === "student" && !showStudent;
-        const hideAttendance = col === "attendance" && !showAttendance;
-        th.hidden = hideStudent || hideAttendance;
-      });
-    }
-
-    function getGreetingLabel() {
-      let hour = new Date().getHours();
-      try {
-        const formatted = new Intl.DateTimeFormat("en-US", {
-          timeZone: "Africa/Cairo",
-          hour: "numeric",
-          hour12: false,
-        }).format(new Date());
-        hour = Number(formatted);
-      } catch (err) {
-        // Fallback to local time if timezone formatting fails.
-      }
-      if (hour >= 5 && hour < 12) return "Good morning";
-      if (hour >= 12 && hour < 17) return "Good afternoon";
-      if (hour >= 17 && hour < 21) return "Good evening";
-      return "Good night";
-    }
-
-    function renderStudentCards(items) {
-      if (!cardsWrap) return;
-      cardsWrap.innerHTML = "";
-
-      if (!items.length) {
-        cardsWrap.style.display = "block";
-        cardsWrap.innerHTML = '<div class="dashboard-card"><div class="dashboard-card-title">No grades available yet.</div><div class="dashboard-card-subtitle">Try adjusting the filters.</div></div>';
-        return;
-      }
-
-      const sorted = [...items].sort(
-        (a, b) => Number(a.year_level) - Number(b.year_level) || Number(a.semester) - Number(b.semester)
-      );
-
-      sorted.forEach((item) => {
-        const card = document.createElement("div");
-        card.className = "dashboard-card";
-        const score = item.final_score !== null ? Number(item.final_score).toFixed(2) : "--";
-        const attendance =
-          item.attendance_score !== null && item.attendance_score !== undefined
-            ? Number(item.attendance_score).toFixed(2)
-            : "--";
-        const subjectCode = item.subject_code ? escapeHtml(item.subject_code) : "--";
-
-        card.innerHTML = `
-          <div class="dashboard-card-title">${escapeHtml(item.course_name)}</div>
-          <div class="dashboard-card-subtitle">${subjectCode} \u00B7 Year ${escapeHtml(item.year_level)} \u00B7 Sem ${escapeHtml(item.semester)}</div>
-          <div class="student-insight-row" style="margin-top:8px;">
-            <div class="dashboard-metric student-insight-value">${score}</div>
-            <span class="student-dashboard-badge">/ 20</span>
-          </div>
-          <div class="student-insight-row" style="margin-top:10px;">
-            <div class="student-insight-note">Attendance</div>
-            <span class="student-dashboard-badge">${attendance} / 20</span>
-          </div>
-        `;
-        cardsWrap.appendChild(card);
-      });
-
-      cardsWrap.style.display = "grid";
-    }
-
-    async function loadGrades() {
-      setStatusById?.(statusId, "Loading...");
-      try {
-        const year = document.getElementById("studentGradesYear")?.value || "";
-        const sem = document.getElementById("studentGradesSemester")?.value || "";
-
-        const qs = new URLSearchParams();
-        if (year) qs.set("year_level", year);
-        if (sem) qs.set("semester", sem);
-
-        if (isAdminView) {
-          const sid = studentSelect?.value || "";
-          if (sid) {
-            qs.set("scope", "student");
-            qs.set("student_id", sid);
-          } else {
-            qs.set("scope", "all");
-          }
-          const cid = courseSelect?.value || "";
-          if (cid) {
-            qs.set("course_id", cid);
-          }
-        }
-
-        const payload = await fetchJson(`php/get_student_evaluation.php?${qs.toString()}`);
-        const items = payload?.data?.items || [];
-        const scope = payload?.data?.scope || "self";
-
-        body.innerHTML = "";
-        const showStudent = isAdminView;
-        const showAttendance = isAdminView;
-        applyTableColumns(showStudent, showAttendance);
-        const colCount = (showStudent ? 1 : 0) + 3 + (showAttendance ? 1 : 0) + 1;
-
-        if (!isAdminView) {
-          if (tableWrap) tableWrap.style.display = "none";
-          renderStudentCards(items);
-        } else {
-          if (cardsWrap) cardsWrap.style.display = "none";
-          if (tableWrap) tableWrap.style.display = "table";
-        }
-
-        if (!items.length) {
-          if (isAdminView) {
-            body.innerHTML = `<tr><td colspan="${colCount}" class="muted">No grades available yet.</td></tr>`;
-          } else {
-            renderStudentCards([]);
-          }
-          const averages = updateStudentSummary([]);
-          renderInsights([], averages);
-          setStatusById?.(statusId, "");
-          return;
-        }
-
-        if (isAdminView) {
-          items.forEach((item) => {
-            const row = document.createElement("tr");
-            const cells = [];
-            if (showStudent) {
-              cells.push(`<td>${escapeHtml(item.student_name || "")}</td>`);
-            }
-            cells.push(`<td>${escapeHtml(item.course_name)}</td>`);
-            cells.push(`<td>${escapeHtml(item.year_level)}</td>`);
-            cells.push(`<td>${escapeHtml(item.semester)}</td>`);
-            if (showAttendance) {
-              cells.push(`<td>${item.attendance_score !== null ? Number(item.attendance_score).toFixed(2) : ""}</td>`);
-            }
-            cells.push(`<td>${item.final_score !== null ? Number(item.final_score).toFixed(2) : ""}</td>`);
-            row.innerHTML = cells.join("");
-            body.appendChild(row);
-          });
-        }
-
-        if (titleEl && subtitleEl) {
-          if (isAdminView) {
-            titleEl.textContent = "Student Dashboard";
-            subtitleEl.textContent = scope === "all" ? "All student evaluation results." : "Selected student evaluation results.";
-          } else {
-            titleEl.textContent = titleEl.dataset.greeting || "My Dashboard";
-            subtitleEl.textContent = "Read-only view of your evaluation results.";
-          }
-        }
-
-        const averages = updateStudentSummary(items);
-        renderInsights(items, averages);
-        setStatusById?.(statusId, "");
-      } catch (err) {
-        setStatusById?.(statusId, err.message || "Failed to load grades.", "error");
-      }
-    }
-
-    initPageFiltersUI?.({ yearSelectId: "studentGradesYear", semesterSelectId: "studentGradesSemester" });
-
-    refreshBtn?.addEventListener("click", loadGrades);
-    studentSelect?.addEventListener("change", loadGrades);
-    courseSelect?.addEventListener("change", loadGrades);
-    document.getElementById("studentGradesYear")?.addEventListener("change", () => {
-      renderAdminCourses();
-      loadGrades();
-    });
-    document.getElementById("studentGradesSemester")?.addEventListener("change", () => {
-      renderAdminCourses();
-      loadGrades();
-    });
-
-    const initialFilters = getPageFilters?.() || {};
-    if (initialFilters.year_level && document.getElementById("studentGradesYear")) {
-      document.getElementById("studentGradesYear").value = String(initialFilters.year_level || "");
-    }
-    if (initialFilters.semester && document.getElementById("studentGradesSemester")) {
-      document.getElementById("studentGradesSemester").value = String(initialFilters.semester || "");
-    }
-
-    fetchJson("php/auth_me.php")
-      .then((payload) => {
-        const role = payload?.data?.role || "";
-        const studentId = Number(payload?.data?.student_id || 0);
-        isAdminView = role === "admin" || role === "management";
-
-        if (isAdminView) {
-          adminSelectWrap.style.display = "block";
-          courseSelectWrap.style.display = "block";
-          loadAdminStudents();
-          loadAdminCourses();
-          if (visualsCard) visualsCard.style.display = "none";
-          if (summaryWrap) summaryWrap.style.display = "grid";
-        } else {
-          if (visualsCard) visualsCard.style.display = "block";
-          if (tableCard) tableCard.style.display = "block";
-          if (summaryWrap) summaryWrap.style.display = "none";
-        }
-
-        if (!isAdminView && studentId <= 0) {
-          setStatusById?.(statusId, "Student account missing student_id.", "error");
-          return;
-        }
-
-        if (!isAdminView && titleEl) {
-          fetchJson("php/get_student_profile.php")
-            .then((profile) => {
-              const fullName = profile?.data?.full_name || "";
-              const greeting = getGreetingLabel();
-              const nameText = fullName ? `, ${fullName}` : "";
-              titleEl.dataset.greeting = `${greeting}${nameText}`;
-              titleEl.textContent = titleEl.dataset.greeting;
-            })
-            .catch(() => {
-              const greeting = getGreetingLabel();
-              titleEl.dataset.greeting = greeting;
-              titleEl.textContent = greeting;
-            });
-        }
-
-        loadGrades();
-      })
-      .catch(() => {
-        loadGrades();
-      });
+    
+    return payload.data || null;
   }
 
+  /**
+   * Render loading state in the dashboard container
+   */
+  function renderLoadingState() {
+    // Don't destroy the card structure - just show loading in each card
+    const gradesContent = document.getElementById("gradesContent");
+    const attendanceContent = document.getElementById("attendanceContent");
+    const performanceContent = document.getElementById("performanceContent");
+    
+    const loadingHTML = '<div class="loading-spinner" role="status">Loading...</div>';
+    
+    if (gradesContent) gradesContent.innerHTML = loadingHTML;
+    if (attendanceContent) attendanceContent.innerHTML = loadingHTML;
+    if (performanceContent) performanceContent.innerHTML = loadingHTML;
+  }
+
+  /**
+   * Render error state with retry functionality
+   * @param {string} errorMessage - Error message to display
+   * @param {boolean} allowRetry - Whether to show retry button
+   */
+  function renderErrorState(errorMessage, allowRetry = true) {
+    const container = document.getElementById("dashboardContainer");
+    if (!container) return;
+
+    const errorDiv = document.createElement("div");
+    errorDiv.className = "dashboard-error";
+    errorDiv.setAttribute("role", "alert");
+    errorDiv.setAttribute("aria-live", "assertive");
+    errorDiv.setAttribute("aria-atomic", "true");
+
+    const errorIcon = document.createElement("div");
+    errorIcon.className = "error-icon";
+    errorIcon.setAttribute("aria-hidden", "true");
+    errorIcon.textContent = "âš ï¸";
+
+    const errorTitle = document.createElement("h2");
+    errorTitle.className = "error-title";
+    errorTitle.textContent = "Unable to Load Dashboard";
+
+    const errorText = document.createElement("p");
+    errorText.className = "error-message";
+    errorText.textContent = errorMessage || "An unexpected error occurred.";
+
+    errorDiv.appendChild(errorIcon);
+    errorDiv.appendChild(errorTitle);
+    errorDiv.appendChild(errorText);
+
+    if (allowRetry && state.retryCount < MAX_RETRY_ATTEMPTS) {
+      const retryButton = document.createElement("button");
+      retryButton.className = "btn btn-primary";
+      retryButton.setAttribute("aria-label", "Retry loading dashboard");
+      retryButton.textContent = "Retry";
+      retryButton.addEventListener("click", () => {
+        state.retryCount++;
+        loadDashboard();
+      });
+      errorDiv.appendChild(retryButton);
+    } else if (state.retryCount >= MAX_RETRY_ATTEMPTS) {
+      const helpText = document.createElement("p");
+      helpText.className = "muted";
+      helpText.textContent = "Please refresh the page or contact your administrator if the problem persists.";
+      errorDiv.appendChild(helpText);
+    }
+
+    container.innerHTML = "";
+    container.appendChild(errorDiv);
+  }
+
+  /**
+   * Render "no active term" message
+   */
+  function renderNoTermMessage() {
+    const container = document.getElementById("dashboardContainer");
+    if (!container) return;
+
+    renderEmptyState(container, {
+      icon: "",
+      title: "No Active Term",
+      subtitle: "There is currently no active academic term. Please contact your administrator to activate a term.",
+      className: "dashboard-no-term"
+    });
+  }
+
+  /**
+   * Render the grades card
+   * @param {Array} grades - Array of grade objects
+   */
+  function renderGradesCard(grades) {
+    const container = document.getElementById("gradesContent");
+    if (!container) return;
+
+    // Handle empty grades array
+    if (!grades || grades.length === 0) {
+      renderEmptyState(container, {
+        icon: "",
+        title: "No Courses Found",
+        subtitle: "You are not enrolled in any courses for this term.",
+        className: "grades-empty"
+      });
+      return;
+    }
+
+    const gradedCount = grades.filter(g => g.has_grade).length;
+    const totalCount = grades.length;
+
+    // Build course list with semantic HTML and accessibility attributes
+    let html = `
+      <div class="grades-summary">
+        <p class="grades-count" role="status" aria-label="${gradedCount} of ${totalCount} courses have been graded">${gradedCount} of ${totalCount} courses graded</p>
+      </div>
+      <ul class="grades-list" aria-label="List of course grades">
+    `;
+
+    grades.forEach(grade => {
+      const scoreDisplay = grade.has_grade 
+        ? escapeHtml(grade.final_score_display)
+        : 'N/A';
+      
+      const scoreClass = grade.has_grade ? 'grade-score' : 'grade-score grade-na';
+      const ariaLabel = grade.has_grade 
+        ? `${grade.course_name}: Grade ${grade.final_score_display} out of 100`
+        : `${grade.course_name}: Not graded yet`;
+
+      const courseCode = grade.subject_code 
+        ? `<span class="course-code"><span class="sr-only">Course code: </span>${escapeHtml(grade.subject_code)}</span>` 
+        : '';
+
+      html += `
+        <li class="grade-item">
+          <div class="grade-info">
+            <div class="course-name">${escapeHtml(grade.course_name)}</div>
+            ${courseCode}
+          </div>
+          <span class="${scoreClass}" aria-label="${escapeHtml(ariaLabel)}">${scoreDisplay}</span>
+        </li>
+      `;
+    });
+
+    html += `</ul>`;
+    container.innerHTML = html;
+  }
+
+  /**
+   * Render the attendance card
+   * @param {Object} attendance - Attendance statistics object
+   */
+  function renderAttendanceCard(attendance) {
+    const container = document.getElementById("attendanceContent");
+    if (!container) return;
+
+    if (!attendance || attendance.total_scheduled === 0) {
+      renderEmptyState(container, {
+        icon: "",
+        title: "No Attendance Data",
+        subtitle: "No attendance records are available for this term.",
+        className: "attendance-empty"
+      });
+      return;
+    }
+
+    const rate = attendance.attendance_rate || 0;
+    const rateClass = rate >= 80 ? 'rate-good' : rate >= 60 ? 'rate-warning' : 'rate-danger';
+    const rateStatus = rate >= 80 ? 'good' : rate >= 60 ? 'moderate' : 'needs improvement';
+
+    const html = `
+      <div class="attendance-stats">
+        <div class="attendance-rate ${rateClass}" role="status" aria-label="Your attendance rate is ${rate.toFixed(1)} percent, which is ${rateStatus}">
+          <div class="rate-number" aria-hidden="true">${rate.toFixed(1)}%</div>
+          <div class="rate-label" aria-hidden="true">Attendance Rate</div>
+        </div>
+        <div class="attendance-breakdown" role="list" aria-label="Attendance breakdown">
+          <div class="attendance-item" role="listitem">
+            <span class="attendance-label">Present</span>
+            <span class="attendance-value" aria-label="${attendance.present_count} classes attended out of ${attendance.total_scheduled} total">${attendance.present_count} / ${attendance.total_scheduled}</span>
+          </div>
+          <div class="attendance-item" role="listitem">
+            <span class="attendance-label">Absent</span>
+            <span class="attendance-value" aria-label="${attendance.absent_count} classes missed">${attendance.absent_count}</span>
+          </div>
+          <div class="attendance-item" role="listitem">
+            <span class="attendance-label">Late</span>
+            <span class="attendance-value" aria-label="${attendance.late_count} times late">${attendance.late_count}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = html;
+  }
+
+  /**
+   * Render the performance metrics card
+   * @param {Object} performance - Performance metrics object
+   */
+  function renderPerformanceCard(performance) {
+    const container = document.getElementById("performanceContent");
+    if (!container) return;
+
+    if (!performance || performance.total_graded_courses === 0) {
+      renderEmptyState(container, {
+        icon: "",
+        title: "No Performance Data",
+        subtitle: "Performance metrics will appear once grades are available.",
+        className: "performance-empty"
+      });
+      return;
+    }
+
+    const avgGrade = performance.average_grade !== null 
+      ? performance.average_grade.toFixed(1) 
+      : 'N/A';
+    
+    const highestGrade = performance.highest_grade !== null 
+      ? performance.highest_grade.toFixed(1) 
+      : 'N/A';
+    
+    const lowestGrade = performance.lowest_grade !== null 
+      ? performance.lowest_grade.toFixed(1) 
+      : 'N/A';
+
+    const showHighLow = performance.total_graded_courses >= 2;
+
+    const html = `
+      <div class="performance-grid" role="list" aria-label="Performance metrics">
+        <div class="performance-metric" role="listitem">
+          <div class="metric-value" aria-hidden="true">${avgGrade}</div>
+          <div class="metric-label">Average Grade</div>
+          <span class="sr-only">Your average grade is ${avgGrade === 'N/A' ? 'not available' : avgGrade + ' out of 100'}</span>
+        </div>
+        ${showHighLow ? `
+          <div class="performance-metric" role="listitem">
+            <div class="metric-value" aria-hidden="true">${highestGrade}</div>
+            <div class="metric-label">Highest Grade</div>
+            <span class="sr-only">Your highest grade is ${highestGrade} out of 100</span>
+          </div>
+          <div class="performance-metric" role="listitem">
+            <div class="metric-value" aria-hidden="true">${lowestGrade}</div>
+            <div class="metric-label">Lowest Grade</div>
+            <span class="sr-only">Your lowest grade is ${lowestGrade} out of 100</span>
+          </div>
+        ` : ''}
+        <div class="performance-metric" role="listitem">
+          <div class="metric-value" aria-hidden="true">${performance.high_performing_count}</div>
+          <div class="metric-label">High Performing (>85)</div>
+          <span class="sr-only">You have ${performance.high_performing_count} high performing ${performance.high_performing_count === 1 ? 'course' : 'courses'} with grades above 85</span>
+        </div>
+        <div class="performance-metric" role="listitem">
+          <div class="metric-value" aria-hidden="true">${performance.low_performing_count}</div>
+          <div class="metric-label">Low Performing (<60)</div>
+          <span class="sr-only">You have ${performance.low_performing_count} low performing ${performance.low_performing_count === 1 ? 'course' : 'courses'} with grades below 60</span>
+        </div>
+        <div class="performance-metric" role="listitem">
+          <div class="metric-value" aria-hidden="true">${performance.total_graded_courses} / ${performance.total_courses}</div>
+          <div class="metric-label">Courses Graded</div>
+          <span class="sr-only">${performance.total_graded_courses} out of ${performance.total_courses} courses have been graded</span>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = html;
+  }
+
+  /**
+   * Render the term info header
+   * @param {Object} term - Term information object
+   * @param {Object} student - Student information object
+   */
+  function renderTermInfo(term, student) {
+    const termInfo = document.getElementById("termInfo");
+    if (!termInfo) return;
+
+    if (!term) {
+      termInfo.innerHTML = '<p class="muted">No active term</p>';
+      return;
+    }
+
+    const studentName = student ? escapeHtml(student.full_name) : 'Student';
+    const termLabel = escapeHtml(term.label || 'Current Term');
+    const academicYear = term.academic_year ? escapeHtml(term.academic_year) : '';
+
+    termInfo.innerHTML = `
+      <p class="welcome-message">Welcome back, <strong>${studentName}</strong>!</p>
+      <p class="term-label">Current Term: ${termLabel} ${academicYear}</p>
+    `;
+  }
+
+  /**
+   * Render the complete dashboard
+   * @param {Object} data - Complete dashboard data
+   */
+  function renderDashboard(data) {
+    console.log("Rendering dashboard with data:", data);
+    if (!data) {
+      renderErrorState("No dashboard data available.");
+      return;
+    }
+
+    // Handle case where no active term exists
+    if (!data.term) {
+      renderNoTermMessage();
+      return;
+    }
+
+    // Render term info header
+    renderTermInfo(data.term, data.student);
+
+    // Render each dashboard card
+    renderGradesCard(data.grades);
+    renderAttendanceCard(data.attendance);
+    renderPerformanceCard(data.performance);
+  }
+
+  /**
+   * Handle API errors with user-friendly messages
+   * @param {Error} error - Error object
+   */
+  function handleError(error) {
+    console.error("Dashboard error:", error);
+
+    const errorMessage = error.message || "An unexpected error occurred.";
+
+    // Handle authentication errors
+    if (errorMessage.includes("Not authenticated") || errorMessage.includes("401")) {
+      showError("Your session has expired. Redirecting to login...");
+      setTimeout(() => {
+        window.location.href = "login.php?next=student_dashboard.php";
+      }, 2000);
+      return;
+    }
+
+    // Handle authorization errors
+    if (errorMessage.includes("Forbidden") || errorMessage.includes("403")) {
+      showError("You do not have permission to access this page.");
+      renderErrorState("Access Denied: This page is only available to students.", false);
+      return;
+    }
+
+    // Handle network errors
+    if (errorMessage.includes("Failed to fetch") || errorMessage.includes("Network")) {
+      showError("Network error. Please check your connection.");
+      renderErrorState("Unable to connect to the server. Please check your internet connection.", true);
+      return;
+    }
+
+    // Handle server errors
+    if (errorMessage.includes("500") || errorMessage.includes("Internal Server Error")) {
+      showError("Server error. Please try again later.");
+      renderErrorState("The server encountered an error. Please try again later.", true);
+      return;
+    }
+
+    // Generic error handling
+    showError(errorMessage);
+    renderErrorState(errorMessage, true);
+  }
+
+  /**
+   * Main function to load dashboard data
+   */
+  async function loadDashboard() {
+    if (state.isLoading) return;
+
+    state.isLoading = true;
+    renderLoadingState();
+
+    try {
+      const data = await fetchDashboardData();
+      state.dashboardData = data;
+      state.retryCount = 0; // Reset retry count on success
+      renderDashboard(data);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      state.isLoading = false;
+    }
+  }
+
+  /**
+   * Initialize the student dashboard
+   * Public API function called from student_dashboard.php
+   */
+  function initStudentDashboard() {
+    // Check if required container exists
+    const container = document.getElementById("dashboardContainer");
+    if (!container) {
+      console.error("Dashboard container not found");
+      return;
+    }
+
+    // Load dashboard data
+    loadDashboard();
+
+    // Add refresh button listener if it exists
+    const refreshButton = document.getElementById("refreshDashboard");
+    if (refreshButton) {
+      refreshButton.addEventListener("click", () => {
+        state.retryCount = 0; // Reset retry count on manual refresh
+        loadDashboard();
+      });
+    }
+  }
+
+  // Expose public API
   window.dmportal = window.dmportal || {};
-  window.dmportal.initStudentDashboardPage = initStudentDashboardPage;
+  window.dmportal.initStudentDashboard = initStudentDashboard;
 })();
+
+

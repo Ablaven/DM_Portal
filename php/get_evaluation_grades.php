@@ -135,7 +135,7 @@ try {
                 'year_level' => (int)$course['year_level'],
                 'semester' => (int)$course['semester'],
             ],
-            'doctor_id' => $doctorId,
+            'doctor_id' => $userDoctorId,
             'term_id' => $termId,
             'items' => $itemsOut,
             'students' => $itemsPayload,

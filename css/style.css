@@ -1,5 +1,18 @@
 /* Clean, modern, responsive styling (no frameworks) */
 
+/* Screen reader only class - for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 :root {
   --bg: #070b18;
   --card: rgba(255, 255, 255, 0.08);
@@ -3761,24 +3774,37 @@ html[data-theme="light"] .course-progress-legend {
 .grades-page .eval-grades-table td.col-id {
   text-align: center;
   font-variant-numeric: tabular-nums;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
 }
 
 .eval-page .eval-grades-table th.col-id,
 .grades-page .eval-grades-table th.col-id {
   text-align: center;
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
 }
 
 .eval-page .eval-grades-table td.col-student,
 .grades-page .eval-grades-table td.col-student {
   text-align: left;
-  font-size: 1.18rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  min-width: 360px;
+  min-width: 280px;
+  max-width: 280px;
+  width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .eval-page .eval-grades-table th.col-student,
 .grades-page .eval-grades-table th.col-student {
-  min-width: 360px;
+  min-width: 280px;
+  max-width: 280px;
+  width: 280px;
 }
 
 .eval-page .eval-grades-table th.col-grade,
@@ -3787,7 +3813,44 @@ html[data-theme="light"] .course-progress-legend {
 .grades-page .eval-grades-table th.col-number,
 .eval-page .eval-grades-table td.col-number,
 .grades-page .eval-grades-table td.col-number {
-  width: 100px;
+  width: 75px;
+  min-width: 75px;
+  max-width: 75px;
+}
+
+/* Make grade input boxes always visible */
+.eval-page .eval-grades-table td.col-number input[type="number"],
+.grades-page .eval-grades-table td.col-number input[type="number"] {
+  width: 100%;
+  min-width: 65px;
+  max-width: 65px;
+  box-sizing: border-box;
+  padding: 6px 3px;
+  font-size: 0.9rem;
+}
+
+/* Ensure table wrapper allows horizontal scroll when needed */
+.eval-page .table-wrap,
+.grades-page .table-wrap {
+  overflow-x: auto;
+}
+
+/* Make evaluation page container wider to accommodate many grade columns */
+.eval-page .container {
+  width: min(1600px, 98vw);
+  max-width: 1600px;
+}
+
+/* Remove horizontal scroll - table should fit in wider container */
+.eval-page .table-wrap {
+  overflow-x: visible !important;
+}
+
+/* Ensure table doesn't force overflow */
+.eval-page .eval-grades-table {
+  table-layout: auto;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .eval-page .eval-grades-table th.col-id,
@@ -5128,3 +5191,236 @@ html[data-theme="light"] .card .empty-state {
     print-color-adjust: exact;
   }
 }
+
+/* Student Dashboard Responsive Styles - Requirement 8.7 */
+
+/* Base dashboard grid - uses 12 column grid system */
+body.student-dashboard .dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 18px;
+  margin-top: 20px;
+}
+
+/* Desktop layout (1024px and above) */
+@media (min-width: 1024px) {
+  body.student-dashboard .dashboard-grid {
+    gap: 20px;
+  }
+  
+  /* Grades card spans full width (12 columns) */
+  body.student-dashboard #gradesCard {
+    grid-column: span 12;
+  }
+  
+  /* Attendance and Performance cards each take half width (6 columns each) */
+  body.student-dashboard #attendanceCard,
+  body.student-dashboard #performanceCard {
+    grid-column: span 6;
+  }
+}
+
+/* Tablet layout (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.student-dashboard .dashboard-grid {
+    gap: 16px;
+  }
+  
+  /* All cards stack vertically - each spans full width */
+  body.student-dashboard .dashboard-card {
+    grid-column: span 12;
+  }
+}
+
+/* Mobile layout (below 768px) - Stack all cards vertically */
+@media (max-width: 767px) {
+  body.student-dashboard .dashboard-grid {
+    /* Single column layout - cards stack vertically */
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  /* All cards take full width */
+  body.student-dashboard .dashboard-card {
+    grid-column: span 1;
+  }
+  
+  /* Reduce padding on mobile for better space utilization */
+  body.student-dashboard .dashboard-card {
+    padding: 16px;
+  }
+  
+  /* Ensure touch targets are at least 44x44 CSS pixels */
+  body.student-dashboard .dashboard-card .btn,
+  body.student-dashboard .dashboard-card button,
+  body.student-dashboard .dashboard-card a.btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+  }
+  
+  /* Card titles remain readable on small screens */
+  body.student-dashboard .dashboard-card-title {
+    font-size: 1.15rem;
+  }
+  
+  body.student-dashboard .dashboard-card-subtitle {
+    font-size: 0.88rem;
+  }
+}
+
+/* Extra small mobile (320px - 480px) */
+@media (max-width: 480px) {
+  body.student-dashboard .container {
+    width: 96vw;
+    margin: 12px auto;
+  }
+  
+  body.student-dashboard .dashboard-grid {
+    gap: 12px;
+  }
+  
+  body.student-dashboard .dashboard-card {
+    padding: 14px;
+  }
+  
+  body.student-dashboard .page-header {
+    padding: 18px 20px;
+  }
+  
+  body.student-dashboard .page-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  body.student-dashboard .subtitle {
+    font-size: 0.9rem;
+  }
+}
+
+/* Large desktop (1920px and above) - Optimize for wide screens */
+@media (min-width: 1920px) {
+  body.student-dashboard .container {
+    max-width: 1400px;
+  }
+  
+  body.student-dashboard .dashboard-grid {
+    gap: 24px;
+  }
+  
+  body.student-dashboard .dashboard-card {
+    padding: 24px;
+  }
+}
+
+/* Dashboard card content area - ensure proper spacing */
+body.student-dashboard .dashboard-card-content {
+  margin-top: 14px;
+}
+
+/* Loading spinner styles */
+body.student-dashboard .loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Ensure tables/lists in cards are scrollable on mobile */
+@media (max-width: 767px) {
+  body.student-dashboard .dashboard-card-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  body.student-dashboard .dashboard-card-content table {
+    min-width: 100%;
+  }
+}
+
+/* Accessibility: Focus styles for keyboard navigation */
+body.student-dashboard .dashboard-card:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.9);
+  outline-offset: 3px;
+}
+
+/* Smooth transitions for responsive layout changes */
+@media (prefers-reduced-motion: no-preference) {
+  body.student-dashboard .dashboard-grid,
+  body.student-dashboard .dashboard-card {
+    transition: padding 200ms ease, gap 200ms ease;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  body.student-dashboard .dashboard-grid,
+  body.student-dashboard .dashboard-card {
+    transition: none;
+  }
+}
+
+/* Grades list styling */
+.grades-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.grade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background-color 150ms ease;
+}
+
+.grade-item:hover {
+  background-color: rgba(0,0,0,0.02);
+}
+
+.grade-item:last-child {
+  border-bottom: none;
+}
+
+.grade-info {
+  flex: 1;
+}
+
+.course-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.course-code {
+  font-size: 0.85rem;
+  color: var(--muted-color, #666);
+}
+
+.grade-score {
+  font-weight: 700;
+  font-size: 1.1rem;
+  min-width: 60px;
+  text-align: right;
+}
+
+.grade-na {
+  color: var(--muted-color, #999);
+  font-weight: 500;
+}
+
+.grades-summary {
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.03);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.grades-count {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+

@@ -26,9 +26,9 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Evaluation</title>
-  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/style.css?v=20260919e" />
 </head>
-<body class="students-view">
+<body class="students-view eval-page">
   <?php render_portal_navbar('evaluation.php'); ?>
 
   <main class="container container-top eval-page">
@@ -70,7 +70,7 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
           <div class="field">
             <label for="evaluationCourseSelect">Course</label>
             <select id="evaluationCourseSelect">
-              <option value="">Loading…</option>
+              <option value="">Loadingâ€¦</option>
             </select>
           </div>
         </div>
@@ -139,7 +139,7 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
 
           <div class="field mb-12" style="max-width:320px;">
             <label for="evaluationStudentSearch">Search</label>
-            <input id="evaluationStudentSearch" type="text" placeholder="Type a student name…" />
+            <input id="evaluationStudentSearch" type="text" placeholder="Type a student nameâ€¦" />
           </div>
 
           <div class="schedule-wrap table-wrap" style="max-height:60vh;">
@@ -195,9 +195,9 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
     </div>
   </main>
 
-  <script src="js/core.js?v=20260914f"></script>
-  <script src="js/navbar.js?v=20260914f"></script>
-  <script src="js/evaluation.js?v=20260914f"></script>
+  <script src="js/core.js?v=20260919b"></script>
+  <script src="js/navbar.js?v=20260919b"></script>
+  <script src="js/evaluation.js?v=20260919b"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initEvaluationPage?.({

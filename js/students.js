@@ -66,7 +66,9 @@
     }
   }
 
-  async function initStudentView() {
+  async function initStudentView(options = {}) {
+    const { isStudent = false, studentYear = null, studentProgram = null } = options;
+    
     try {
       setStatusById("studentStatus", "Loading…");
 
@@ -86,17 +88,32 @@
       }
 
       const gf = getGlobalFilters();
-      let activeYear = gf.year_level || 1;
+      let activeYear = isStudent && studentYear ? studentYear : (gf.year_level || 1);
+      
+      // For students, lock to their own program and year
+      const programSel = document.getElementById("studentProgram");
+      if (isStudent && studentProgram && programSel) {
+        programSel.value = studentProgram;
+        programSel.disabled = true;
+      }
+      
       const semSelect = document.getElementById("studentSemester");
       if (semSelect) {
         semSelect.value = gf.semester ? String(gf.semester) : (semSelect.value || "1");
+        if (isStudent) {
+          semSelect.disabled = true;
+        }
       }
 
-      document.querySelectorAll(".tabs [data-year]")?.forEach((b) => b.classList.remove("active"));
-      document.querySelector(`.tabs [data-year='${activeYear}']`)?.classList.add("active");
+      // Only show year tabs for admin
+      const yearTabs = document.querySelectorAll(".tabs [data-year]");
+      if (!isStudent) {
+        yearTabs?.forEach((b) => b.classList.remove("active"));
+        document.querySelector(`.tabs [data-year='${activeYear}']`)?.classList.add("active");
+      }
 
       async function refreshStudentSchedule() {
-        const program = document.getElementById("studentProgram")?.value || "Digital Marketing";
+        const program = isStudent && studentProgram ? studentProgram : (document.getElementById("studentProgram")?.value || "Digital Marketing");
         const weekIdVal = document.getElementById("studentWeekSelect")?.value;
         const weekId = weekIdVal ? Number(weekIdVal) : studentState.activeWeekId;
 
@@ -122,7 +139,7 @@
       document.getElementById("studentWeekSelect")?.addEventListener("change", refreshStudentSchedule);
 
       document.getElementById("exportStudentXls")?.addEventListener("click", () => {
-        const program = document.getElementById("studentProgram")?.value || "Digital Marketing";
+        const program = isStudent && studentProgram ? studentProgram : (document.getElementById("studentProgram")?.value || "Digital Marketing");
         const weekIdVal = document.getElementById("studentWeekSelect")?.value;
         const weekId = weekIdVal ? Number(weekIdVal) : studentState.activeWeekId;
 
@@ -135,7 +152,7 @@
       document.getElementById("emailStudentSchedule")?.addEventListener("click", async () => {
         try {
           setStatusById("studentStatus", "Emailing…");
-          const program = document.getElementById("studentProgram")?.value || "Digital Marketing";
+          const program = isStudent && studentProgram ? studentProgram : (document.getElementById("studentProgram")?.value || "Digital Marketing");
           const weekIdVal = document.getElementById("studentWeekSelect")?.value;
           const weekId = weekIdVal ? Number(weekIdVal) : studentState.activeWeekId;
           const semester = document.getElementById("studentSemester")?.value || "1";
@@ -160,7 +177,8 @@
         }
       });
 
-      document.querySelectorAll(".tabs [data-year]")?.forEach((btn) => {
+      if (!isStudent) {
+        document.querySelectorAll(".tabs [data-year]")?.forEach((btn) => {
         btn.addEventListener("click", async () => {
           document.querySelectorAll(".tabs [data-year]").forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
@@ -171,8 +189,11 @@
           await refreshStudentSchedule();
         });
       });
+      }
 
       window.addEventListener("dmportal:globalFiltersChanged", (e) => {
+        if (isStudent) return; // Ignore filter changes for students
+        
         const d = e.detail || getGlobalFilters();
         if (d.year_level) activeYear = Number(d.year_level);
         if (document.getElementById("studentSemester") && d.semester) {

@@ -47,6 +47,10 @@
     let studentsCache = [];
     let coursesCache = [];
     let doctorsCache = [];
+    let currentDoctorId = 0;
+    let teachersCache = [];
+    const teacherSelector = document.getElementById("evaluationTeacherSelector");
+    const teacherSelectorField = document.getElementById("evaluationTeacherSelectorField");
 
     function setStatus(msg, type = "") {
       setStatusById?.(statusId, msg, type);
@@ -142,14 +146,14 @@
             ${CATEGORIES.map(
               (c) => `<option value="${c.key}" ${item.category === c.key ? "selected" : ""}>${escapeHtml(c.label)}</option>`
             ).join("")}
-            <option value="__add__">+ Add Category…</option>
+            <option value="__add__">+ Add CategoryÃ¢â‚¬Â¦</option>
           </select>
         </td>
         <td>
           <input type="text" class="eval-label" placeholder="" value="${escapeHtml(item.label || "")}" />
         </td>
         <td class="col-number">
-          <input type="number" min="0" max="100" step="0.01" class="eval-weight" value="${item.weight ?? ""}" style="max-width:120px;" />
+          <input type="number" min="0" max="100" step="0.01" class="eval-weight" value="${item.weight ?? ""}" />
         </td>
         <td>
           <button type="button" class="btn btn-secondary btn-small eval-split">Split</button>
@@ -293,7 +297,7 @@
           if (categorySelectRef) {
             categorySelectRef.innerHTML = CATEGORIES.map(
               (c) => `<option value="${c.key}">${escapeHtml(c.label)}</option>`
-            ).join("") + '<option value="__add__">+ Add Category…</option>';
+            ).join("") + '<option value="__add__">+ Add CategoryÃ¢â‚¬Â¦</option>';
             categorySelectRef.value = cat.category_key;
             updateLabelState(categorySelectRef.closest("tr"));
           }
@@ -412,7 +416,7 @@
     }
 
     async function loadDoctors() {
-      // If logged in as a teacher, the doctor filter is hidden — no need to load the list.
+      // If logged in as a teacher, the doctor filter is hidden Ã¢â‚¬â€ no need to load the list.
       if (isTeacher || !doctorSelect) return;
       try {
         const payload = await fetchJson("php/get_doctors.php");
@@ -427,7 +431,7 @@
       if (!canConfigure) return;
       setConfigStatus("Loading...", true);
       try {
-        const payload = await fetchJson(`php/get_evaluation_config.php?course_id=${courseId}`);
+        const payload = await fetchJson(`php/get_evaluation_config.php?course_id=${courseId}&doctor_id=${currentDoctorId}`);
         configItems = payload?.data?.items || [];
         if (payload?.data?.categories?.length) {
           CATEGORIES = payload.data.categories.map((c) => ({
@@ -497,7 +501,7 @@
           const scoreVal = item.scores?.[String(cfgItem.item_id)] ?? item.scores?.[cfgItem.item_id] ?? "";
           cells.push(`
             <td class="col-number">
-              <input type="number" min="0" max="${cfgItem.weight ?? 0}" step="0.01" data-score-item="${cfgItem.item_id}" value="${scoreVal}" style="max-width:80px;" />
+              <input type="number" min="0" max="${cfgItem.weight ?? 0}" step="0.01" data-score-item="${cfgItem.item_id}" value="${scoreVal}" />
             </td>
           `);
         });
@@ -513,7 +517,7 @@
     async function loadGrades(courseId) {
       setGradesStatus("Loading...", true);
       try {
-        const payload = await fetchJson(`php/get_evaluation_grades.php?course_id=${courseId}`);
+        const payload = await fetchJson(`php/get_evaluation_grades.php?course_id=${courseId}&doctor_id=${currentDoctorId}`);
         configItems = payload?.data?.items || [];
         studentsCache = payload?.data?.students || [];
         renderGradesTable(configItems);
@@ -624,9 +628,50 @@
       appendConfigRow({ category: "projects", label: "", weight: "" });
     });
 
+    async function loadTeachersForCourse(courseId) {
+      if (!teacherSelector || isTeacher) return;
+      try {
+        const payload = await fetchJson(`php/get_course_teachers.php?course_id=${courseId}`);
+        teachersCache = payload?.data?.teachers || [];
+        
+        // Clear and populate teacher selector
+        teacherSelector.innerHTML = '<option value="0">Global/Admin Config</option>';
+        teachersCache.forEach(teacher => {
+          const opt = document.createElement("option");
+          opt.value = teacher.doctor_id;
+          opt.textContent = teacher.full_name;
+          teacherSelector.appendChild(opt);
+        });
+        
+        // Show the selector if there are teachers
+        if (teacherSelectorField && teachersCache.length > 0) {
+          teacherSelectorField.style.display = '';
+        }
+      } catch (err) {
+        console.error("Failed to load teachers:", err);
+      }
+    }
+
+    // Teacher selector change handler
+    if (teacherSelector) {
+      teacherSelector.addEventListener("change", async () => {
+        currentDoctorId = Number(teacherSelector.value || 0);
+        // Sync doctor filter
+        if (doctorSelect && currentDoctorId > 0) {
+          doctorSelect.value = String(currentDoctorId);
+        }
+        if (!currentCourseId) return;
+        if (canConfigure) {
+          await loadConfig(currentCourseId);
+        }
+        await loadGrades(currentCourseId);
+      });
+    }
+
     courseSelect.addEventListener("change", async () => {
       const val = Number(courseSelect.value || 0);
       currentCourseId = val;
+      currentDoctorId = Number(doctorSelect?.value || 0);
       if (!val) return;
       if (canConfigure) {
         await loadConfig(val);
@@ -689,13 +734,19 @@
       }
     });
 
-    doctorSelect?.addEventListener("change", () => {
+    doctorSelect?.addEventListener("change", async () => {
       const current = Number(courseSelect.value || 0);
+      currentDoctorId = Number(doctorSelect.value || 0);
       renderCourses();
       const currentCourse = coursesCache.find((c) => Number(c.course_id) === current);
       if (current && (!courseMatchesDoctor(currentCourse) || !doesItemMatchPageFilters?.(currentCourse))) {
         courseSelect.value = "";
         currentCourseId = 0;
+      } else if (current) {
+        if (canConfigure) {
+          await loadConfig(current);
+        }
+        await loadGrades(current);
       }
     });
 

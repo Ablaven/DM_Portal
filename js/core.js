@@ -708,7 +708,11 @@
     const iconEl = document.createElement("div");
     iconEl.className = "empty-state-icon";
     iconEl.setAttribute("aria-hidden", "true");
-    iconEl.textContent = icon;
+    if (icon && icon.trim()) {
+      iconEl.textContent = icon;
+    } else {
+      iconEl.style.display = 'none';
+    }
 
     const titleEl = document.createElement("h3");
     titleEl.className = "empty-state-title";

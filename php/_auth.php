@@ -237,7 +237,7 @@ function auth_allowed_pages_for_user(array $user): ?array
         $studentId = (int)($user['student_id'] ?? 0);
         $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php'];
         if ($studentId <= 0) {
-            $pages = ['students.php', 'profile.php', 'lectures.php'];
+            $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php'];
         }
         return $pages;
     }

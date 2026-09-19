@@ -13,6 +13,29 @@ auth_require_page_access('students.php');
 // Students can access; admins too.
 auth_require_roles(['admin','management','student']);
 
+$u = auth_current_user();
+$role = (string)($u['role'] ?? '');
+$studentId = (int)($u['student_id'] ?? 0);
+$isStudent = ($role === 'student' && $studentId > 0);
+
+// If logged in as a student, fetch their year/program
+$studentYear = null;
+$studentProgram = null;
+$studentSemester = null;
+
+if ($isStudent) {
+    require_once __DIR__ . '/php/db_connect.php';
+    $pdo = get_pdo();
+    $stmt = $pdo->prepare('SELECT year_level, program FROM students WHERE student_id = :id LIMIT 1');
+    $stmt->execute([':id' => $studentId]);
+    $student = $stmt->fetch();
+    if ($student) {
+        $studentYear = (int)$student['year_level'];
+        $studentProgram = (string)$student['program'];
+        // Semester is determined by the active term, we'll handle that in JavaScript
+    }
+}
+
 // Combined student schedule by Program + Year (Sun–Thu).
 ?><!doctype html>
 <html lang="en">
@@ -28,11 +51,16 @@ auth_require_roles(['admin','management','student']);
   <main class="container container-top">
     <header class="page-header">
       <h1>Student Schedule</h1>
-      <p class="subtitle">Combined schedule across all doctors (filtered by Program + Year)</p>
+      <?php if ($isStudent): ?>
+        <p class="subtitle">Your schedule</p>
+      <?php else: ?>
+        <p class="subtitle">Combined schedule across all doctors (filtered by Program + Year)</p>
+      <?php endif; ?>
     </header>
 
     <section class="card">
       <div class="schedule-header">
+        <?php if (!$isStudent): ?>
         <div class="filter-bar">
           <div class="field">
             <label for="studentProgram">Program</label>
@@ -57,6 +85,16 @@ auth_require_roles(['admin','management','student']);
             </select>
           </div>
         </div>
+        <?php else: ?>
+        <div class="filter-bar">
+          <div class="field">
+            <label for="studentWeekSelect">Week</label>
+            <select id="studentWeekSelect">
+              <option value="">Loading…</option>
+            </select>
+          </div>
+        </div>
+        <?php endif; ?>
 
         <div class="page-actions">
           <button id="exportStudentXls" class="btn btn-secondary btn-small" type="button">Export Excel (.xlsx)</button>
@@ -70,11 +108,13 @@ auth_require_roles(['admin','management','student']);
         </div>
       </div>
 
+      <?php if (!$isStudent): ?>
       <nav class="tabs" aria-label="Year tabs" style="margin-top:10px;">
         <button class="tab active" type="button" data-year="1">Year 1</button>
         <button class="tab" type="button" data-year="2">Year 2</button>
         <button class="tab" type="button" data-year="3">Year 3</button>
       </nav>
+      <?php endif; ?>
 
       <div class="schedule-wrap">
         <table class="schedule-grid" aria-label="Student schedule grid">
@@ -100,12 +140,16 @@ auth_require_roles(['admin','management','student']);
     </section>
   </main>
 
-  <script src="js/core.js?v=20260425a"></script>
-  <script src="js/navbar.js?v=20260425a"></script>
-  <script src="js/students.js?v=20260425a"></script>
+  <script src="js/core.js?v=20260919f"></script>
+  <script src="js/navbar.js?v=20260919f"></script>
+  <script src="js/students.js?v=20260919f"></script>
   <script>
     window.dmportal?.initNavbar?.({});
-    window.dmportal?.initStudentView?.();
+    window.dmportal?.initStudentView?.({
+      isStudent: <?php echo $isStudent ? 'true' : 'false'; ?>,
+      studentYear: <?php echo $studentYear ?? 'null'; ?>,
+      studentProgram: <?php echo json_encode($studentProgram ?? null); ?>
+    });
   </script>
 </body>
 </html>
