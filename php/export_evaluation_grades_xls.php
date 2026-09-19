@@ -53,10 +53,44 @@ try {
         exit;
     }
 
-    // Always use doctor_id=0 for config and grade storage so that records are shared
-    // regardless of whether an admin or a teacher created/reads them.
-    $sharedDoctorId = 0;
-    $config = dmportal_eval_fetch_config($pdo, $courseId, $sharedDoctorId);
+    // Resolve which doctor_id config to use:
+    // - Teachers always use their own doctor_id
+    // - Admins/management use the doctor_id from GET (set by the "View As" selector),
+    //   falling back to 0 (global). If still nothing found, scan for any teacher config.
+    if ($role === 'teacher' && $doctorId > 0) {
+        $configDoctorId = $doctorId;
+    } else {
+        $requestedDoctorId = (int)($_GET['doctor_id'] ?? 0);
+        if ($requestedDoctorId > 0) {
+            $stmt = $pdo->prepare('SELECT 1 FROM course_doctors WHERE course_id = :course_id AND doctor_id = :doctor_id');
+            $stmt->execute([':course_id' => $courseId, ':doctor_id' => $requestedDoctorId]);
+            $configDoctorId = $stmt->fetch() ? $requestedDoctorId : 0;
+        } else {
+            $configDoctorId = 0;
+        }
+    }
+
+    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
+
+    // Try to load config — if not found with the resolved doctor_id, scan all assigned
+    // teachers for this course and use the first one that has a config.
+    $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
+    if ((!$config || empty($config['items'])) && $configDoctorId === 0) {
+        // No global config — try each assigned teacher
+        $assignedStmt = $pdo->prepare(
+            'SELECT doctor_id FROM course_doctors WHERE course_id = :course_id ORDER BY doctor_id ASC'
+        );
+        $assignedStmt->execute([':course_id' => $courseId]);
+        foreach ($assignedStmt->fetchAll() as $row) {
+            $tryId = (int)$row['doctor_id'];
+            $tryConfig = dmportal_eval_fetch_config($pdo, $courseId, $tryId, $termId);
+            if ($tryConfig && !empty($tryConfig['items'])) {
+                $config = $tryConfig;
+                $configDoctorId = $tryId;
+                break;
+            }
+        }
+    }
     $items = $config['items'] ?? [];
 
     if (!$items) {
@@ -72,14 +106,12 @@ try {
     $studentsStmt->execute([':year_level' => (int)$course['year_level']]);
     $students = $studentsStmt->fetchAll();
 
-    $termId = dmportal_get_term_id_from_request($pdo, $_GET);
-
     $gradesStmt = $pdo->prepare(
         'SELECT grade_id, student_id, attendance_score, final_score
          FROM evaluation_grades
          WHERE course_id = :course_id AND doctor_id = :doctor_id AND term_id = :term_id'
     );
-    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
+    $gradesStmt->execute([':course_id' => $courseId, ':doctor_id' => $configDoctorId, ':term_id' => $termId]);
     $gradeRows = $gradesStmt->fetchAll();
     $gradeMap = [];
     foreach ($gradeRows as $r) {
@@ -92,7 +124,7 @@ try {
          JOIN evaluation_grades g ON g.grade_id = gi.grade_id
          WHERE g.course_id = :course_id AND g.doctor_id = :doctor_id AND g.term_id = :term_id'
     );
-    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $sharedDoctorId, ':term_id' => $termId]);
+    $itemScoresStmt->execute([':course_id' => $courseId, ':doctor_id' => $configDoctorId, ':term_id' => $termId]);
     $itemScoreRows = $itemScoresStmt->fetchAll();
     $scoreMap = [];
     foreach ($itemScoreRows as $r) {

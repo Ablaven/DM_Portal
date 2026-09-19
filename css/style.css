@@ -5435,3 +5435,126 @@ body.student-dashboard .dashboard-card:focus-visible {
   font-size: 0.9rem;
 }
 
+
+/* ── Attendance slot window states ───────────────────────────────────── */
+
+/* Active: lecture is happening right now — green accent */
+.slot.slot-state-active {
+  border-color: rgba(var(--success-rgb), 0.70) !important;
+  box-shadow: 0 0 0 2px rgba(var(--success-rgb), 0.18), 0 8px 20px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+
+/* Upcoming: lecture hasn't started yet — muted blue, clearly not clickable */
+.slot.slot-state-upcoming {
+  opacity: 0.55;
+  border-color: rgba(var(--accent-rgb), 0.25) !important;
+  cursor: not-allowed !important;
+}
+.slot.slot-state-upcoming:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Ended: lecture window closed — dimmed, red tint border */
+.slot.slot-state-ended {
+  opacity: 0.45;
+  border-color: rgba(var(--danger-rgb), 0.30) !important;
+  cursor: not-allowed !important;
+}
+.slot.slot-state-ended:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Recorded: attendance already taken — success tint, no hover effect */
+.slot.slot-state-recorded {
+  border-color: rgba(var(--success-rgb), 0.45) !important;
+  background: rgba(var(--success-rgb), 0.06) !important;
+  cursor: pointer;
+}
+
+/* -- Attendance slot window states ---------------------------------------- */
+
+/* Active: lecture is in progress right now - vivid green */
+.slot.slot-state-active {
+  border-color: rgba(var(--success-rgb), 0.90) !important;
+  box-shadow: 0 0 0 3px rgba(var(--success-rgb), 0.30), 0 8px 24px rgba(0,0,0,0.30);
+  background: rgba(var(--success-rgb), 0.10) !important;
+  cursor: pointer;
+}
+
+/* Upcoming: not started yet - blue tint, clearly locked */
+.slot.slot-state-upcoming {
+  opacity: 0.70;
+  border-color: rgba(var(--accent-rgb), 0.60) !important;
+  background: rgba(var(--accent-rgb), 0.08) !important;
+  cursor: not-allowed !important;
+}
+.slot.slot-state-upcoming:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Ended: window closed - red tint, clearly locked */
+.slot.slot-state-ended {
+  opacity: 0.65;
+  border-color: rgba(var(--danger-rgb), 0.60) !important;
+  background: rgba(var(--danger-rgb), 0.08) !important;
+  cursor: not-allowed !important;
+}
+.slot.slot-state-ended:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Recorded: attendance already saved - green tint */
+.slot.slot-state-recorded {
+  border-color: rgba(var(--success-rgb), 0.70) !important;
+  background: rgba(var(--success-rgb), 0.10) !important;
+  cursor: pointer;
+}
+
+/* State badge inside the slot cell */
+.slot-state-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 7px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  width: fit-content;
+}
+
+.slot-badge-active {
+  background: rgba(var(--success-rgb), 0.25);
+  color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.55);
+}
+
+.slot-badge-upcoming {
+  background: rgba(var(--accent-rgb), 0.20);
+  color: var(--accent);
+  border: 1px solid rgba(var(--accent-rgb), 0.50);
+}
+
+.slot-badge-ended {
+  background: rgba(var(--danger-rgb), 0.20);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.50);
+}
+
+.slot-badge-recorded {
+  background: rgba(var(--success-rgb), 0.20);
+  color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.50);
+}
+
+html[data-theme="light"] .slot-badge-upcoming {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.40);
+}

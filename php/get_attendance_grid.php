@@ -117,9 +117,9 @@ try {
         }
 
         $scheduleId = (int)$r['schedule_id'];
-        $windowState = $weekStartDate !== ''
-            ? dmportal_schedule_window_state_from_meta($weekStartDate, $isRamadan, $day, $slot, $nowCairo)
-            : 'ended';
+        // $windowState = $weekStartDate !== ''
+        // TEMP: time restriction disabled — always active
+        $windowState = 'active';
 
         $sessionExists = array_key_exists($scheduleId, $sessionMap);
         $session = $sessionExists

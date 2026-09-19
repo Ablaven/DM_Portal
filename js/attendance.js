@@ -96,10 +96,22 @@
         const taken = items.some((it) => it.attendance_taken);
 
         cell.classList.add("filled");
+
+        // Apply state-specific class for teachers so visual is unambiguous
+        if (!isAdmin) {
+          if (taken) {
+            cell.classList.add("slot-state-recorded");
+          } else if (windowState === "active") {
+            cell.classList.add("slot-state-active");
+          } else if (windowState === "upcoming") {
+            cell.classList.add("slot-state-upcoming");
+          } else if (windowState === "ended") {
+            cell.classList.add("slot-state-ended");
+          }
+        }
+
         if (!canOpen) {
-          cell.classList.add("attendance-slot-locked");
           cell.style.cursor = "not-allowed";
-          cell.style.opacity = "0.72";
         } else {
           cell.style.cursor = "pointer";
         }
@@ -116,10 +128,24 @@
         } else {
           const one = items[0];
           const room = one.room_code ? `Room ${escapeHtml(one.room_code)}` : "";
-          const statusHint = !isAdmin && (taken || windowState) ? ` &middot; ${escapeHtml(taken ? "Recorded" : lectureWindowLabel(windowState))}` : "";
-          const line2 = `${escapeHtml(one.doctor_name || "")} &middot; ${escapeHtml(makeCourseLabel(one.course_type, one.subject_code))}${room ? " &middot; " + room : ""}${statusHint}`;
-          cell.innerHTML = `<div class="slot-title">${escapeHtml(one.course_name || "")}</div><div class="slot-sub">${line2}</div>`;
-          if (one?.doctor_color) {
+          const line2 = `${escapeHtml(one.doctor_name || "")} &middot; ${escapeHtml(makeCourseLabel(one.course_type, one.subject_code))}${room ? " &middot; " + room : ""}`;
+
+          // State badge for teachers (not admins)
+          let badgeHTML = "";
+          if (!isAdmin) {
+            if (taken) {
+              badgeHTML = `<div class="slot-state-badge slot-badge-recorded">&#10003; Recorded</div>`;
+            } else if (windowState === "active") {
+              badgeHTML = `<div class="slot-state-badge slot-badge-active">&#9679; Open now</div>`;
+            } else if (windowState === "upcoming") {
+              badgeHTML = `<div class="slot-state-badge slot-badge-upcoming">&#9679; Not open yet</div>`;
+            } else if (windowState === "ended") {
+              badgeHTML = `<div class="slot-state-badge slot-badge-ended">&#9632; Closed</div>`;
+            }
+          }
+
+          cell.innerHTML = `<div class="slot-title">${escapeHtml(one.course_name || "")}</div><div class="slot-sub">${line2}</div>${badgeHTML}`;
+          if (one?.doctor_color && !badgeHTML) {
             cell.style.background = one.doctor_color + "22";
             cell.style.borderColor = one.doctor_color + "88";
           }

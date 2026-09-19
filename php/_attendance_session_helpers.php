@@ -213,10 +213,12 @@ function dmportal_attendance_meta_for_schedule(PDO $pdo, int $scheduleId, string
 {
     $range = dmportal_schedule_lecture_range($pdo, $scheduleId);
     $nowCairo = dmportal_cairo_now();
-    $windowState = 'ended';
-    if ($range) {
-        $windowState = dmportal_lecture_window_state($nowCairo, $range['start'], $range['end']);
-    }
+    // TEMP: time restriction disabled — teachers can take attendance any time
+    
+    $windowState = 'active';
+    // if ($range) {
+    //     $windowState = dmportal_lecture_window_state($nowCairo, $range['start'], $range['end']);
+    // }
 
     $termId = 0;
     $termStmt = $pdo->prepare(
