@@ -45,9 +45,22 @@ try {
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
-    // Teachers use their own config (doctor_id = their ID)
+    // Teachers use their own doctor_id; admins pass doctor_id via GET
+    if ($role === 'teacher' && $userDoctorId > 0) {
+        $configDoctorId = $userDoctorId;
+    } elseif (in_array($role, ['admin', 'management'], true)) {
+        $requestedDoctorId = (int)($_GET['doctor_id'] ?? 0);
+        if ($requestedDoctorId > 0) {
+            $stmt = $pdo->prepare('SELECT 1 FROM course_doctors WHERE course_id = :course_id AND doctor_id = :doctor_id');
+            $stmt->execute([':course_id' => $courseId, ':doctor_id' => $requestedDoctorId]);
+            $configDoctorId = $stmt->fetch() ? $requestedDoctorId : 0;
+        } else {
+            $configDoctorId = 0;
+        }
+    } else {
+        $configDoctorId = 0;
+    }
     // Admin/management use global config (doctor_id = 0)
-    $configDoctorId = ($role === 'teacher' && $userDoctorId > 0) ? $userDoctorId : 0;
     
     $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     $items = $config['items'] ?? [];

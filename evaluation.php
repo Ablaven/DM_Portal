@@ -197,7 +197,7 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
 
   <script src="js/core.js?v=20260919b"></script>
   <script src="js/navbar.js?v=20260919b"></script>
-  <script src="js/evaluation.js?v=20260919b"></script>
+  <script src="js/evaluation.js?v=20260919z"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initEvaluationPage?.({

@@ -231,6 +231,125 @@ $importStatus = $_GET['import_status'] ?? '';
   </main>
 
   <script src="js/core.js?v=20260912a"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      function getOrCreateUploadConfirmModal() {
+        const existing = document.getElementById("uploadConfirmModal");
+        if (existing) return existing;
+
+        // Backdrop
+        const modal = document.createElement("div");
+        modal.id = "uploadConfirmModal";
+        modal.className = "modal";
+        modal.setAttribute("aria-hidden", "true");
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "modal-backdrop";
+        backdrop.dataset.close = "1";
+
+        // Card
+        const card = document.createElement("div");
+        card.className = "modal-card";
+        card.setAttribute("role", "dialog");
+        card.setAttribute("aria-modal", "true");
+        card.setAttribute("aria-labelledby", "uploadConfirmTitle");
+                // Header
+        const header = document.createElement("div");
+        header.className = "modal-header";
+
+        const title = document.createElement("h3");
+        title.id = "uploadConfirmTitle";
+        title.textContent = "Confirm Database Import";
+
+        header.appendChild(title);
+
+        // Body
+        const body = document.createElement("div");
+        body.className = "modal-body";
+
+        const msg = document.createElement("p");
+        msg.className = "muted";
+        msg.style.margin = "0";
+        msg.textContent = "This will replace the current database with the contents of the uploaded SQL file. This action cannot be undone. Are you sure you want to continue?";
+
+        body.appendChild(msg);
+
+        // Actions
+        const actions = document.createElement("div");
+        actions.className = "modal-actions";
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn btn-secondary";
+        cancelBtn.type = "button";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.dataset.close = "1";
+
+        const confirmBtn = document.createElement("button");
+        confirmBtn.id = "uploadConfirmBtn";
+        confirmBtn.className = "btn btn-danger";
+        confirmBtn.type = "button";
+        confirmBtn.textContent = "Yes, Import";
+
+        actions.appendChild(cancelBtn);
+        actions.appendChild(confirmBtn);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        card.appendChild(actions);
+        modal.appendChild(backdrop);
+        modal.appendChild(card);
+        document.body.appendChild(modal);
+
+        // Close on backdrop / close buttons
+        modal.addEventListener("click", (e) => {
+          if (e.target.dataset.close === "1") closeUploadModal();
+        });
+
+        return modal;
+      }
+
+      function openUploadModal() {
+        const modal = getOrCreateUploadConfirmModal();
+        modal.setAttribute("aria-hidden", "false");
+        modal.classList.add("open");
+      }
+
+      function closeUploadModal() {
+        const modal = document.getElementById("uploadConfirmModal");
+        if (!modal) return;
+        modal.setAttribute("aria-hidden", "true");
+        modal.classList.remove("open");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.querySelector("form[action='php/import_database_sql.php']");
+        if (!form) return;
+
+        form.addEventListener("submit", (e) => {
+          const fileInput = document.getElementById("importSqlFile");
+          if (!fileInput || !fileInput.files.length) return;
+
+          e.preventDefault();
+          openUploadModal();
+
+          const modal = getOrCreateUploadConfirmModal();
+          const confirmBtn = modal.querySelector("#uploadConfirmBtn");
+
+          const handler = () => {
+            confirmBtn.removeEventListener("click", handler);
+            closeUploadModal();
+            form.submit();
+          };
+
+          // Remove any stale handler before adding a new one
+          confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+          modal.querySelector("#uploadConfirmBtn").addEventListener("click", handler);
+        });
+      });
+    })();
+  </script>
   <script src="js/navbar.js?v=20260912a"></script>
   <script src="js/admin_terms.js?v=20260912a"></script>
   <script src="js/admin_advance.js?v=20260912a"></script>

@@ -1527,6 +1527,17 @@ html[data-theme="light"] .legend-remaining {
   background: var(--surface-2);
   border-color: rgba(var(--accent-rgb), 0.35);
 }
+.btn-danger {
+  background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.90), rgba(var(--danger-rgb), 0.60));
+  border-color: rgba(var(--danger-rgb), 0.55);
+  color: #fff;
+}
+.btn-danger:hover {
+  filter: brightness(1.12);
+  border-color: rgba(var(--danger-rgb), 0.85);
+  transform: translateY(-2px);
+}
+
 
 .status {
   min-height: 20px;
@@ -4058,7 +4069,7 @@ html[data-theme="light"] .course-progress-legend {
 
 .modal-card {
   position: relative;
-  width: min(520px, 96vw);
+  width: min(600px, 96vw);
   max-height: min(84vh, 900px);
   display: flex;
   flex-direction: column;
