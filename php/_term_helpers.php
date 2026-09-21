@@ -134,20 +134,14 @@ function dmportal_set_active_term(PDO $pdo, int $termId): void
         $pdo->beginTransaction();
     }
     try {
-        $row = $pdo->prepare('SELECT semester, academic_year_id FROM terms WHERE term_id = :term_id LIMIT 1');
-        $row->execute([':term_id' => $termId]);
-        $rowData = $row->fetch();
-        $semester = (int)($rowData['semester'] ?? 0);
-        $academicYearId = (int)($rowData['academic_year_id'] ?? 0);
-        if ($semester > 0) {
-            $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE semester = :semester AND academic_year_id = :academic_year_id");
-            $stmt->execute([':semester' => $semester, ':academic_year_id' => $academicYearId]);
-        } else {
-            $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE academic_year_id = :academic_year_id");
-            $stmt->execute([':academic_year_id' => $academicYearId]);
-        }
+        // Close ALL active terms first (across all academic years)
+        $stmt = $pdo->prepare("UPDATE terms SET status='closed' WHERE status='active'");
+        $stmt->execute();
+        
+        // Then activate the requested term
         $stmt = $pdo->prepare("UPDATE terms SET status='active' WHERE term_id = :term_id");
         $stmt->execute([':term_id' => $termId]);
+        
         if ($ownTransaction) {
             $pdo->commit();
         }

@@ -36,6 +36,15 @@ try {
     $pdo = get_pdo();
     dmportal_ensure_attendance_sessions_table($pdo);
 
+    // Resolve the active term so we show only the current semester's courses
+    require_once __DIR__ . '/_term_helpers.php';
+    $activeTermId = dmportal_get_active_term_id($pdo);
+
+    // Get the active semester number from the term
+    $termStmt = $pdo->prepare('SELECT semester FROM terms WHERE term_id = :term_id LIMIT 1');
+    $termStmt->execute([':term_id' => $activeTermId]);
+    $activeSemester = (int)($termStmt->fetchColumn() ?: 0);
+
     // Verify doctor exists
     $chk = $pdo->prepare('SELECT doctor_id, full_name FROM doctors WHERE doctor_id = :id');
     $chk->execute([':id' => $doctorId]);
@@ -47,20 +56,28 @@ try {
         exit;
     }
 
+    $semesterFilter = $activeSemester > 0 ? 'AND c.semester = :semester' : '';
+
     $stmt = $pdo->prepare(
         "SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester, c.course_type, c.subject_code, c.total_hours,
                 GREATEST(0, ROUND(c.total_hours - (COALESCE(x.scheduled_base_hours,0) + COALESCE(x.scheduled_extra_hours,0)), 2)) AS remaining_hours
          FROM courses c
          JOIN course_doctors cd ON cd.course_id = c.course_id AND cd.doctor_id = :doctor_id
          LEFT JOIN (
-           " . dmportal_done_hours_course_subquery_sql('s.doctor_id = :doctor_id_done') . "
+           " . dmportal_done_hours_course_subquery_sql('s.doctor_id = :doctor_id_done', $activeTermId) . "
          ) x ON x.course_id = c.course_id
+         WHERE 1=1 $semesterFilter
          ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC"
     );
-    $stmt->execute([
-        ':doctor_id' => $doctorId,
+
+    $params = [
+        ':doctor_id'      => $doctorId,
         ':doctor_id_done' => $doctorId,
-    ]);
+    ];
+    if ($activeSemester > 0) {
+        $params[':semester'] = $activeSemester;
+    }
+    $stmt->execute($params);
 
     echo json_encode([
         'success' => true,
@@ -69,6 +86,8 @@ try {
                 'doctor_id' => (int)$doctor['doctor_id'],
                 'full_name' => $doctor['full_name'],
             ],
+            'active_term_id' => $activeTermId,
+            'active_semester' => $activeSemester,
             'courses' => $stmt->fetchAll(),
         ],
     ]);

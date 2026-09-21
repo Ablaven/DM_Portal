@@ -139,9 +139,7 @@
               </div>
               <span class="muted">${formatHours(done)}h / ${formatHours(total)}h</span>
             </div>
-            <div class="course-progress-bar" aria-label="Course progress">
-              <div class="course-progress-fill" style="width:${total > 0 ? ((done / total) * 100).toFixed(2) : 0}%"></div>
-            </div>
+            <div class="course-progress-bar" aria-label="Course progress"><div class="course-progress-fill-assigned" style="width:${total > 0 ? ((assigned / total) * 100).toFixed(2) : 0}%"></div><div class="course-progress-fill" style="width:${total > 0 ? ((done / total) * 100).toFixed(2) : 0}%"></div></div>
             <div class="course-progress-legend" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
               <span class="badge" style="background:var(--surface-2);">Total: ${formatHours(total)}h</span>
               <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assigned)}h</span>
@@ -163,9 +161,7 @@
           </div>
           <span class="muted">${formatHours(doneT)}h / ${formatHours(totalT)}h</span>
         </div>
-        <div class="course-progress-bar" aria-label="Doctor progress">
-          <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
-        </div>
+        <div class="course-progress-bar" aria-label="Doctor progress"><div class="course-progress-fill-assigned" style="width:${totalT > 0 ? ((assignedT / totalT) * 100).toFixed(2) : 0}%"></div><div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div></div>
         <div class="course-progress-legend" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
           <span class="badge" style="background:var(--surface-2);">Total: ${formatHours(totalT)}h</span>
           <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assignedT)}h</span>

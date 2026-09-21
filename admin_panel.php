@@ -160,6 +160,100 @@ $importStatus = $_GET['import_status'] ?? '';
 
     </section>
 
+    <!-- ── Attendance Tracking Report ─────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="margin:0 0 6px;">Attendance Tracking Report</h2>
+        <p class="muted" style="margin:0; font-size:0.9rem;">View and export attendance status for a range of weeks.</p>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+        <div class="field" style="margin:0;">
+          <label for="attendanceTrackingTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
+          <select id="attendanceTrackingTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">All Terms</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="attendanceTrackingFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
+          <select id="attendanceTrackingFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="attendanceTrackingToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
+          <select id="attendanceTrackingToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <button id="loadAttendanceTrackingReport" class="btn btn-secondary" type="button">Load Report</button>
+        <button id="exportAttendanceTrackingReport" class="btn" type="button" disabled>Export Excel</button>
+      </div>
+
+      <div id="attendanceTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+
+      <!-- Summary stats -->
+      <div id="attendanceTrackingSummary" style="display:none; margin-bottom:20px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Lectures</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="attendanceTrackingTotal">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Attendance Taken</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="attendanceTrackingTaken">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Missing</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--danger);" id="attendanceTrackingMissing">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Canceled</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--muted);" id="attendanceTrackingCanceled">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <div id="attendanceTrackingTableWrap" style="display:none;">
+        <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="attendanceTrackingFilterCourse" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
+            <option value="">All Courses</option>
+          </select>
+          <select id="attendanceTrackingFilterProfessor" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
+            <option value="">All Professors</option>
+          </select>
+          <select id="attendanceTrackingFilterStatus" class="navlink" style="padding:8px 11px;">
+            <option value="">All Status</option>
+            <option value="missing">Missing Only</option>
+            <option value="taken">Taken Only</option>
+            <option value="canceled">Canceled Only</option>
+          </select>
+        </div>
+
+        <div class="table-wrap" style="max-height:600px; overflow:auto;">
+          <table class="data-table" id="attendanceTrackingTable">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Course</th>
+                <th>Professor</th>
+                <th>Status</th>
+                <th>Attendance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
     <details id="manualOptionsPanel" style="margin-top:14px;">
       <summary style="cursor:pointer; font-weight:600; padding:10px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
@@ -353,6 +447,7 @@ $importStatus = $_GET['import_status'] ?? '';
   <script src="js/navbar.js?v=20260912a"></script>
   <script src="js/admin_terms.js?v=20260912a"></script>
   <script src="js/admin_advance.js?v=20260912a"></script>
+  <script src="js/admin_attendance_tracking.js?v=20260922e"></script>
   <script>
     window.dmportal?.initNavbar?.({});
   </script>

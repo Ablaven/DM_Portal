@@ -3598,6 +3598,7 @@ html[data-theme="light"] .slot.available-slot {
   border: 1px solid var(--card-border);
 }
 
+.legend-assigned { background: rgba(99, 102, 241, 0.80); }
 .legend-done { background: rgba(var(--success-rgb), 0.92); }
 .legend-remaining { background: rgba(var(--danger-rgb), 0.9); }
 
@@ -3697,6 +3698,7 @@ html[data-theme="light"] .course-progress-legend {
 }
 
 .course-progress-bar {
+  position: relative;
   margin-top: 10px;
   height: 14px;
   border-radius: 999px;
@@ -3705,11 +3707,28 @@ html[data-theme="light"] .course-progress-legend {
   overflow: hidden;
 }
 
-.course-progress-fill {
+/* Assigned hours layer — purple, sits behind done */
+.course-progress-fill-assigned {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 0%;
-  /* Left-to-right indicates progress (done) and finishes with remaining hint */
-  background: linear-gradient(90deg, rgba(var(--success-rgb), 0.95), rgba(var(--danger-rgb), 0.85));
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.80), rgba(129, 140, 248, 0.70));
+  border-radius: 999px;
+  transition: width 600ms ease;
+}
+
+/* Done hours layer — overlaps assigned */
+.course-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(var(--success-rgb), 0.95), rgba(60, 196, 129, 0.85));
+  border-radius: 999px;
+  transition: width 600ms ease;
 }
 
 .course-progress-legend {

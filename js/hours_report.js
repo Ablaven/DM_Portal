@@ -8,6 +8,8 @@
     const allocT = Number(totals.allocated_hours || 0);
     const doneT = Number(totals.done_hours || 0);
     const remT = Number(totals.remaining_hours || 0);
+    const assignedT = Number(totals.assigned_hours || 0);
+    const assignedPctT = allocT > 0 ? Math.max(0, Math.min(100, (assignedT / allocT) * 100)) : 0;
     const pct = allocT > 0 ? Math.max(0, Math.min(100, (doneT / allocT) * 100)) : 0;
 
     const courseRows = (doctor.courses || [])
@@ -15,6 +17,8 @@
         const alloc = Number(course.allocated_hours || 0);
         const done = Number(course.done_hours || 0);
         const rem = Number(course.remaining_hours || 0);
+        const assigned = Number(course.assigned_hours || 0);
+        const assignedPct = alloc > 0 ? Math.max(0, Math.min(100, (assigned / alloc) * 100)) : 0;
         const title = String(course.course_name || "(Unnamed course)");
         const metaParts = [];
         if (course.program) metaParts.push(course.program);
@@ -33,9 +37,11 @@
               <span class="muted">${formatHours(done)}h / ${formatHours(alloc)}h</span>
             </div>
             <div class="course-progress-bar" aria-label="Course progress">
+              <div class="course-progress-fill-assigned" style="width:${assignedPct.toFixed(2)}%"></div>
               <div class="course-progress-fill" style="width:${alloc > 0 ? ((done / alloc) * 100).toFixed(2) : 0}%"></div>
             </div>
             <div class="course-progress-legend">
+              <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assigned)}h</span>
               <span class="badge badge-success">Done: ${formatHours(done)}h</span>
               <span class="badge badge-danger">Remaining: ${formatHours(rem)}h</span>
               <span class="muted">${alloc > 0 ? Math.round((done / alloc) * 100) : 0}%</span>
@@ -55,10 +61,12 @@
           <span class="muted">${formatHours(doneT)}h / ${formatHours(allocT)}h</span>
         </div>
         <div class="course-progress-bar" aria-label="Doctor progress">
+          <div class="course-progress-fill-assigned" style="width:${assignedPctT.toFixed(2)}%"></div>
           <div class="course-progress-fill" style="width:${pct.toFixed(2)}%"></div>
         </div>
         <div class="course-progress-legend">
           <span class="badge">Allocated: ${formatHours(allocT)}h</span>
+          <span class="badge" style="background:transparent; border:1px solid #6366f1; color:#6366f1;">Assigned: ${formatHours(assignedT)}h</span>
           <span class="badge badge-success">Done: ${formatHours(doneT)}h</span>
           <span class="badge badge-danger">Remaining: ${formatHours(remT)}h</span>
           <span class="muted">${pct.toFixed(0)}%</span>

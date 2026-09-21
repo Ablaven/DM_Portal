@@ -117,9 +117,10 @@ try {
         }
 
         $scheduleId = (int)$r['schedule_id'];
-        // $windowState = $weekStartDate !== ''
-        // TEMP: time restriction disabled — always active
-        $windowState = 'active';
+        // Compute actual lecture window state based on Cairo time
+        $windowState = $weekStartDate !== ''
+            ? dmportal_schedule_window_state_from_meta($weekStartDate, $isRamadan, $day, $slot, $nowCairo)
+            : 'ended';
 
         $sessionExists = array_key_exists($scheduleId, $sessionMap);
         $session = $sessionExists
