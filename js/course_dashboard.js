@@ -115,7 +115,7 @@
   }
 
   // ---------- DONUT ----------
-  // Two arcs: purple (assigned) + green (done) drawn over a grey track.
+  // Simple donut: green (done) arc over grey track showing progress
   function drawCourseDashboardDonut(courses) {
     const canvas = document.getElementById("courseDashboardDonut");
     if (!canvas) return;
@@ -125,19 +125,16 @@
     const items = getDashboardCoursesSorted(courses || []);
     const totals = items.reduce((acc, c) => {
       const { total, done } = computeCourseDoneHours(c);
-      acc.total    += total;
-      acc.assigned += Number(c.assigned_hours || 0);
-      acc.done     += done;
+      acc.total += total;
+      acc.done  += done;
       return acc;
-    }, { total: 0, assigned: 0, done: 0 });
+    }, { total: 0, done: 0 });
 
     ctx.clearRect(0, 0, w, h);
 
-    const total    = totals.total    || 0;
-    const assigned = Math.min(totals.assigned || 0, total);
-    const done     = totals.done     || 0;
-    const assignedPct = total > 0 ? Math.max(0, Math.min(1, assigned / total)) : 0;
-    const donePct     = total > 0 ? Math.max(0, Math.min(1, done     / total)) : 0;
+    const total = totals.total || 0;
+    const done  = totals.done  || 0;
+    const donePct = total > 0 ? Math.max(0, Math.min(1, done / total)) : 0;
 
     const cx = w / 2, cy = h / 2;
     const r  = Math.min(w, h) * 0.36;
@@ -151,17 +148,7 @@
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Assigned arc (purple, drawn first / behind)
-    if (assignedPct > 0) {
-      ctx.beginPath();
-      ctx.strokeStyle = C.assigned;
-      ctx.lineCap = "round";
-      ctx.lineWidth = thick;
-      ctx.arc(cx, cy, r, start, start + Math.PI * 2 * assignedPct);
-      ctx.stroke();
-    }
-
-    // Done arc (green, drawn on top of assigned)
+    // Done arc (green)
     if (donePct > 0) {
       ctx.beginPath();
       ctx.strokeStyle = C.done;
@@ -185,7 +172,6 @@
     if (t) {
       if (total > 0) {
         t.innerHTML = `
-          <span class="badge" style="background:transparent;border:1px solid #6366f1;color:#6366f1;margin-right:6px;">Assigned ${formatHours(assigned)}h</span>
           <span class="badge badge-success" style="margin-right:6px;">Done ${formatHours(done)}h</span>
           <span class="badge badge-danger">Remaining ${formatHours(Math.max(0, total - done))}h</span>
         `;
@@ -294,9 +280,7 @@
   }
 
   // ---------- EGYPTIAN / FRENCH DONE vs REMAINING pies ----------
-  // These use assigned_hours from the API. The API (get_doctor_type_hours_summary.php)
-  // needs to return assigned_hours — if it doesn't yet, we show Done/Remaining as before
-  // and add Assigned to the legend text only.
+  // Simple 2-slice pies: Done (green) and Remaining (red)
   async function drawDoctorTypeHoursCharts() {
     const egyptCanvas = document.getElementById("dashboardEgyptianHours");
     const frenchCanvas = document.getElementById("dashboardFrenchHours");
@@ -319,8 +303,8 @@
       const payload = await fetchJson(url);
       if (!payload?.success) throw new Error(payload?.error || "Failed to load summary");
 
-      const egypt  = payload?.data?.egyptian || { label: "Egyptian", done_hours: 0, remaining_hours: 0, assigned_hours: 0 };
-      const french = payload?.data?.french   || { label: "French",   done_hours: 0, remaining_hours: 0, assigned_hours: 0 };
+      const egypt  = payload?.data?.egyptian || { label: "Egyptian", done_hours: 0, remaining_hours: 0 };
+      const french = payload?.data?.french   || { label: "French",   done_hours: 0, remaining_hours: 0 };
 
       const charts = [
         { type: "Egyptian", data: egypt,  canvas: egyptCtx,  labelId: "dashboardEgyptianHoursText" },
@@ -330,7 +314,6 @@
       charts.forEach(({ data, canvas, labelId, type }) => {
         const done      = Number(data?.done_hours      || 0);
         const remaining = Number(data?.remaining_hours || 0);
-        const assigned  = Number(data?.assigned_hours  || 0);
         const total     = done + remaining;
         const { ctx, w, h } = canvas;
 
@@ -345,31 +328,18 @@
 
         const cx = w / 2, cy = h / 2 + 4;
         const r = Math.min(w, h) * 0.32;
-        const startAngle  = -Math.PI / 2;
-        const assignedPct = total > 0 ? Math.min(1, assigned / total) : 0;
-        const donePct     = total > 0 ? done / total : 0;
-        const aAssigned   = startAngle + Math.PI * 2 * assignedPct;
-        const aDone       = startAngle + Math.PI * 2 * donePct;
+        const startAngle = -Math.PI / 2;
+        const donePct = total > 0 ? done / total : 0;
+        const aDone = startAngle + Math.PI * 2 * donePct;
 
-        // Draw 3 slices: Done | Assigned-only (assigned > done) | Remaining
-        // Simplest correct approach: draw remaining (full remaining arc), then
-        // assigned arc on top, then done arc on top of assigned.
-
-        // Full remaining slice (background for the whole pie first)
+        // Draw 2 slices: Done (green) and Remaining (red)
+        // Draw remaining first (full circle background)
         ctx.beginPath(); ctx.moveTo(cx, cy);
         ctx.fillStyle = palette.remain;
         ctx.arc(cx, cy, r, startAngle, startAngle + Math.PI * 2);
         ctx.closePath(); ctx.fill();
 
-        // Assigned slice (purple) — from start up to assigned%
-        if (assignedPct > 0) {
-          ctx.beginPath(); ctx.moveTo(cx, cy);
-          ctx.fillStyle = palette.assigned;
-          ctx.arc(cx, cy, r, startAngle, aAssigned);
-          ctx.closePath(); ctx.fill();
-        }
-
-        // Done slice (green) — from start up to done%, overlaps assigned
+        // Done slice (green) on top
         if (donePct > 0) {
           ctx.beginPath(); ctx.moveTo(cx, cy);
           ctx.fillStyle = palette.done;
@@ -380,13 +350,11 @@
         ctx.strokeStyle = palette.grid; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
 
-        // Labels — Done slice, Assigned-only slice (between done and assigned), Remaining slice
-        const doneLabel     = donePct > 0.05 ? `${Math.round(donePct * 100)}% Done` : "";
-        const assignedLabel = (assignedPct > donePct && (assignedPct - donePct) > 0.05) ? `${Math.round((assignedPct - donePct) * 100)}% Assign.` : "";
-        const remainLabel   = (1 - donePct) > 0.05 ? `${Math.round((1 - donePct) * 100)}% Rem.` : "";
-        drawTextAlongArc(ctx, doneLabel,     cx, cy, r * 0.68, startAngle, aDone,                   { color: "#000", baseSize: 12 });
-        drawTextAlongArc(ctx, assignedLabel, cx, cy, r * 0.68, aDone,     aAssigned,                { color: "#000", baseSize: 12 });
-        drawTextAlongArc(ctx, remainLabel,   cx, cy, r * 0.68, aAssigned, startAngle + Math.PI * 2, { color: "#000", baseSize: 12 });
+        // Labels
+        const doneLabel   = donePct > 0.05 ? `${Math.round(donePct * 100)}% Done` : "";
+        const remainLabel = (1 - donePct) > 0.05 ? `${Math.round((1 - donePct) * 100)}% Rem.` : "";
+        drawTextAlongArc(ctx, doneLabel,   cx, cy, r * 0.68, startAngle, aDone,                   { color: "#000", baseSize: 12 });
+        drawTextAlongArc(ctx, remainLabel, cx, cy, r * 0.68, aDone, startAngle + Math.PI * 2, { color: "#000", baseSize: 12 });
 
         const t = document.getElementById(labelId);
         if (t) {
@@ -394,13 +362,6 @@
           t.innerHTML = `
             <div class="badge" style="display:inline-block;margin-bottom:8px;background:var(--surface-1);border:1px solid var(--card-border);color:var(--text);">Total ${formatHours(total)}h</div>
             <div style="margin-top:4px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px solid var(--card-border);">
-                <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-                  <span style="width:10px;height:10px;border-radius:2px;background:rgba(99,102,241,0.70);flex:0 0 auto;"></span>
-                  <span>Assigned</span>
-                </div>
-                <div style="white-space:nowrap;">${formatHours(assigned)}h</div>
-              </div>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px solid var(--card-border);">
                 <div style="display:flex;align-items:center;gap:8px;min-width:0;">
                   <span style="width:10px;height:10px;border-radius:2px;background:${palette.done};flex:0 0 auto;"></span>
@@ -435,7 +396,7 @@
   }
 
   // ---------- BAR CHART ----------
-  // Each bar from bottom to top: Done (green) | Assigned-only (purple, assigned > done) | Remaining (red at top)
+  // Each bar from bottom to top: Done (green) at bottom | Remaining (red) at top
   function drawCourseDashboardChart(courses) {
     const canvas = document.getElementById("courseDashboardChart");
     if (!canvas) return;
@@ -509,37 +470,22 @@
     for (let i = 0; i < barCount; i++) {
       const c = items[i];
       const { total, done } = computeCourseDoneHours(c);
-      const assigned  = Math.min(Number(c.assigned_hours || 0), total);
       const remaining = Math.max(0, total - done);
 
       const x = baseX + i * (barW + barGap);
       const y0 = padding.top + chartH; // bottom of chart area
 
-      const totalH    = (total    / maxTotal) * chartH;
-      const doneH     = (done     / maxTotal) * chartH;
-      const assignedH = (assigned / maxTotal) * chartH;
-      const remainH   = (remaining / maxTotal) * chartH;
+      const totalH = (total / maxTotal) * chartH;
+      const doneH  = (done  / maxTotal) * chartH;
 
-      // Draw from bottom up: done (green) at base, assigned (purple) above done
-      // if assigned > done, then remaining (red) at the very top.
-      // The bar starts at y0 - totalH and goes down to y0.
-      // done:     y0 - doneH  to  y0
-      // assigned: y0 - assignedH  to  y0  (overlaps done, purple only visible where assigned > done)
-      // remaining fills from y0 - totalH  to  y0 - doneH (the top unfilled portion)
-
-      // 1. Remaining (red) — top section
-      if (remainH > 0) {
+      // Draw from bottom up: remaining (red) at top, done (green) at bottom
+      // Remaining fills from y0 - totalH to y0 - doneH
+      if (remaining > 0) {
         ctx.fillStyle = C.remain;
-        ctx.fillRect(x, y0 - totalH, barW, remainH);
+        ctx.fillRect(x, y0 - totalH, barW, totalH - doneH);
       }
 
-      // 2. Assigned (purple) — from bottom, behind green
-      if (assignedH > 0) {
-        ctx.fillStyle = C.assigned;
-        ctx.fillRect(x, y0 - assignedH, barW, assignedH);
-      }
-
-      // 3. Done (green) — from bottom, overlaps purple
+      // Done (green) at the bottom
       if (doneH > 0) {
         ctx.fillStyle = C.done;
         ctx.fillRect(x, y0 - doneH, barW, doneH);
