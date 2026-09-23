@@ -220,6 +220,22 @@
     if (!list) return;
 
     const filtered = applyGlobalFiltersToCourses(courses || []);
+    
+    // Calculate summary stats from filtered courses
+    const stats = {
+      total: filtered.length,
+      year1: filtered.filter(c => c.year_level === 1).length,
+      year2: filtered.filter(c => c.year_level === 2).length,
+      year3: filtered.filter(c => c.year_level === 3).length,
+      totalHours: filtered.reduce((sum, c) => sum + parseFloat(c.total_hours || 0), 0).toFixed(2)
+    };
+    
+    // Update summary stats
+    document.getElementById('statsDoctorCourses').textContent = stats.total;
+    document.getElementById('statsDoctorYear1').textContent = stats.year1;
+    document.getElementById('statsDoctorYear2').textContent = stats.year2;
+    document.getElementById('statsDoctorYear3').textContent = stats.year3;
+    document.getElementById('statsDoctorHours').textContent = stats.totalHours + 'h';
 
     if (!filtered.length) {
       const hasAny = (courses || []).length > 0;
@@ -232,31 +248,40 @@
     list.innerHTML = "";
     for (const c of filtered) {
       const item = document.createElement("div");
-      item.className = "course-item";
+      item.className = "course-card";
 
-      const top = document.createElement("div");
-      top.className = "course-top";
+      const yearBadgeColors = {
+        1: 'background: rgba(33, 150, 243, 0.15); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3);',
+        2: 'background: rgba(76, 175, 80, 0.15); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);',
+        3: 'background: rgba(255, 152, 0, 0.15); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.3);'
+      };
+      const yearStyle = yearBadgeColors[c.year_level] || '';
 
-      const left = document.createElement("div");
-      left.innerHTML = `
-        <div>
-          <div class="muted" style="font-size:0.85rem; margin-top:2px;">${escapeHtml(c.program)}</div>
-          <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</div>
-          <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
-            <span class="pill">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span>
-            <div><strong>${escapeHtml(c.course_name)}</strong></div>
+      item.innerHTML = `
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px;">
+          <div style="flex:1;">
+            <div style="font-size:1.125rem; font-weight:700; margin-bottom:8px;">${escapeHtml(c.course_name)}</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              <span style="padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:600; ${yearStyle}">
+                Year ${escapeHtml(c.year_level)}
+              </span>
+              <span class="muted" style="font-size:0.875rem;">${escapeHtml(c.program)}</span>
+              <span class="muted" style="font-size:0.875rem;">Sem ${escapeHtml(c.semester)}</span>
+            </div>
           </div>
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Remaining</div>
+            <div style="font-size:1.25rem; font-weight:700; color:var(--accent);">${formatHours(c.remaining_hours)}h</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <span style="padding:6px 12px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:8px; font-size:0.875rem; font-weight:600;">
+            ${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}
+          </span>
+          <span class="muted" style="font-size:0.875rem; padding:6px 0;">Total: ${formatHours(c.total_hours)}h</span>
         </div>
       `;
 
-      const badge = document.createElement("span");
-      badge.className = "badge badge-hours";
-      badge.textContent = `${formatHours(c.remaining_hours)}h left`;
-
-      top.appendChild(left);
-      top.appendChild(badge);
-
-      item.appendChild(top);
       list.appendChild(item);
     }
   }

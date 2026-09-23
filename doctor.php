@@ -91,10 +91,35 @@ if ($doctorId > 0) {
     </section>
 
     <section class="card mt-16">
-      <div class="card-header">
-        <h2 style="margin:0;">Doctor Courses</h2>
-        <div id="doctorCoursesStatus" class="status" role="status" aria-live="polite"></div>
+      <h2 style="font-size:1.25rem; font-weight:700; margin:0 0 20px 0; padding-bottom:12px; border-bottom:1px solid var(--card-border);">Doctor Courses</h2>
+      
+      <!-- Summary Stats -->
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px; margin-bottom:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorCourses">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 1</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear1">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 2</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear2">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 3</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear3">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Hours</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorHours">—</div>
+          </div>
+        </div>
       </div>
+      
+      <div id="doctorCoursesStatus" class="status" role="status" aria-live="polite"></div>
       <div id="doctorCoursesList" class="courses-list">
         <div class="muted">Loading courses…</div>
       </div>
