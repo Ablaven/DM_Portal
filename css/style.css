@@ -930,30 +930,106 @@ html[data-theme="light"] input[type="week"] {
   color-scheme: light;
 }
 
+/* Enhanced Date & DateTime Input Styling */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"] {
+  position: relative;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, var(--input-bg), rgba(var(--accent-rgb), 0.03));
+  border: 1px solid var(--input-border);
+  transition: all 0.2s ease;
+}
+
+input[type="date"]:hover,
+input[type="datetime-local"]:hover,
+input[type="time"]:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  background: linear-gradient(135deg, var(--input-bg), rgba(var(--accent-rgb), 0.06));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+input[type="time"]:focus {
+  border-color: rgba(var(--accent-rgb), 0.75);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16), 0 2px 12px rgba(var(--accent-rgb), 0.2);
+  background: var(--input-bg);
+}
+
+/* Calendar icon styling for date inputs */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  filter: drop-shadow(0 0 1px rgba(var(--accent-rgb), 0.3));
+}
+
+input[type="date"]:hover::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator,
+input[type="time"]:hover::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  filter: drop-shadow(0 0 2px rgba(var(--accent-rgb), 0.6));
+}
+
 /* Fix native select rendering (avoid white-on-white on some browsers) */
 .field select,
 select.navlink,
-.weekbar select {
+.weekbar select,
+select.form-control {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  background: var(--input-bg);
+  color: var(--text);
   background-image:
-    linear-gradient(45deg, transparent 50%, rgba(var(--accent-rgb), 0.85) 50%),
-    linear-gradient(135deg, rgba(var(--accent-rgb), 0.85) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
   background-position:
     calc(100% - 18px) calc(50% - 2px),
     calc(100% - 12px) calc(50% - 2px);
-  background-size: 6px 6px, 6px 6px;
+  background-size: 
+    6px 6px, 
+    6px 6px;
   background-repeat: no-repeat;
-  padding-right: 34px;
+  padding-right: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+select.form-control:hover,
+.field select:hover,
+select.navlink:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: var(--text);
+}
+
+select.form-control:focus,
+.field select:focus,
+select.navlink:focus {
+  border-color: rgba(var(--accent-rgb), 0.75);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);
+  color: var(--text);
 }
 
 select option {
   background: var(--input-bg);
   color: var(--text);
+  padding: 10px;
 }
 
-select:disabled { opacity: 0.6; }
+select:disabled { 
+  opacity: 0.6;
+  cursor: not-allowed;
+  color: var(--text);
+}
 
 /* Reports landing page */
 .reports-page .page-header {
