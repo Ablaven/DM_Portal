@@ -128,6 +128,22 @@ final class SimpleXlsxWriter
     }
 
     /**
+     * Cancelled cell style (light red fill).
+     */
+    public function styleCancelled(): int
+    {
+        return $this->styleFill('FFE6E6'); // Light red
+    }
+
+    /**
+     * Unavailable cell style (light gray fill).
+     */
+    public function styleUnavailable(): int
+    {
+        return $this->styleFill('E0E0E0'); // Light gray
+    }
+
+    /**
      * Register a background fill color (RRGGBB) and return a style ID.
      */
     public function styleFill(string $hexRgb): int

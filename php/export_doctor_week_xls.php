@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+// Enable error display for debugging
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_term_helpers.php';
@@ -306,5 +311,9 @@ try {
 } catch (Throwable $e) {
     http_response_code(500);
     header('Content-Type: text/plain');
-    echo 'Export failed';
+    echo "EXPORT ERROR:\n";
+    echo "Message: " . $e->getMessage() . "\n";
+    echo "File: " . $e->getFile() . "\n";
+    echo "Line: " . $e->getLine() . "\n";
+    echo "\nStack Trace:\n" . $e->getTraceAsString();
 }
