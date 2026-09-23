@@ -41,6 +41,30 @@ if ($role === 'teacher') {
       </div>
     </div>
 
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Available Slots</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsAvailableSlots">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Not Set</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsUnavailableSlots">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Blocked Periods</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsBlockedSlots">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Availability</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="statsAvailabilityPercent">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Main Availability Card -->
     <section class="card">
       <!-- Enhanced Filter Bar -->
@@ -131,9 +155,7 @@ if ($role === 'teacher') {
     <!-- Unavailability List Section (Admin/Management Only) -->
     <?php if ($role === 'admin' || $role === 'management'): ?>
     <section class="card" id="unavailabilitySection" style="display: none;">
-      <div class="card-header">
-        <h2 class="section-heading">Unavailability Periods</h2>
-      </div>
+      <h2 style="font-size:1.25rem; font-weight:700; margin:0 0 20px 0; padding-bottom:12px; border-bottom:1px solid var(--card-border);">Unavailability Periods</h2>
 
       <div id="unavailabilityList" class="unavailability-list">
         <div class="muted">Select a doctor and week to view unavailability periods.</div>

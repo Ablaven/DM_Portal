@@ -65,3 +65,30 @@ body {
     height: 20px;
   }
 }
+
+/* User card styling */
+.user-card {
+  padding: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.user-card:hover {
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .user-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--line-strong);
+}
+
+html[data-theme="light"] .user-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}

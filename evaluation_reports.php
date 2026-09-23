@@ -25,69 +25,119 @@ $isTeacher = $role === 'teacher';
 <body>
   <?php render_portal_navbar('evaluation_reports.php'); ?>
 
-  <main class="container container-top report-detail-page">
+  <main class="container container-top">
     <header class="page-header">
-      <h1>Evaluation Reports</h1>
-      <p class="subtitle">Read-only evaluation summaries with course averages and performance signals.</p>
-    </header>
-
-    <section class="card report-detail-card">
-      <div class="card-header">
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div>
-          <h2>Overview</h2>
-          <p class="muted"><?php echo $isTeacher ? 'Scoped to my courses.' : 'All courses and years.'; ?></p>
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <a href="hours_report.php" class="btn btn-small btn-secondary" style="text-decoration:none; padding:6px 12px;">← Reports</a>
+          </div>
+          <h1>Evaluation Reports</h1>
+          <p class="subtitle">Student performance, grades, and assessment analytics.</p>
         </div>
       </div>
+    </header>
 
-      <div class="report-filters report-filters-grid filter-bar" style="margin-top:12px;">
-        <div class="field">
-          <label for="evaluationReportsYear">Year</label>
-          <select id="evaluationReportsYear">
+    <section class="card">
+      <div style="margin-bottom:20px;">
+        <h2 style="margin:0 0 6px;">Filters</h2>
+        <p class="muted" style="margin:0; font-size:0.9rem;"><?php echo $isTeacher ? 'Showing my courses only.' : 'Filter by academic context.'; ?></p>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+        <div class="field" style="margin:0;">
+          <label for="evaluationReportsYear" style="font-size:0.85rem; margin-bottom:4px;">Year</label>
+          <select id="evaluationReportsYear" class="navlink" style="padding:9px 11px; min-width:120px;">
             <option value="">All</option>
             <option value="1">Year 1</option>
             <option value="2">Year 2</option>
             <option value="3">Year 3</option>
           </select>
         </div>
-        <div class="field">
-          <label for="evaluationReportsSemester">Semester</label>
-          <select id="evaluationReportsSemester">
+
+        <div class="field" style="margin:0;">
+          <label for="evaluationReportsSemester" style="font-size:0.85rem; margin-bottom:4px;">Semester</label>
+          <select id="evaluationReportsSemester" class="navlink" style="padding:9px 11px; min-width:120px;">
             <option value="">All</option>
             <option value="1">Sem 1</option>
             <option value="2">Sem 2</option>
           </select>
         </div>
-        <div class="field">
-          <label for="evaluationReportsCourse">Course</label>
-          <select id="evaluationReportsCourse">
+
+        <?php if (!$isTeacher) : ?>
+        <div class="field" style="margin:0;">
+          <label for="evaluationReportsTeacher" style="font-size:0.85rem; margin-bottom:4px;">Professor</label>
+          <select id="evaluationReportsTeacher" class="navlink" style="padding:9px 11px; min-width:180px;">
+            <option value="">All Professors</option>
+          </select>
+        </div>
+        <?php endif; ?>
+
+        <div class="field" style="margin:0;">
+          <label for="evaluationReportsCourse" style="font-size:0.85rem; margin-bottom:4px;">Course</label>
+          <select id="evaluationReportsCourse" class="navlink" style="padding:9px 11px; min-width:200px;">
             <option value="">All courses</option>
           </select>
         </div>
-        <div class="page-actions">
-          <button id="evaluationReportsRefresh" class="btn btn-secondary" type="button">Refresh</button>
-          <button id="exportEvaluationReportSummary" class="btn btn-secondary" type="button">Export Final Grades</button>
-          <?php if (!$isTeacher) { ?>
-            <button id="exportEvaluationReportSummaryAll" class="btn btn-secondary" type="button">Export Final Grades (All Subjects)</button>
-          <?php } ?>
-          <button id="exportEvaluationReportGrades" class="btn btn-secondary" type="button">Export Detailed Grades</button>
+
+        <button id="evaluationReportsRefresh" class="btn btn-secondary" type="button">Refresh</button>
+        
+        <!-- Export dropdown -->
+        <div style="position:relative;">
+          <button id="evaluationReportsExportBtn" class="btn" type="button" style="display:flex; align-items:center; gap:6px;">
+            Export <span style="font-size:0.7rem;">▼</span>
+          </button>
+          <div id="evaluationReportsExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:260px; background:var(--dropdown-bg); border:1px solid var(--card-border); border-radius:12px; padding:8px; box-shadow:var(--shadow); z-index:1000; backdrop-filter:blur(48px);">
+            <button id="exportEvaluationReportSummary" type="button" style="width:100%; text-align:left; padding:10px 12px; border:none; background:transparent; color:var(--text); cursor:pointer; border-radius:8px; font-size:0.9rem; font-weight:600; transition: background 150ms;">
+              📊 Final Grades (Filtered)
+            </button>
+            <?php if (!$isTeacher) : ?>
+            <button id="exportEvaluationReportSummaryAll" type="button" style="width:100%; text-align:left; padding:10px 12px; border:none; background:transparent; color:var(--text); cursor:pointer; border-radius:8px; font-size:0.9rem; font-weight:600; transition: background 150ms;">
+              📋 Final Grades (All Subjects)
+            </button>
+            <?php endif; ?>
+            <button id="exportEvaluationReportGrades" type="button" style="width:100%; text-align:left; padding:10px 12px; border:none; background:transparent; color:var(--text); cursor:pointer; border-radius:8px; font-size:0.9rem; font-weight:600; transition: background 150ms;">
+              📈 Detailed Grades
+            </button>
+          </div>
         </div>
       </div>
 
-      <div id="evaluationReportsStatus" class="status" role="status" aria-live="polite"></div>
+      <div id="evaluationReportsStatus" class="status" role="status" style="margin-bottom:12px;"></div>
 
-      <div id="evaluationReportsMetrics" class="report-metrics"></div>
+      <!-- Summary stats -->
+      <div id="evaluationReportsSummary" style="display:none; margin-bottom:20px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="evaluationReportsTotalCourses">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Graded Students</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="evaluationReportsGradedStudents">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Avg Final Grade</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="evaluationReportsAvgFinal">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Avg Attendance</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="evaluationReportsAvgAttendance">—</div>
+          </div>
+        </div>
+      </div>
 
-      <div class="report-table-wrap">
-        <table class="report-table" aria-label="Evaluation report summary">
+      <div class="table-wrap" style="max-height:600px; overflow:auto;">
+        <table class="data-table" id="evaluationReportsTable">
           <thead>
             <tr>
               <th>Course</th>
-              <th>Doctors</th>
-              <th class="col-number">Year</th>
-              <th class="col-number">Sem</th>
-              <th class="col-number">Avg Final</th>
-              <th class="col-number">Avg Attendance</th>
-              <th class="col-number">Graded</th>
+              <th>Professor</th>
+              <th>Year</th>
+              <th>Sem</th>
+              <th>Avg Final</th>
+              <th>Avg Attendance</th>
+              <th>Graded</th>
             </tr>
           </thead>
           <tbody id="evaluationReportsBody"></tbody>

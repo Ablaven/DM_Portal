@@ -22,16 +22,49 @@ auth_require_roles(['admin','management']);
 <body>
   <?php render_portal_navbar('admin_students.php'); ?>
 
-  <main class="container">
+  <main class="container container-top">
     <header class="page-header">
-      <h1>Student Management</h1>
-      <p class="subtitle">Add, edit, and remove students (name, email, and Student ID).</p>
+      <div>
+        <h1>Student Management</h1>
+        <p class="subtitle">Add, edit, and manage students with their academic information.</p>
+      </div>
     </header>
 
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Students</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="studentsTotalCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 1</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="studentsYear1Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 2</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="studentsYear2Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 3</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#f59e0b;" id="studentsYear3Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Digital Marketing</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="studentsDMCount">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="card">
-      <div class="card-header">
-        <h2 style="margin:0;">Add Student</h2>
-        <button id="refreshStudentsAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0 0 6px;">Add Student</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Enter student details to add them to the system.</p>
+        </div>
+        <button id="refreshStudentsAdmin" class="btn btn-small btn-secondary" type="button">Refresh</button>
       </div>
 
       <form id="studentForm" class="form" autocomplete="off">
@@ -82,26 +115,26 @@ auth_require_roles(['admin','management']);
       </form>
     </section>
 
-    <section class="card" style="margin-top:14px;">
-      <div class="card-header">
+    <section class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
         <div>
-          <h2 style="margin:0;">All Students</h2>
-          <div class="muted" style="margin-top:4px;">Use the Academic Year filter to narrow the list.</div>
+          <h2 style="margin:0 0 6px;">All Students</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Filter by year or search by name, email, or ID.</p>
         </div>
 
-        <div class="page-actions">
-          <div class="field" style="margin:0; min-width:160px;">
-            <label for="studentsYearFilter" class="muted" style="font-size:0.85rem;">Academic Year</label>
-            <select id="studentsYearFilter" class="navlink" style="padding:7px 10px;">
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="margin:0; min-width:140px;">
+            <label for="studentsYearFilter" style="font-size:0.85rem; margin-bottom:4px;">Year</label>
+            <select id="studentsYearFilter" class="navlink" style="padding:9px 11px;">
               <option value="">All</option>
               <option value="1">Year 1</option>
               <option value="2">Year 2</option>
               <option value="3">Year 3</option>
             </select>
           </div>
-          <div class="field" style="margin:0; min-width:260px;">
-            <label for="studentSearch" class="muted" style="font-size:0.85rem;">Search</label>
-            <input id="studentSearch" type="text" placeholder="Search by name/email/ID…" />
+          <div class="field" style="margin:0; min-width:220px;">
+            <label for="studentSearch" style="font-size:0.85rem; margin-bottom:4px;">Search</label>
+            <input id="studentSearch" type="text" placeholder="Search students…" />
           </div>
         </div>
       </div>

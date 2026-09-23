@@ -19,9 +19,14 @@ function bad_request(string $m): void {
 
 try {
     $yearLevel = isset($_GET['year_level']) ? (int)$_GET['year_level'] : 0;
+    $semester = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
 
     if ($yearLevel !== 0 && ($yearLevel < 1 || $yearLevel > 3)) {
         bad_request('year_level must be 1-3 or empty.');
+    }
+
+    if ($semester !== 0 && ($semester < 1 || $semester > 2)) {
+        bad_request('semester must be 1-2 or empty.');
     }
 
     $pdo = get_pdo();
@@ -41,6 +46,7 @@ try {
     $where = [];
     $params = [];
     if ($yearLevel > 0) { $where[] = 'c.year_level = :year_level'; $params[':year_level'] = $yearLevel; }
+    if ($semester > 0) { $where[] = 'c.semester = :semester'; $params[':semester'] = $semester; }
     if ($termId > 0) { $where[] = 'ar.term_id = :term_id'; $params[':term_id'] = $termId; }
     if ($role === 'teacher' && $doctorId > 0) {
         $where[] = 's.doctor_id = :doctor_id';
@@ -50,8 +56,8 @@ try {
     $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
     $summaryStmt = $pdo->prepare(
-        "SELECT c.course_id, c.course_name, c.year_level,
-                d.full_name AS doctor_name,
+        "SELECT c.course_id, c.course_name, c.subject_code, c.year_level, c.semester,
+                d.doctor_id, d.full_name AS doctor_name,
                 COUNT(ar.attendance_id) AS total_records,
                 SUM(CASE WHEN ar.status = 'PRESENT' THEN 1 ELSE 0 END) AS present_records
          FROM attendance_records ar
@@ -59,8 +65,8 @@ try {
          JOIN courses c ON c.course_id = s.course_id
          JOIN doctors d ON d.doctor_id = s.doctor_id
          $whereSql
-         GROUP BY c.course_id, c.course_name, c.year_level, d.full_name
-         ORDER BY c.year_level ASC, c.course_name ASC"
+         GROUP BY c.course_id, c.course_name, c.subject_code, c.year_level, c.semester, d.doctor_id, d.full_name
+         ORDER BY c.year_level ASC, c.semester ASC, c.course_name ASC"
     );
     $summaryStmt->execute($params);
     $rows = $summaryStmt->fetchAll();
@@ -86,7 +92,10 @@ try {
         $courses[] = [
             'course_id' => (int)$row['course_id'],
             'course_name' => (string)$row['course_name'],
+            'subject_code' => (string)($row['subject_code'] ?? ''),
             'year_level' => (int)$row['year_level'],
+            'semester' => (int)$row['semester'],
+            'doctor_id' => (int)$row['doctor_id'],
             'doctor_name' => (string)$row['doctor_name'],
             'total_records' => $total,
             'present_records' => $present,

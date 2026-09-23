@@ -22,18 +22,47 @@ auth_require_roles(['admin','management']);
 <body>
   <?php render_portal_navbar('admin_courses.php'); ?>
 
-  <main class="container">
+  <main class="container container-top">
     <header class="page-header">
       <h1>Course Management</h1>
-      <p class="subtitle">Assign doctors, edit details, and manage existing courses.</p>
+      <p class="subtitle">Assign professors, manage course details, and track academic offerings.</p>
     </header>
 
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Add New Course</h2>
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="coursesTotalCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 1</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="coursesYear1Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 2</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="coursesYear2Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 3</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#f59e0b;" id="coursesYear3Count">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Hours</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="coursesTotalHours">—</div>
+          </div>
         </div>
-        <button id="refreshCoursesAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0 0 6px;">Add New Course</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Create a new course with professor assignments.</p>
+        </div>
+        <button id="refreshCoursesAdmin" class="btn btn-small btn-secondary" type="button">Refresh</button>
       </div>
 
       <form id="courseForm" class="form" autocomplete="off">
@@ -132,37 +161,36 @@ auth_require_roles(['admin','management']);
       </form>
     </section>
 
-    <section class="card mt-16">
-      <div class="card-header">
+    <section class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
         <div>
-          <h2>All Courses</h2>
-          <p class="card-subtitle">Edit, reassign doctors, or delete courses (cannot delete if used in schedules).</p>
+          <h2 style="margin:0 0 6px;">All Courses</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Filter by year/semester or search by name and code.</p>
         </div>
-        <div class="page-actions">
-          <div class="filter-bar">
-            <div class="field">
-              <label for="coursesYearFilter">Academic Year</label>
-              <select id="coursesYearFilter" class="navlink">
-                <option value="">All</option>
-                <option value="1">Year 1</option>
-                <option value="2">Year 2</option>
-                <option value="3">Year 3</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="coursesSemesterFilter">Semester</label>
-              <select id="coursesSemesterFilter" class="navlink">
-                <option value="">All</option>
-                <option value="1">Sem 1</option>
-                <option value="2">Sem 2</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="courseSearch">Search</label>
-              <input id="courseSearch" type="text" placeholder="Search by name/program…" />
-            </div>
-            <button id="exportProgramCatalogXls" class="btn btn-secondary" type="button">Export Program Catalog</button>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+          <div class="field" style="margin:0; min-width:140px;">
+            <label for="coursesYearFilter" style="font-size:0.85rem; margin-bottom:4px;">Year</label>
+            <select id="coursesYearFilter" class="navlink" style="padding:9px 11px;">
+              <option value="">All</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
           </div>
+          <div class="field" style="margin:0; min-width:140px;">
+            <label for="coursesSemesterFilter" style="font-size:0.85rem; margin-bottom:4px;">Semester</label>
+            <select id="coursesSemesterFilter" class="navlink" style="padding:9px 11px;">
+              <option value="">All</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0; min-width:200px;">
+            <label for="courseSearch" style="font-size:0.85rem; margin-bottom:4px;">Search</label>
+            <input id="courseSearch" type="text" placeholder="Search courses…" />
+          </div>
+          <button id="exportProgramCatalogXls" class="btn btn-secondary" type="button">Export Catalog</button>
         </div>
       </div>
 

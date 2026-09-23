@@ -160,6 +160,49 @@
         return;
       }
       root.innerHTML = doctors.map(renderDoctorCard).join("");
+      calculateSummaryMetrics(doctors);
+    }
+
+    function calculateSummaryMetrics(doctors) {
+      let totalDoctors = doctors.length;
+      let totalCourses = 0;
+      let totalAllocated = 0;
+      let totalAssigned = 0;
+      let totalDone = 0;
+
+      doctors.forEach(doctor => {
+        const courses = doctor.courses || [];
+        totalCourses += courses.length;
+        totalAllocated += Number(doctor.totals?.allocated_hours || 0);
+        totalAssigned += Number(doctor.totals?.assigned_hours || 0);
+        totalDone += Number(doctor.totals?.done_hours || 0);
+      });
+
+      const completionRate = totalAllocated > 0 ? ((totalDone / totalAllocated) * 100).toFixed(1) : 0;
+
+      document.getElementById("hoursReportTotalDoctors").textContent = totalDoctors;
+      document.getElementById("hoursReportTotalCourses").textContent = totalCourses;
+      document.getElementById("hoursReportTotalAllocated").textContent = formatHours(totalAllocated) + "h";
+      document.getElementById("hoursReportTotalAssigned").textContent = formatHours(totalAssigned) + "h";
+      document.getElementById("hoursReportTotalDone").textContent = formatHours(totalDone) + "h";
+      document.getElementById("hoursReportCompletionRate").textContent = completionRate + "%";
+    }
+
+    function buildLocalFilterQueryString() {
+      const f = getEffectivePageFilters();
+      const qs = new URLSearchParams();
+      if (f.year_level) qs.set("year_level", String(f.year_level));
+      if (f.semester) qs.set("semester", String(f.semester));
+      
+      // Include selected doctor filter for admins
+      if (!isTeacher && doctorSelect) {
+        const selectedDoctorId = doctorSelect.value;
+        if (selectedDoctorId) {
+          qs.set("doctor_id", selectedDoctorId);
+        }
+      }
+      
+      return qs;
     }
 
     async function loadDoctorsDropdown() {
@@ -169,7 +212,7 @@
         if (!payload?.success) return;
         const doctors = Array.isArray(payload?.data) ? payload.data : (payload?.data?.doctors || []);
         const current = doctorSelect.value;
-        doctorSelect.innerHTML = '<option value="">Select professor…</option>';
+        doctorSelect.innerHTML = '<option value="">All Professors</option>';
         doctors.forEach((d) => {
           const opt = document.createElement("option");
           opt.value = String(d.doctor_id);
@@ -256,7 +299,7 @@
     }
 
     async function load() {
-      const qs = buildFilterQueryString();
+      const qs = buildLocalFilterQueryString();
       setStatus("Loading…");
       try {
         const url = "php/get_hours_report.php" + (qs.toString() ? `?${qs.toString()}` : "");
@@ -277,8 +320,39 @@
     window.addEventListener("dmportal:pageFiltersChanged", load);
     refreshBtn?.addEventListener("click", load);
 
+    // Export dropdown toggle
+    const exportBtn = document.getElementById("hoursReportExportBtn");
+    const exportMenu = document.getElementById("hoursReportExportMenu");
+
+    if (exportBtn && exportMenu) {
+      exportBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isVisible = exportMenu.style.display === "block";
+        exportMenu.style.display = isVisible ? "none" : "block";
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", (e) => {
+        if (exportMenu.style.display === "block" && !exportMenu.contains(e.target) && e.target !== exportBtn) {
+          exportMenu.style.display = "none";
+        }
+      });
+
+      // Hover effects for dropdown items
+      const menuItems = exportMenu.querySelectorAll("button");
+      menuItems.forEach(item => {
+        item.addEventListener("mouseenter", function() {
+          this.style.background = "var(--surface-1)";
+        });
+        item.addEventListener("mouseleave", function() {
+          this.style.background = "transparent";
+        });
+      });
+    }
+
     document.getElementById("exportHoursReportSummaryXls")?.addEventListener("click", () => {
-      const qs = buildFilterQueryString();
+      if (exportMenu) exportMenu.style.display = "none";
+      const qs = buildLocalFilterQueryString();
       window.location.href = `php/export_hours_report_summary_xls.php?${qs.toString()}`;
     });
 
@@ -286,15 +360,18 @@
       const doctorId = isTeacher ? teacherDoctorId : Number(doctorSelect?.value || 0);
       if (!doctorId) {
         setStatus("Select a professor first.", "error");
+        if (exportMenu) exportMenu.style.display = "none";
         return;
       }
-      const qs = buildFilterQueryString();
+      if (exportMenu) exportMenu.style.display = "none";
+      const qs = buildLocalFilterQueryString();
       qs.set("doctor_id", String(doctorId));
       window.location.href = `php/export_hours_report_detail_xls.php?${qs.toString()}`;
     });
 
     // Custom export modal wiring
     customBtn?.addEventListener("click", async () => {
+      if (exportMenu) exportMenu.style.display = "none";
       setStatusById("hoursReportCustomExportStatus", "");
       if (!isTeacher) {
         customSelectedDoctorIds = [];
@@ -343,6 +420,15 @@
     });
 
     await loadDoctorsDropdown();
+    
+    // Add doctor filter change handler
+    if (doctorSelect && !isTeacher) {
+      doctorSelect.addEventListener("change", async () => {
+        const selectedDoctorId = doctorSelect.value;
+        await load();
+      });
+    }
+    
     await load();
   }
 

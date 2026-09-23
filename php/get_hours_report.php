@@ -27,6 +27,8 @@ try {
 
     $yearLevel = isset($_GET['year_level']) ? (int)$_GET['year_level'] : 0;
     $semester = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
+    $singleDoctorId = isset($_GET['doctor_id']) ? (int)$_GET['doctor_id'] : 0;
+    
     if ($yearLevel !== 0 && ($yearLevel < 1 || $yearLevel > 3)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'year_level must be 1-3 or empty.']);
@@ -41,7 +43,7 @@ try {
     require_once __DIR__ . '/_term_helpers.php';
     $activeTermId = dmportal_get_active_term_id($pdo);
 
-    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, 0, $activeTermId);
+    $doctors = dmportal_fetch_hours_report($pdo, $yearLevel, $semester, $doctorScopeId, $singleDoctorId, $activeTermId);
 
     echo json_encode(['success' => true, 'data' => ['doctors' => $doctors]]);
 } catch (Throwable $e) {

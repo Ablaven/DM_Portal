@@ -13,26 +13,18 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  background: var(--surface-1);
+  padding: 20px;
+  margin-bottom: 0;
+  background: var(--surface-2);
   border: 1px solid var(--card-border);
-  border-radius: 18px;
+  border-radius: 12px;
   backdrop-filter: blur(20px);
-  position: relative;
+  transition: all 0.2s ease;
 }
 
-.availability-controls::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 18px;
-  background: linear-gradient(135deg,
-    rgba(var(--accent-rgb), 0.06) 0%,
-    rgba(var(--accent-rgb), 0.02) 50%,
-    transparent 100%);
-  pointer-events: none;
-  z-index: 0;
+.availability-controls:hover {
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .availability-filters {
@@ -40,7 +32,6 @@
   gap: 1rem;
   flex-wrap: wrap;
   flex: 1;
-  z-index: 1;
 }
 
 .availability-filters .field {
@@ -53,7 +44,6 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  z-index: 1;
 }
 
 .availability-actions .btn {
@@ -77,9 +67,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 2rem;
-  margin-bottom: 1.5rem;
-  background: var(--surface-1);
+  padding: 12px 20px;
+  margin-bottom: 0;
+  background: var(--surface-2);
   border: 1px solid var(--card-border);
   border-radius: 12px;
   min-height: 48px;
@@ -110,7 +100,8 @@
 
 .availability-grid {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .availability-grid thead th {
@@ -121,20 +112,29 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 1rem;
+  border: 1px solid var(--card-border);
   border-bottom: 2px solid var(--card-border);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
+.availability-grid thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.availability-grid thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
 .availability-grid thead th.corner {
   width: 180px;
   text-align: left;
-  border-right: 1px solid var(--card-border);
+  background: var(--surface-1);
 }
 
 .availability-grid tbody td {
-  padding: 0.5rem;
+  padding: 8px;
   border: 1px solid var(--card-border);
   background: var(--bg);
   vertical-align: middle;
@@ -144,8 +144,15 @@
 .availability-grid tbody td:first-child {
   font-weight: 600;
   background: var(--surface-1);
-  border-right: 2px solid var(--card-border);
   padding: 1rem;
+}
+
+.availability-grid tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+.availability-grid tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
 }
 
 .availability-grid tbody tr:hover td {
@@ -167,23 +174,12 @@
   justify-content: center;
   min-height: 80px;
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   border: 2px solid transparent;
   background: var(--input-bg);
   position: relative;
-  overflow: hidden;
-}
-
-.availability-slot::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
 }
 
 /* Available State */
@@ -194,46 +190,39 @@
   border-color: rgba(var(--accent-rgb), 0.3);
 }
 
-.availability-slot.available::before {
-  background: linear-gradient(135deg,
-    rgba(var(--accent-rgb), 0.1),
-    transparent);
-  opacity: 1;
-}
-
 .availability-slot.available:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(var(--accent-rgb), 0.6);
-  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.2);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
 }
 
 /* Unavailable State */
 .availability-slot.unavailable {
   background: var(--surface-1);
   border-color: var(--card-border);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .availability-slot.unavailable:hover {
   transform: translateY(-2px);
   border-color: var(--accent);
   opacity: 1;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Blocked State (unavailability period) */
 .availability-slot.blocked {
   background: linear-gradient(135deg,
-    rgba(244, 67, 54, 0.15),
-    rgba(211, 47, 47, 0.08));
-  border-color: rgba(244, 67, 54, 0.4);
+    rgba(244, 67, 54, 0.12),
+    rgba(211, 47, 47, 0.06));
+  border-color: rgba(244, 67, 54, 0.3);
   cursor: not-allowed;
   opacity: 1;
 }
 
 .availability-slot.blocked:hover {
   transform: none;
-  border-color: rgba(244, 67, 54, 0.6);
+  border-color: rgba(244, 67, 54, 0.5);
 }
 
 .availability-slot.blocked .slot-status-label {
@@ -254,17 +243,12 @@
 }
 
 .availability-slot.multi-doctor:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(76, 175, 80, 0.6);
-  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.2);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
 }
 
 /* Slot Content */
-.slot-status-icon {
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
-}
-
 .slot-status-label {
   font-size: 0.875rem;
   font-weight: 600;
@@ -287,9 +271,9 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding: 1.5rem 2rem;
-  margin-top: 1.5rem;
-  background: var(--surface-1);
+  padding: 16px 20px;
+  margin-top: 0;
+  background: var(--surface-2);
   border: 1px solid var(--card-border);
   border-radius: 12px;
   flex-wrap: wrap;
@@ -350,38 +334,28 @@
   margin-top: 2rem;
 }
 
-#unavailabilitySection .card-header {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid var(--card-border);
-  background: var(--surface-1);
-}
-
-#unavailabilitySection .section-heading {
-  margin: 0;
-  font-size: 1.375rem;
-}
-
 .unavailability-list {
-  padding: 1.5rem 2rem;
+  padding: 0;
 }
 
 .unavailability-item {
+  padding: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: var(--surface-1);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 16px;
 }
 
 .unavailability-item:hover {
-  border-color: var(--accent);
-  transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .unavailability-info {
@@ -391,7 +365,7 @@
 .unavailability-dates {
   font-weight: 700;
   font-size: 0.9375rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 6px;
   color: var(--text);
 }
 

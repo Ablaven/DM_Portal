@@ -734,45 +734,66 @@ function renderAdminCoursesList(filter = "") {
   list.innerHTML = "";
   for (const c of courses) {
     const card = document.createElement("div");
-    card.className = "course-item";
+    card.className = "course-card";
+
+    const courseLabel = makeCourseLabel(c.course_type, c.subject_code);
+    const doctorNames = c.doctor_names || c.doctor_name || "Unassigned";
+    
+    // Year badge colors
+    const yearColors = {
+      1: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);',
+      2: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
+      3: 'background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);'
+    };
+    const yearStyle = yearColors[Number(c.year_level)] || yearColors[1];
 
     card.innerHTML = `
-      <div class=\"course-top\">
-        <div style=\"display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;\">
-          <span class=\"pill\">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span>
-          <div>
-            <div class=\"muted\" style=\"font-size:0.85rem; margin-top:2px;\">${escapeHtml(c.program)}</div>
-            <div class=\"muted\" style=\"font-size:0.85rem; margin-top:2px;\">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}${c.default_room_code ? " • Room " + escapeHtml(c.default_room_code) : ""}</div>
-            <div style=\"margin-top:4px;\"><span class=\"pill\">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span> <strong>${escapeHtml(c.course_name)}</strong></div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 250px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${escapeHtml(c.course_name)}</h3>
+            <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; ${yearStyle}">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</span>
+          </div>
+          <div style="margin-bottom: 6px;">
+            <span class="pill">${escapeHtml(courseLabel)}</span>
+            <span class="muted" style="margin-left: 8px;">${escapeHtml(c.program)}</span>
+            ${c.default_room_code ? `<span class="muted" style="margin-left: 8px;">Room ${escapeHtml(c.default_room_code)}</span>` : ''}
+          </div>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted);">
+            <span>ID: <strong style="color: var(--text);">${escapeHtml(c.course_id)}</strong></span>
+            <span>Professor: <strong style="color: var(--text);">${escapeHtml(doctorNames)}</strong></span>
+            <span>Hours: <strong style="color: var(--accent);">${formatHours(c.remaining_hours)}h / ${formatHours(c.total_hours)}h</strong></span>
           </div>
         </div>
-        <span class=\"badge badge-hours\">${formatHours(c.remaining_hours)}h</span>
-      </div>
-
-      <div class=\"grid-2\" style=\"gap:10px;\">
-        <div class=\"field\" style=\"margin:0;\">
-          <label class=\"muted\" style=\"font-size:0.85rem;\">Doctor</label>
-          <select data-action=\"doctor\" data-course-id=\"${escapeHtml(c.course_id)}\">${doctorOptionsHtml(c.doctor_id)}</select>
-        </div>
-
-        <div class=\"field\" style=\"margin:0;\">
-          <label class=\"muted\" style=\"font-size:0.85rem;\">Total Hours</label>
-          <input data-action=\"hours\" data-course-id=\"${escapeHtml(c.course_id)}\" type=\"number\" step=\"0.5\" min=\"0\" value=\"${escapeHtml(c.total_hours ?? "")}\" />
-          <small class=\"hint\">Remaining hours are calculated automatically.</small>
-        </div>
-      </div>
-
-      <div class=\"actions\" style=\"justify-content: space-between;\">
-        <div class=\"muted\" style=\"font-size:0.85rem;\">ID: ${escapeHtml(c.course_id)} • ${escapeHtml(c.doctor_names || c.doctor_name || "Unassigned")}</div>
-        <div style=\"display:flex; gap:10px;\">
-          <button class=\"btn btn-secondary btn-small\" data-action=\"edit\" data-course-id=\"${escapeHtml(c.course_id)}\" type=\"button\">Edit</button>
-          <button class=\"btn btn-secondary btn-small\" data-action=\"delete\" data-course-id=\"${escapeHtml(c.course_id)}\" type=\"button\" style=\"border-color: rgba(255,106,122,.35);\">Delete</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-small btn-secondary" data-action="edit" data-course-id="${escapeHtml(c.course_id)}" type="button">Edit</button>
+          <button class="btn btn-small btn-secondary" data-action="delete" data-course-id="${escapeHtml(c.course_id)}" type="button" style="border-color: rgba(239, 68, 68, 0.4); color: #ef4444;">Delete</button>
         </div>
       </div>
     `;
 
     list.appendChild(card);
   }
+  
+  // Calculate stats from filtered courses, not all courses
+  calculateSummaryStats(courses);
+}
+
+function calculateSummaryStats(courses) {
+  // Use filtered courses if provided, otherwise use all courses
+  const coursesToCount = courses || state.courses || [];
+  
+  const total = coursesToCount.length;
+  const year1 = coursesToCount.filter(c => Number(c.year_level) === 1).length;
+  const year2 = coursesToCount.filter(c => Number(c.year_level) === 2).length;
+  const year3 = coursesToCount.filter(c => Number(c.year_level) === 3).length;
+  const totalHours = coursesToCount.reduce((sum, c) => sum + (Number(c.total_hours) || 0), 0);
+
+  document.getElementById('coursesTotalCount').textContent = total;
+  document.getElementById('coursesYear1Count').textContent = year1;
+  document.getElementById('coursesYear2Count').textContent = year2;
+  document.getElementById('coursesYear3Count').textContent = year3;
+  document.getElementById('coursesTotalHours').textContent = formatHours(totalHours) + 'h';
 }
 
 async function updateCourse(courseId, patch) {

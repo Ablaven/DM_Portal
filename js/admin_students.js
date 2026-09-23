@@ -50,23 +50,37 @@
     list.innerHTML = "";
     for (const s of filtered) {
       const card = document.createElement("div");
-      card.className = "course-item";
+      card.className = "student-card";
 
-      const meta = `ID ${escapeHtml(s.student_code || s.student_id)} • ${escapeHtml(s.program || "")}`;
+      const studentCodeLabel = s.student_code ? `${escapeHtml(s.student_code)}` : `${escapeHtml(s.student_id)}`;
       const yearLabel = `Year ${escapeHtml(s.year_level)}`;
+      
+      // Year badge colors
+      const yearColors = {
+        1: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);',
+        2: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
+        3: 'background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);'
+      };
+      const yearStyle = yearColors[Number(s.year_level)] || yearColors[1];
 
       card.innerHTML = `
-        <div class="course-top">
-          <div>
-            <div class="course-title">${escapeHtml(s.full_name || "")}</div>
-            <div class="muted" style="margin-top:4px;">${escapeHtml(s.email || "")}</div>
-            <div class="muted" style="margin-top:4px;">${meta}</div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${escapeHtml(s.full_name || "")}</h3>
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; ${yearStyle}">${yearLabel}</span>
+            </div>
+            <div style="margin-bottom: 6px; color: var(--muted);">${escapeHtml(s.email || "")}</div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted);">
+              <span>Student ID: <strong style="color: var(--text);">${studentCodeLabel}</strong></span>
+              <span>DB ID: <strong style="color: var(--text);">${escapeHtml(s.student_id)}</strong></span>
+              <span>Program: <strong style="color: var(--text);">${escapeHtml(s.program || "")}</strong></span>
+            </div>
           </div>
-          <span class="badge">${yearLabel}</span>
-        </div>
-        <div class="actions" style="margin-top:10px; justify-content:flex-end;">
-          <button class="btn btn-secondary btn-small" type="button" data-action="edit" data-id="${escapeHtml(s.student_id)}">Edit</button>
-          <button class="btn btn-secondary btn-small" type="button" data-action="delete" data-id="${escapeHtml(s.student_id)}" style="border-color: rgba(255,106,122,.35);">Delete</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-small btn-secondary" type="button" data-action="edit" data-id="${escapeHtml(s.student_id)}">Edit</button>
+            <button class="btn btn-small btn-secondary" type="button" data-action="delete" data-id="${escapeHtml(s.student_id)}" style="border-color: rgba(239, 68, 68, 0.4); color: #ef4444;">Delete</button>
+          </div>
         </div>
       `;
 
@@ -85,10 +99,25 @@
       if (!payload.success) throw new Error(payload.error || "Failed to load students.");
       state.students = payload.data || [];
       renderStudentsList();
+      calculateSummaryStats();
       setStatusById("adminStudentsStatus", "");
     } catch (err) {
       setStatusById("adminStudentsStatus", err.message || "Failed to load students.", "error");
     }
+  }
+
+  function calculateSummaryStats() {
+    const total = state.students.length;
+    const year1 = state.students.filter(s => Number(s.year_level) === 1).length;
+    const year2 = state.students.filter(s => Number(s.year_level) === 2).length;
+    const year3 = state.students.filter(s => Number(s.year_level) === 3).length;
+    const dm = state.students.filter(s => s.program === 'Digital Marketing').length;
+
+    document.getElementById('studentsTotalCount').textContent = total;
+    document.getElementById('studentsYear1Count').textContent = year1;
+    document.getElementById('studentsYear2Count').textContent = year2;
+    document.getElementById('studentsYear3Count').textContent = year3;
+    document.getElementById('studentsDMCount').textContent = dm;
   }
 
   function openStudentEditModal(student) {

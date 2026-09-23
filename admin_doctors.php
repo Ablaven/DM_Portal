@@ -22,18 +22,45 @@ auth_require_roles(['admin','management']);
 <body>
   <?php render_portal_navbar('admin_doctors.php'); ?>
 
-  <main class="container">
+  <main class="container container-top">
     <header class="page-header">
-      <h1>Doctor Management</h1>
-      <p class="subtitle">Add, edit, and remove doctors (name, email, color).</p>
+      <div>
+        <h1>Doctor Management</h1>
+        <p class="subtitle">Add, edit, and manage professors with their academic information.</p>
+      </div>
     </header>
 
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Add Doctor</h2>
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Doctors</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="doctorsTotalCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Egyptian</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="doctorsEgyptianCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">French</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="doctorsFrenchCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">With Phone</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="doctorsWithPhoneCount">—</div>
+          </div>
         </div>
-        <button id="refreshDoctorsAdmin" class="btn btn-small btn-secondary" type="button">Refresh List</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0 0 6px;">Add Doctor</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Enter professor details to add them to the system.</p>
+        </div>
+        <button id="refreshDoctorsAdmin" class="btn btn-small btn-secondary" type="button">Refresh</button>
       </div>
 
       <form id="doctorForm" class="form" autocomplete="off">
@@ -96,24 +123,23 @@ auth_require_roles(['admin','management']);
       </form>
     </section>
 
-    <section class="card mt-16">
-      <div class="card-header">
+    <section class="card" style="margin-top:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
         <div>
-          <h2>All Doctors</h2>
-          <p class="card-subtitle">Edit details or delete a doctor (deletion may be blocked if scheduled).</p>
+          <h2 style="margin:0 0 6px;">All Doctors</h2>
+          <p class="muted" style="margin:0; font-size:0.9rem;">Edit details or search by name and email.</p>
         </div>
-        <div class="page-actions">
-          <div class="filter-bar">
-            <div class="field">
-              <label for="doctorsWeekSelect">Week for export</label>
-              <select id="doctorsWeekSelect" class="navlink">
-                <option value="">Loading…</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="doctorSearch">Search</label>
-              <input id="doctorSearch" type="text" placeholder="Search by name/email…" />
-            </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field" style="margin:0; min-width:160px;">
+            <label for="doctorsWeekSelect" style="font-size:0.85rem; margin-bottom:4px;">Week</label>
+            <select id="doctorsWeekSelect" class="navlink" style="padding:9px 11px;">
+              <option value="">Loading…</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0; min-width:220px;">
+            <label for="doctorSearch" style="font-size:0.85rem; margin-bottom:4px;">Search</label>
+            <input id="doctorSearch" type="text" placeholder="Search doctors…" />
           </div>
         </div>
       </div>

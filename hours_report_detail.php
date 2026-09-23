@@ -25,20 +25,52 @@ $isTeacher = $role === 'teacher';
 <body>
   <?php render_portal_navbar('hours_report_detail.php'); ?>
 
-  <main class="container container-top course-dashboard">
+  <main class="container container-top">
     <header class="page-header">
-      <h1>Hours Report</h1>
-      <p class="subtitle">Hours per doctor per subject: allocated vs done vs remaining, plus totals.</p>
+      <div>
+        <h1>Hours Report</h1>
+        <p class="subtitle">Track allocated, assigned, and completed teaching hours per professor and course with detailed breakdowns.</p>
+      </div>
     </header>
 
-    <section class="card">
-      <div class="card-header" style="margin-bottom:12px;">
-        <div>
-          <h2>Details</h2>
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Professors</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalDoctors">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalCourses">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Allocated Hours</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalAllocated">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Assigned Hours</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportTotalAssigned">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Done Hours</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="hoursReportTotalDone">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Completion Rate</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportCompletionRate">—</div>
+          </div>
         </div>
-        <div class="filter-bar report-filters-grid" style="flex-wrap:wrap;">
+      </div>
+    </section>
+
+    <!-- Filters & Export -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+        <div class="report-filters-grid" style="flex:1; min-width:280px;">
           <div class="field">
-            <label for="hoursReportYearFilter">Academic Year</label>
+            <label for="hoursReportYearFilter">Year</label>
             <select id="hoursReportYearFilter" class="navlink">
               <option value="">All</option>
               <option value="1">Year 1</option>
@@ -50,27 +82,40 @@ $isTeacher = $role === 'teacher';
             <label for="hoursReportSemesterFilter">Semester</label>
             <select id="hoursReportSemesterFilter" class="navlink">
               <option value="">All</option>
-              <option value="1">Sem 1</option>
-              <option value="2">Sem 2</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
             </select>
           </div>
           <?php if (!$isTeacher) : ?>
           <div class="field">
             <label for="hoursReportDoctorFilter">Professor</label>
             <select id="hoursReportDoctorFilter" class="navlink">
-              <option value="">Select professor…</option>
+              <option value="">All Professors</option>
             </select>
           </div>
           <?php endif; ?>
-          <div class="page-actions">
-            <button id="hoursReportRefresh" class="btn btn-secondary" type="button">Refresh</button>
-            <?php if (!$isTeacher) : ?>
-            <button id="exportHoursReportSummaryXls" class="btn btn-secondary" type="button">Export Professors Totals</button>
-            <?php endif; ?>
-            <button id="exportHoursReportDetailXls" class="btn btn-secondary" type="button">Export Professor Detail</button>
-            <button id="exportHoursReportCustomXls" class="btn btn-secondary" type="button">Custom Export</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+          <button id="hoursReportRefresh" class="btn btn-secondary" type="button">Refresh</button>
+          <div style="position:relative;">
+            <button id="hoursReportExportBtn" class="btn btn-secondary" type="button">Export ▼</button>
+            <div id="hoursReportExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:220px; background:rgba(255,255,255,0.08); backdrop-filter:blur(48px); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:6px; z-index:100; box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+              <?php if (!$isTeacher) : ?>
+              <button id="exportHoursReportSummaryXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📊 Professors Totals</button>
+              <?php endif; ?>
+              <button id="exportHoursReportDetailXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📋 Professor Detail</button>
+              <button id="exportHoursReportCustomXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📈 Custom Export</button>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Details -->
+    <section class="card">
+      <div style="margin-bottom:16px;">
+        <h2 style="margin:0 0 6px;">Professor Hours Breakdown</h2>
+        <p class="muted" style="margin:0; font-size:0.9rem;">Hours per professor per subject: allocated vs assigned vs done vs remaining.</p>
       </div>
 
       <div id="hoursReportStatus" class="status" role="status" aria-live="polite"></div>

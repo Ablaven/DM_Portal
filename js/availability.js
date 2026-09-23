@@ -206,6 +206,33 @@
 
   function updateStats(available) {
     const statsEl = document.getElementById("availabilityStats");
+    const total = DAYS.length * SLOTS.length; // 5 days * 5 slots = 25 total
+    
+    // Count blocked slots
+    let blockedCount = 0;
+    for (const day of DAYS) {
+      for (const slot of SLOTS) {
+        if (availabilityState.unavailabilitySlotMap?.[day]?.[slot]) {
+          blockedCount++;
+        }
+      }
+    }
+    
+    const unavailable = total - available - blockedCount;
+    const percentage = total > 0 ? Math.round((available / total) * 100) : 0;
+    
+    // Update summary stats at top
+    const statsAvailableEl = document.getElementById("statsAvailableSlots");
+    const statsUnavailableEl = document.getElementById("statsUnavailableSlots");
+    const statsBlockedEl = document.getElementById("statsBlockedSlots");
+    const statsPercentEl = document.getElementById("statsAvailabilityPercent");
+    
+    if (statsAvailableEl) statsAvailableEl.textContent = available;
+    if (statsUnavailableEl) statsUnavailableEl.textContent = unavailable;
+    if (statsBlockedEl) statsBlockedEl.textContent = blockedCount;
+    if (statsPercentEl) statsPercentEl.textContent = percentage + '%';
+    
+    // Update inline stats bar
     if (!statsEl) return;
 
     const showAllDoctors = !availabilityState.activeDoctorId;
@@ -217,8 +244,6 @@
         </div>
       `;
     } else {
-      const total = DAYS.length * SLOTS.length;
-      const percentage = total > 0 ? Math.round((available / total) * 100) : 0;
       statsEl.innerHTML = `
         <div class="stat">
           <span class="stat-value">${available}/${total}</span>

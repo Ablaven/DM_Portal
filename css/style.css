@@ -53,8 +53,8 @@
   --badge-success-border: rgba(0, 220, 140, 0.30);
   --badge-success-bg: rgba(0, 220, 140, 0.12);
   --badge-success-text: rgba(0, 220, 140, 0.92);
-  --scrollbar-thumb: rgba(255,255,255,0.22);
-  --scrollbar-track: rgba(0,0,0,0.18);
+  --scrollbar-thumb: rgba(92, 198, 255, 0.35);
+  --scrollbar-track: rgba(10, 14, 26, 0.4);
   --slot-empty-title: rgba(232,237,247,0.88);
   --slot-empty-sub: rgba(232,237,247,0.62);
   --slot-unavail-bg: rgba(153, 153, 153, 0.16);
@@ -135,36 +135,47 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 
+/* ============================================
+   CUSTOM SCROLLBAR - ALWAYS VISIBLE
+   ============================================ */
+
+/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-
-*:hover {
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+/* Webkit (Chrome, Safari, Edge) */
 *::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 999px;
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+  margin: 4px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 999px;
-}
-
-*:hover::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
-
-*:hover::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 2px solid var(--scrollbar-track);
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--accent-rgb), 0.5);
+  border-color: rgba(var(--accent-rgb), 0.1);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: rgba(var(--accent-rgb), 0.7);
+}
+
+/* Scrollbar corner (when both scrollbars are visible) */
+*::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
 }
 
 /* Global polish */
@@ -958,7 +969,7 @@ select:disabled { opacity: 0.6; }
 .report-card {
   position: relative;
   display: block;
-  padding: 24px;
+  padding: 32px;
   border-radius: 20px;
   color: inherit;
   text-decoration: none;
@@ -1000,23 +1011,28 @@ html[data-theme="light"] .report-card {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   height: 100%;
   transform: translateZ(18px);
 }
 
 .report-card-icon {
-  font-size: 2rem;
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 4px;
 }
 
 .report-card h2 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .report-card p {
   margin: 0;
   color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .report-card-cta {
@@ -5576,4 +5592,85 @@ html[data-theme="light"] .slot-badge-upcoming {
   color: var(--accent);
   background: rgba(var(--accent-rgb), 0.15);
   border-color: rgba(var(--accent-rgb), 0.40);
+}
+
+/* Student card styling */
+.student-card {
+  padding: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.student-card:hover {
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .student-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--line-strong);
+}
+
+html[data-theme="light"] .student-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+/* Doctor card styling */
+.doctor-card {
+  padding: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.doctor-card:hover {
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .doctor-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--line-strong);
+}
+
+html[data-theme="light"] .doctor-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+/* Course card styling */
+.course-card {
+  padding: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.course-card:hover {
+  background: var(--surface-1);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+html[data-theme="light"] .course-card {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: var(--line-strong);
+}
+
+html[data-theme="light"] .course-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }

@@ -81,33 +81,60 @@
     list.innerHTML = "";
     for (const d of filtered) {
       const card = document.createElement("div");
-      card.className = "course-item";
+      card.className = "doctor-card";
 
       const color = d.color_code || "#0055A4";
       const email = d.email ? escapeHtml(d.email) : "(no email)";
       const phone = d.phone_number ? escapeHtml(d.phone_number) : "";
+      const doctorType = d.doctor_type || "Egyptian";
+      
+      // Type badge colors
+      const typeColors = {
+        Egyptian: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
+        French: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);'
+      };
+      const typeStyle = typeColors[doctorType] || typeColors.Egyptian;
 
       card.innerHTML = `
-        <div class="course-top">
-          <div>
-            <div class="course-title">${escapeHtml(d.full_name || "")}</div>
-            <div class="muted" style="margin-top:4px;">${email}</div>
-            ${phone ? `<div class=\"muted\" style=\"margin-top:4px;\">${phone}</div>` : ""}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${escapeHtml(d.full_name || "")}</h3>
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; ${typeStyle}">${escapeHtml(doctorType)}</span>
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: ${color}22; border: 1px solid ${color}88; color: ${color};">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
+                ${escapeHtml(color)}
+              </span>
+            </div>
+            <div style="margin-bottom: 6px; color: var(--muted);">${email}</div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted);">
+              <span>Doctor ID: <strong style="color: var(--text);">${escapeHtml(d.doctor_id)}</strong></span>
+              ${phone ? `<span>Phone: <strong style="color: var(--text);">${phone}</strong></span>` : '<span style="color: var(--muted);">No phone</span>'}
+            </div>
           </div>
-          <span class="badge" style="background:${escapeHtml(color)}22; border-color:${escapeHtml(color)}88; color:${escapeHtml(color)};">${escapeHtml(color)}</span>
-        </div>
-        <div class="actions" style="margin-top:10px; justify-content:space-between;">
-          <div class="muted" style="font-size:0.85rem;">ID: ${escapeHtml(d.doctor_id)}</div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn btn-secondary btn-small" type="button" data-action="export" data-id="${escapeHtml(d.doctor_id)}">Export</button>
-            <button class="btn btn-secondary btn-small" type="button" data-action="edit" data-id="${escapeHtml(d.doctor_id)}">Edit</button>
-            <button class="btn btn-secondary btn-small" type="button" data-action="delete" data-id="${escapeHtml(d.doctor_id)}" style="border-color: rgba(255,106,122,.35);">Delete</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-small btn-secondary" type="button" data-action="export" data-id="${escapeHtml(d.doctor_id)}">Export</button>
+            <button class="btn btn-small btn-secondary" type="button" data-action="edit" data-id="${escapeHtml(d.doctor_id)}">Edit</button>
+            <button class="btn btn-small btn-secondary" type="button" data-action="delete" data-id="${escapeHtml(d.doctor_id)}" style="border-color: rgba(239, 68, 68, 0.4); color: #ef4444;">Delete</button>
           </div>
         </div>
       `;
 
       list.appendChild(card);
     }
+    calculateSummaryStats();
+  }
+
+  function calculateSummaryStats() {
+    const total = state.doctors.length;
+    const egyptian = state.doctors.filter(d => d.doctor_type === 'Egyptian').length;
+    const french = state.doctors.filter(d => d.doctor_type === 'French').length;
+    const withPhone = state.doctors.filter(d => d.phone_number && d.phone_number.trim() !== '').length;
+
+    document.getElementById('doctorsTotalCount').textContent = total;
+    document.getElementById('doctorsEgyptianCount').textContent = egyptian;
+    document.getElementById('doctorsFrenchCount').textContent = french;
+    document.getElementById('doctorsWithPhoneCount').textContent = withPhone;
   }
 
   async function openDoctorEditModal(doctor) {

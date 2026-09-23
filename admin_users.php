@@ -22,11 +22,41 @@ auth_require_roles(['admin']);
 <body>
   <?php render_portal_navbar('admin_users.php'); ?>
 
-  <main class="container">
+  <main class="container container-top">
     <header class="page-header">
-      <h1>User Accounts</h1>
-      <p class="subtitle">Create portal logins for doctors and students and assign which pages they can access.</p>
+      <div>
+        <h1>User Accounts</h1>
+        <p class="subtitle">Manage portal logins and access permissions for doctors, students, and staff.</p>
+      </div>
     </header>
+
+    <!-- Summary Stats -->
+    <section class="card" style="margin-bottom:20px;">
+      <div style="padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Users</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="usersTotalCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Admins</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="usersAdminCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Teachers</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersTeacherCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Students</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#60a5fa;" id="usersStudentCount">—</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Active</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersActiveCount">—</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="card">
       <div class="card-header">
@@ -77,8 +107,9 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="hours_report_detail.php" /> Hours Report</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="evaluation_reports.php" /> Evaluation Reports</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="attendance_report.php" /> Attendance Report</label>
-              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="profile.php" /> Profile</label>
+              <label class="chk"><input type="checkbox" name="allowed_pages[]" value="profile.php" /> Profile</label>
               <label class="chk"><input type="checkbox" name="allowed_pages[]" value="lectures.php" /> Lecture Materials</label>
+            </div>
             <small class="hint">Leave all unchecked to use role defaults (teacher→doctor.php, student→students.php). Admin always has full access.</small>
           </div>
         </div>
@@ -177,8 +208,9 @@ auth_require_roles(['admin']);
               <label class="chk"><input type="checkbox" value="hours_report_detail.php" /> Hours Report</label>
               <label class="chk"><input type="checkbox" value="evaluation_reports.php" /> Evaluation Reports</label>
               <label class="chk"><input type="checkbox" value="attendance_report.php" /> Attendance Report</label>
-              <label class="chk"><input type="checkbox" value="              <label class="chk"><input type="checkbox" value="profile.php" /> Profile</label>
+              <label class="chk"><input type="checkbox" value="profile.php" /> Profile</label>
               <label class="chk"><input type="checkbox" value="lectures.php" /> Lecture Materials</label>
+            </div>
             <small class="hint">Leave all unchecked to use role defaults. Admin always has full access.</small>
           </div>
 

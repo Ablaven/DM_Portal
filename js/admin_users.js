@@ -159,27 +159,47 @@ async function initAdminUsersPage() {
 
     for (const u of items) {
       const row = document.createElement("div");
-      row.className = "course-row";
+      row.className = "user-card";
 
-      const allowedLabel = Array.isArray(u.allowed_pages) ? u.allowed_pages.join(", ") : "(role default)";
-      const activeLabel = Number(u.is_active) === 1 ? "Active" : "Disabled";
-      const activePillClass = Number(u.is_active) === 1 ? "pill-r" : "pill-las";
+      const allowedPages = Array.isArray(u.allowed_pages) && u.allowed_pages.length > 0 
+        ? u.allowed_pages.length + " pages" 
+        : "Role defaults";
+      const isActive = Number(u.is_active) === 1;
+      const activeLabel = isActive ? "Active" : "Disabled";
+      
+      // Role badge colors
+      const roleColors = {
+        admin: 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);',
+        teacher: 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);',
+        student: 'background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3);',
+        management: 'background: rgba(147, 51, 234, 0.15); color: #9333ea; border: 1px solid rgba(147, 51, 234, 0.3);'
+      };
+      const roleStyle = roleColors[u.role] || roleColors.teacher;
 
       row.innerHTML = `
-        <div class="course-title">
-          ${escapeHtml(u.username)}
-          <span class="pill pill-r" style="margin-left:8px;">${escapeHtml(u.role)}</span>
-          <span class="pill ${activePillClass}" style="margin-left:8px;">${escapeHtml(activeLabel)}</span>
-        </div>
-        <div class="muted" style="margin-top:4px;">user_id: ${escapeHtml(u.user_id)} • doctor_id: ${u.doctor_id ?? "-"} • student_id: ${u.student_id ?? "-"} • allowed: ${escapeHtml(allowedLabel)}</div>
-        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-secondary btn-small" type="button" data-user-action="edit" data-user-id="${escapeHtml(u.user_id)}">Edit</button>
-          <button class="btn btn-secondary btn-small" type="button" data-user-action="toggle" data-user-id="${escapeHtml(u.user_id)}" data-next-active="${Number(u.is_active) === 1 ? 0 : 1}">
-            ${Number(u.is_active) === 1 ? "Disable" : "Enable"}
-          </button>
-          <button class="btn btn-secondary btn-small" type="button" data-user-action="delete" data-user-id="${escapeHtml(u.user_id)}" style="border-color: rgba(255,106,122,.35);">
-            Delete
-          </button>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${escapeHtml(u.username)}</h3>
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; ${roleStyle}">${escapeHtml(u.role)}</span>
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; ${isActive ? 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);' : 'background: rgba(107, 114, 128, 0.15); color: #6b7280; border: 1px solid rgba(107, 114, 128, 0.3);'}">${escapeHtml(activeLabel)}</span>
+            </div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted);">
+              ${u.doctor_id ? `<span>Doctor ID: <strong style="color: var(--text);">${escapeHtml(u.doctor_id)}</strong></span>` : ''}
+              ${u.student_id ? `<span>Student ID: <strong style="color: var(--text);">${escapeHtml(u.student_id)}</strong></span>` : ''}
+              <span>User ID: <strong style="color: var(--text);">${escapeHtml(u.user_id)}</strong></span>
+              <span>Access: <strong style="color: var(--text);">${escapeHtml(allowedPages)}</strong></span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-small btn-secondary" type="button" data-user-action="edit" data-user-id="${escapeHtml(u.user_id)}">Edit</button>
+            <button class="btn btn-small btn-secondary" type="button" data-user-action="toggle" data-user-id="${escapeHtml(u.user_id)}" data-next-active="${isActive ? 0 : 1}">
+              ${isActive ? "Disable" : "Enable"}
+            </button>
+            <button class="btn btn-small btn-secondary" type="button" data-user-action="delete" data-user-id="${escapeHtml(u.user_id)}" style="border-color: rgba(239, 68, 68, 0.4); color: #ef4444;">
+              Delete
+            </button>
+          </div>
         </div>
       `;
 
@@ -194,10 +214,25 @@ async function initAdminUsersPage() {
       usersCache = payload?.data || [];
 
       renderUsers();
+      calculateSummaryStats();
       setListStatus("");
     } catch (err) {
       setListStatus(err.message || "Failed to load users.");
     }
+  }
+
+  function calculateSummaryStats() {
+    const total = usersCache.length;
+    const adminCount = usersCache.filter(u => u.role === 'admin').length;
+    const teacherCount = usersCache.filter(u => u.role === 'teacher').length;
+    const studentCount = usersCache.filter(u => u.role === 'student').length;
+    const activeCount = usersCache.filter(u => Number(u.is_active) === 1).length;
+
+    document.getElementById('usersTotalCount').textContent = total;
+    document.getElementById('usersAdminCount').textContent = adminCount;
+    document.getElementById('usersTeacherCount').textContent = teacherCount;
+    document.getElementById('usersStudentCount').textContent = studentCount;
+    document.getElementById('usersActiveCount').textContent = activeCount;
   }
 
   list.addEventListener("click", async (e) => {
@@ -268,7 +303,12 @@ async function initAdminUsersPage() {
       fd.append("is_active", String(fActive.value || "1"));
 
       const selected = getCheckedPages(fAllowed);
-      for (const p of selected) fd.append("allowed_pages[]", p);
+      if (selected.length > 0) {
+        for (const p of selected) fd.append("allowed_pages[]", p);
+      } else {
+        // Send empty string to explicitly indicate "clear all pages, use role defaults"
+        fd.append("allowed_pages[]", "");
+      }
 
       await fetchJson("php/admin_users_update.php", { method: "POST", body: fd });
 

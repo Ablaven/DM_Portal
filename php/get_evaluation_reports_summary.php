@@ -54,7 +54,7 @@ try {
     $whereSql = $courseWhere ? ('WHERE ' . implode(' AND ', $courseWhere)) : '';
 
     $coursesStmt = $pdo->prepare(
-        "SELECT c.course_id, c.course_name, c.year_level, c.semester,
+        "SELECT c.course_id, c.course_name, c.subject_code, c.year_level, c.semester,
                 GROUP_CONCAT(DISTINCT d.full_name ORDER BY d.full_name SEPARATOR ', ') AS doctor_names
          FROM courses c
          LEFT JOIN course_doctors cd ON cd.course_id = c.course_id
