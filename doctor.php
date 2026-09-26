@@ -83,11 +83,6 @@ if ($doctorId > 0) {
           <tbody id="doctorScheduleBody"></tbody>
         </table>
       </div>
-
-      <div class="legend">
-        <span class="pill pill-r">R</span><span class="muted">Regular</span>
-        <span class="pill pill-las">LAS</span><span class="muted">LAS</span>
-      </div>
     </section>
 
     <section class="card mt-16">
