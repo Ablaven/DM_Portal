@@ -25,7 +25,7 @@ if ($username === '' || $password === '') {
     exit;
 }
 
-// Rate limiting check — before any DB query
+// Rate limiting check - before any DB query
 $rl = rl_check_login();
 if ($rl['limited']) {
     $mins = (int)ceil($rl['retry_after'] / 60);
@@ -76,7 +76,7 @@ try {
         }
     }
 
-    // Successful login — clear rate limit and regenerate session ID
+    // Successful login - clear rate limit and regenerate session ID
     rl_clear();
     auth_session_start();
     session_regenerate_id(true);

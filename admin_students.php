@@ -36,23 +36,23 @@ auth_require_roles(['admin','management']);
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Students</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="studentsTotalCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="studentsTotalCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 1</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="studentsYear1Count">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="studentsYear1Count">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 2</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="studentsYear2Count">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="studentsYear2Count">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 3</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#f59e0b;" id="studentsYear3Count">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#f59e0b;" id="studentsYear3Count">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Digital Marketing</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="studentsDMCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="studentsDMCount">-</div>
           </div>
         </div>
       </div>

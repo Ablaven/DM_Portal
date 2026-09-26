@@ -107,13 +107,13 @@ function dmportal_ensure_schema_version(PDO $pdo): void
         try {
             $pdo->exec("ALTER TABLE weeks DROP INDEX uq_weeks_label");
         } catch (PDOException $e) {
-            // 1091 = key doesn't exist — already gone, fine.
+            // 1091 = key doesn't exist - already gone, fine.
             if ((int)($e->errorInfo[1] ?? 0) !== 1091) throw $e;
         }
         try {
             $pdo->exec("ALTER TABLE weeks ADD UNIQUE KEY uq_weeks_label (term_id, label)");
         } catch (PDOException $e) {
-            // 1061 = duplicate key name — already correct, fine.
+            // 1061 = duplicate key name - already correct, fine.
             if ((int)($e->errorInfo[1] ?? 0) !== 1061) throw $e;
         }
 

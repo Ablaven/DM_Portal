@@ -53,7 +53,7 @@ if ($targetCourseId <= 0) {
 try {
     $pdo = get_pdo();
 
-    // MUST be called before beginTransaction() — DDL causes implicit commit in MySQL.
+    // MUST be called before beginTransaction() - DDL causes implicit commit in MySQL.
     dmportal_ensure_lecture_materials_table($pdo);
 
     // ─── Fetch material (before transaction) ──────────────────────────────────

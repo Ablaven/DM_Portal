@@ -38,14 +38,14 @@ auth_require_login();
           <div class="field">
             <label for="attendanceWeekSelect">Start Week</label>
             <select id="attendanceWeekSelect">
-              <option value="">Loading…</option>
+              <option value="">Loadingâ€¦</option>
             </select>
           </div>
 
           <div class="field">
             <label for="attendanceCourseSelect">Course (for export)</label>
             <select id="attendanceCourseSelect">
-              <option value="">Loading…</option>
+              <option value="">Loadingâ€¦</option>
             </select>
           </div>
         </div>
@@ -86,34 +86,51 @@ auth_require_login();
 
     <div id="attendanceModal" class="modal" aria-hidden="true">
       <div class="modal-backdrop" data-close="1"></div>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle" style="width: min(1400px, 96vw);">
-        <div class="modal-header">
-          <h3 id="attendanceModalTitle">Take Attendance</h3>
-          <button class="btn btn-secondary btn-small" type="button" data-close="1">Close</button>
+      <div class="modal-card attendance-modal" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle">
+        <div class="modal-header attendance-modal-header">
+          <div>
+            <h3 id="attendanceModalTitle">Take Attendance</h3>
+            <div class="muted" id="attendanceModalMeta" style="margin-top:6px; font-size:0.875rem;"></div>
+          </div>
+          <button class="btn btn-secondary btn-small" type="button" data-close="1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+            Close
+          </button>
         </div>
 
         <div class="modal-body">
-          <div class="muted" id="attendanceModalMeta"></div>
+          <div class="attendance-controls">
+            <div class="field" style="flex:1; margin:0;">
+              <label for="attendanceStudentSearch" style="font-size:0.875rem; margin-bottom:6px;">Search Students</label>
+              <input id="attendanceStudentSearch" type="text" placeholder="Type student name or ID..." style="width:100%;" />
+            </div>
 
-          <div class="field">
-            <label for="attendanceStudentSearch">Search</label>
-            <input id="attendanceStudentSearch" type="text" placeholder="Type a student name…" />
+            <div class="attendance-quick-actions">
+              <button id="attendanceMarkAllPresent" class="btn btn-small btn-success" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                All Present
+              </button>
+              <button id="attendanceMarkAllAbsent" class="btn btn-small btn-secondary" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M15 9l-6 6M9 9l6 6"/>
+                </svg>
+                All Absent
+              </button>
+            </div>
           </div>
 
-          <div class="modal-actions" style="justify-content:flex-start;">
-            <button id="attendanceMarkAllPresent" class="btn btn-small" type="button">Mark all Present</button>
-            <button id="attendanceMarkAllAbsent" class="btn btn-small btn-secondary" type="button">Mark all Absent</button>
-            <button id="attendanceSaveChanges" class="btn btn-small btn-primary" type="button">Save</button>
-            <button id="attendanceCopyNextLecture" class="btn btn-small btn-secondary" type="button">Copy to next lecture</button>
-          </div>
-
-          <div class="schedule-wrap">
-            <table class="schedule-grid" aria-label="Attendance list">
+          <div class="attendance-table-wrapper">
+            <table class="attendance-table" aria-label="Attendance list">
               <thead>
                 <tr>
-                  <th style="width:160px;">ID</th>
-                  <th style="width:320px;">Student Name</th>
-                  <th style="width:140px;">Attendence</th>
+                  <th style="width:160px;">Student ID</th>
+                  <th style="width:auto; text-align:left;">Student Name</th>
+                  <th style="width:180px; text-align:center;">Attendance Status</th>
                 </tr>
               </thead>
               <tbody id="attendanceModalBody"></tbody>
@@ -121,6 +138,22 @@ auth_require_login();
           </div>
 
           <div id="attendanceModalStatus" class="status" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="modal-footer attendance-modal-footer">
+          <button id="attendanceCopyNextLecture" class="btn btn-secondary" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            Copy to Next Lecture
+          </button>
+          <button id="attendanceSaveChanges" class="btn btn-primary" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Save Attendance
+          </button>
         </div>
       </div>
     </div>

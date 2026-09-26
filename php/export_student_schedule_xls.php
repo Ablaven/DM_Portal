@@ -105,7 +105,7 @@ try {
 
     $xlsx = new SimpleXlsxWriter();
 
-    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $title = "Student Schedule - {$program} - Year {$yearLevel} - Sem {$semester} - {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];

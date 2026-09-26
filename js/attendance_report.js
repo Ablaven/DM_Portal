@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, escapeHtml, setStatusById } = window.dmportal || {};
@@ -10,9 +10,9 @@
   };
 
   function formatMaybe(value) {
-    if (value === null || value === undefined || value === "") return "—";
+    if (value === null || value === undefined || value === "") return "-";
     const num = Number(value);
-    if (!Number.isFinite(num)) return "—";
+    if (!Number.isFinite(num)) return "-";
     return num.toFixed(2);
   }
 
@@ -71,7 +71,7 @@
     document.getElementById("attendanceReportsAbsent").textContent = metrics.absent || 0;
     
     const rate = formatMaybe(metrics.attendance_rate);
-    document.getElementById("attendanceReportsRate").textContent = rate === "—" ? "—" : `${rate}%`;
+    document.getElementById("attendanceReportsRate").textContent = rate === "-" ? "-" : `${rate}%`;
   }
 
   function renderRows(body, courses) {
@@ -86,7 +86,7 @@
       const tr = document.createElement("tr");
       
       const rate = formatMaybe(course.attendance_rate);
-      const rateDisplay = rate === "—" ? "—" : `${rate}%`;
+      const rateDisplay = rate === "-" ? "-" : `${rate}%`;
       
       tr.innerHTML = `
         <td>

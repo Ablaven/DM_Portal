@@ -112,7 +112,7 @@ try {
     $sParams = $params;
     $sParams[':term_id'] = $activeTermId;
 
-    // Done hours per (course_id, doctor_id) — sessions with hours_counted=1
+    // Done hours per (course_id, doctor_id) - sessions with hours_counted=1
     $doneStmt = $pdo->prepare(
         "SELECT s.course_id,
                 s.doctor_id,
@@ -137,7 +137,7 @@ try {
         ];
     }
 
-    // Assigned hours per (course_id, doctor_id) — all scheduled slots this term
+    // Assigned hours per (course_id, doctor_id) - all scheduled slots this term
     $assignedStmt = $pdo->prepare(
         "SELECT s.course_id,
                 s.doctor_id,

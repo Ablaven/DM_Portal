@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   const { fetchJson, setStatusById, escapeHtml } = window.dmportal || {};
   if (!fetchJson || !escapeHtml) return;
 
@@ -138,7 +138,7 @@
     }
   }
 
-  // ── Step 2b: Year advance — student rule ──────────────────────────────────────
+  // ── Step 2b: Year advance - student rule ──────────────────────────────────────
   async function goToStep2b() {
     setStatusById("wizStep2bStatus", "");
     showStep("wizStep2b");
@@ -288,7 +288,7 @@
           student_actions: JSON.stringify(actions),
         });
       } else {
-        // advance_except_final — auto mode
+        // advance_except_final - auto mode
         body = new URLSearchParams({ start_date: wizStartDate, advance_mode: "auto" });
       }
 

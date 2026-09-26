@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const {
@@ -202,7 +202,7 @@
           `;
         } else {
           cell.innerHTML = `
-            <div class="slot-title">—</div>
+            <div class="slot-title">-</div>
             <div class="slot-sub">Empty</div>
           `;
         }
@@ -299,7 +299,7 @@
       const d = doctorState.doctors.find((x) => String(x.doctor_id) === String(doctorId));
       if (d) {
         const nameEl = document.getElementById("doctorName");
-        if (nameEl) nameEl.textContent = `${d.full_name} — Schedule`;
+        if (nameEl) nameEl.textContent = `${d.full_name} - Schedule`;
 
         const emailBtn = document.getElementById("doctorEmail");
         if (emailBtn) {

@@ -146,7 +146,7 @@
             ${CATEGORIES.map(
               (c) => `<option value="${c.key}" ${item.category === c.key ? "selected" : ""}>${escapeHtml(c.label)}</option>`
             ).join("")}
-            <option value="__add__">+ Add CategoryÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦</option>
+            <option value="__add__">+ Add Category...</option>
           </select>
         </td>
         <td>
@@ -297,7 +297,7 @@
           if (categorySelectRef) {
             categorySelectRef.innerHTML = CATEGORIES.map(
               (c) => `<option value="${c.key}">${escapeHtml(c.label)}</option>`
-            ).join("") + '<option value="__add__">+ Add CategoryÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦</option>';
+            ).join("") + '<option value="__add__">+ Add Category...</option>';
             categorySelectRef.value = cat.category_key;
             updateLabelState(categorySelectRef.closest("tr"));
           }
@@ -416,7 +416,7 @@
     }
 
     async function loadDoctors() {
-      // If logged in as a teacher, the doctor filter is hidden ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â no need to load the list.
+      // If logged in as a teacher, the doctor filter is hidden ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â no need to load the list.
       if (isTeacher || !doctorSelect) return;
       try {
         const payload = await fetchJson("php/get_doctors.php");

@@ -10,11 +10,11 @@
     renderEmptyState,
   } = window.dmportal || {};
 
-  // Authenticated user object — populated in initLecturesPage and shared across views.
+  // Authenticated user object - populated in initLecturesPage and shared across views.
   let currentUser = null;
 
   // ─────────────────────────────────────────────────────────────────
-  // STUB VIEW INITIALISERS — implementations added in tasks 7.2 – 7.4
+  // STUB VIEW INITIALISERS - implementations added in tasks 7.2 – 7.4
   // ─────────────────────────────────────────────────────────────────
 
   // -----------------------------------------------------------------
@@ -81,7 +81,7 @@
     root.appendChild(makeProfessorBackBtn("← Back to Years", initProfessorView));
     const heading = document.createElement("h2");
     heading.className = "section-heading";
-    heading.textContent = "Year " + escapeHtml(String(year)) + " — Select Semester";
+    heading.textContent = "Year " + escapeHtml(String(year)) + " - Select Semester";
     root.appendChild(heading);
     const semGrid = document.createElement("div");
     semGrid.className = "lectures-grid";
@@ -120,7 +120,7 @@
     heading.textContent =
       "Year " + escapeHtml(String(year)) +
       ", Semester " + escapeHtml(String(sem)) +
-      " — My Courses";
+      " - My Courses";
     root.appendChild(heading);
     const loadingEl = document.createElement("p");
     loadingEl.className = "status";
@@ -395,7 +395,7 @@
       statusEl.style.display = "";
       return;
     }
-    // Client-side size check — do NOT POST if over 50 MB
+    // Client-side size check - do NOT POST if over 50 MB
     if (file.size > 52428800) {
       statusEl.textContent = "File exceeds the 50 MB size limit. Please choose a smaller file.";
       statusEl.className = "status status-error";
@@ -473,7 +473,7 @@
       if (semester && semester !== "All") {
         if (String(m.semester) !== String(semester)) return false;
       }
-      // Text search — case-insensitive against filename and course name
+      // Text search - case-insensitive against filename and course name
       if (needle) {
         const filename = String(m.original_filename || "").toLowerCase();
         const courseName = String(m.course_name || "").toLowerCase();
@@ -496,7 +496,7 @@
    * Format an ISO datetime string into a human-readable local date.
    */
   function formatAdminDate(isoString) {
-    if (!isoString) return "—";
+    if (!isoString) return "-";
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return escapeHtml(String(isoString));
     return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -523,10 +523,10 @@
         '<td class="lm-col-filename">' + escapeHtml(m.original_filename || "") + "</td>" +
         '<td class="lm-col-type">'     + escapeHtml(String(m.file_type || "").toUpperCase()) + "</td>" +
         '<td class="lm-col-size">'     + escapeHtml(formatKb(m.file_size_bytes)) + "</td>" +
-        '<td class="lm-col-course">'   + escapeHtml(m.course_name || "—") + "</td>" +
-        '<td class="lm-col-year">'     + escapeHtml(String(m.year_level ?? "—")) + "</td>" +
-        '<td class="lm-col-sem">'      + escapeHtml(String(m.semester ?? "—")) + "</td>" +
-        '<td class="lm-col-uploader">' + escapeHtml(m.uploader_name || "—") + "</td>" +
+        '<td class="lm-col-course">'   + escapeHtml(m.course_name || "-") + "</td>" +
+        '<td class="lm-col-year">'     + escapeHtml(String(m.year_level ?? "-")) + "</td>" +
+        '<td class="lm-col-sem">'      + escapeHtml(String(m.semester ?? "-")) + "</td>" +
+        '<td class="lm-col-uploader">' + escapeHtml(m.uploader_name || "-") + "</td>" +
         '<td class="lm-col-date">'     + escapeHtml(formatAdminDate(m.created_at)) + "</td>" +
         '<td class="lm-col-actions">' +
           '<button class="btn btn-sm btn-secondary lm-btn-preview"  data-id="' + mid + '" data-type="' + escapeHtml(m.file_type || "") + '" data-name="' + escapeHtml(m.original_filename || "") + '" aria-label="Preview ' + escapeHtml(m.original_filename || "") + '">Preview</button> ' +
@@ -828,7 +828,7 @@
       };
     }
 
-    // 5. Re-render table from cached data (requirement 13.7 — no page reload)
+    // 5. Re-render table from cached data (requirement 13.7 - no page reload)
     function refreshTable() {
       const filtered = applyAdminFilters(allMaterials, getCurrentFilters());
       renderAdminTable(filtered, tbody);
@@ -848,7 +848,7 @@
 
     // 7. Bind per-row action buttons after each render
     function bindTableActions() {
-      // Preview — calls openPreview() defined in task 7.5
+      // Preview - calls openPreview() defined in task 7.5
       tbody.querySelectorAll(".lm-btn-preview").forEach(function (btn) {
         btn.addEventListener("click", function () {
           openPreview({
@@ -859,7 +859,7 @@
         });
       });
 
-      // Download — calls triggerDownload() defined in task 7.5
+      // Download - calls triggerDownload() defined in task 7.5
       tbody.querySelectorAll(".lm-btn-download").forEach(function (btn) {
         btn.addEventListener("click", function () {
           triggerDownload(decodeURIComponent(btn.dataset.id));
@@ -953,7 +953,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // renderDoctorCards — list of doctor selection cards
+  // renderDoctorCards - list of doctor selection cards
   // ---------------------------------------------------------------------------
   function renderDoctorCards(rootEl, doctors, studentCtx) {
     rootEl.innerHTML = "";
@@ -1045,7 +1045,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // renderStudentCourses — courses for a selected doctor
+  // renderStudentCourses - courses for a selected doctor
   // ---------------------------------------------------------------------------
   function renderStudentCourses(rootEl, doctor, studentCtx) {
     rootEl.innerHTML = "";
@@ -1080,7 +1080,7 @@
     // Heading
     const heading = document.createElement("h2");
     heading.className = "section-heading";
-    heading.textContent = doctor.full_name; // textContent — safe
+    heading.textContent = doctor.full_name; // textContent - safe
     rootEl.appendChild(heading);
 
     // Courses are already filtered by the server to match student context
@@ -1107,7 +1107,7 @@
 
       const nameEl = document.createElement("h3");
       nameEl.className = "card-title";
-      nameEl.textContent = course.course_name; // textContent — safe
+      nameEl.textContent = course.course_name; // textContent - safe
 
       const codeEl = document.createElement("p");
       codeEl.className = "card-subtitle";
@@ -1132,12 +1132,12 @@
   }
 
   // ---------------------------------------------------------------------------
-  // renderStudentMaterials — material list for a selected course (student view)
+  // renderStudentMaterials - material list for a selected course (student view)
   // ---------------------------------------------------------------------------
   async function renderStudentMaterials(rootEl, course, doctor, studentCtx) {
     rootEl.innerHTML = "";
 
-    // Back button — returns to course list for this doctor
+    // Back button - returns to course list for this doctor
     const backBtn = document.createElement("button");
     backBtn.className = "btn btn-secondary back-btn";
     backBtn.textContent = "← Back to Courses";
@@ -1151,7 +1151,7 @@
     if (course.subject_code) {
       const sub = document.createElement("span");
       sub.className = "section-heading-sub";
-      sub.textContent = ` — ${course.subject_code}`;
+      sub.textContent = ` - ${course.subject_code}`;
       heading.appendChild(sub);
     }
     rootEl.appendChild(heading);
@@ -1217,7 +1217,7 @@
 
       // File name cell
       const tdName = document.createElement("td");
-      tdName.textContent = mat.original_filename; // textContent — safe
+      tdName.textContent = mat.original_filename; // textContent - safe
 
       // Type cell
       const tdType = document.createElement("td");
@@ -1227,7 +1227,7 @@
       const tdSize = document.createElement("td");
       tdSize.textContent = `${sizeKb} KB`;
 
-      // Actions cell — Preview + Download only (no upload form, no delete)
+      // Actions cell - Preview + Download only (no upload form, no delete)
       const tdActions = document.createElement("td");
       tdActions.className = "actions-cell";
 

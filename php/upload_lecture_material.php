@@ -65,7 +65,7 @@ if ($role === 'teacher') {
 } else {
     // admin / management
     if ($userDoctorId > 0) {
-        // Admin has a linked doctor — use it directly.
+        // Admin has a linked doctor - use it directly.
         $insertDoctorId = $userDoctorId;
     } else {
         // Admin without a doctor link: require an explicit doctor_id param so the
@@ -164,7 +164,7 @@ try {
 
     $materialId = (int)$pdo->lastInsertId();
 } catch (Throwable $e) {
-    // DB insert failed — clean up the already-moved file to avoid orphans.
+    // DB insert failed - clean up the already-moved file to avoid orphans.
     @unlink($storedPath);
     upload_error(500, 'Failed to save material record.');
 }
@@ -173,7 +173,7 @@ try {
 $material = dmportal_get_material_by_id($pdo, $materialId);
 if ($material === null) {
     // Very unlikely, but if the row can't be fetched after insert, return a
-    // minimal object rather than erroring — the upload actually succeeded.
+    // minimal object rather than erroring - the upload actually succeeded.
     $material = [
         'material_id'      => $materialId,
         'course_id'        => $courseId,

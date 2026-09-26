@@ -72,11 +72,11 @@ try {
 
     $termId = dmportal_get_term_id_from_request($pdo, $_GET);
 
-    // Try to load config — if not found with the resolved doctor_id, scan all assigned
+    // Try to load config - if not found with the resolved doctor_id, scan all assigned
     // teachers for this course and use the first one that has a config.
     $config = dmportal_eval_fetch_config($pdo, $courseId, $configDoctorId, $termId);
     if ((!$config || empty($config['items'])) && $configDoctorId === 0) {
-        // No global config — try each assigned teacher
+        // No global config - try each assigned teacher
         $assignedStmt = $pdo->prepare(
             'SELECT doctor_id FROM course_doctors WHERE course_id = :course_id ORDER BY doctor_id ASC'
         );

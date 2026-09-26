@@ -19,7 +19,7 @@ function json_error(int $code, string $message): never
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Auth — 401 if not logged in
+// Auth - 401 if not logged in
 // ─────────────────────────────────────────────────────────────────────────────
 auth_require_login(true);
 
@@ -135,7 +135,7 @@ try {
         . "filename*=UTF-8''" . $encodedFilename;
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Stream the file — NO JSON output after this point.
+    // Stream the file - NO JSON output after this point.
     // If an error occurs after headers are sent, abort silently.
     // ─────────────────────────────────────────────────────────────────────────
     header('Content-Type: ' . $contentType);
@@ -155,5 +155,5 @@ try {
     if (!headers_sent()) {
         json_error(500, 'Internal server error.');
     }
-    // If headers were already sent, abort silently — do NOT corrupt the partial stream
+    // If headers were already sent, abort silently - do NOT corrupt the partial stream
 }

@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, escapeHtml, setStatusById } = window.dmportal || {};
@@ -10,9 +10,9 @@
   };
 
   function formatMaybe(value) {
-    if (value === null || value === undefined || value === "") return "—";
+    if (value === null || value === undefined || value === "") return "-";
     const num = Number(value);
-    if (!Number.isFinite(num)) return "—";
+    if (!Number.isFinite(num)) return "-";
     return num.toFixed(2);
   }
 
@@ -78,7 +78,7 @@
     document.getElementById("evaluationReportsAvgFinal").textContent = avgFinal;
     
     const avgAttendance = formatMaybe(metrics.avg_attendance);
-    document.getElementById("evaluationReportsAvgAttendance").textContent = avgAttendance === "—" ? "—" : `${avgAttendance}%`;
+    document.getElementById("evaluationReportsAvgAttendance").textContent = avgAttendance === "-" ? "-" : `${avgAttendance}%`;
   }
 
   function renderRows(body, courses) {
@@ -108,7 +108,7 @@
             ${avgFinal}
           </span>
         </td>
-        <td style="text-align:center;">${avgAttendance === "—" ? "—" : `${avgAttendance}%`}</td>
+        <td style="text-align:center;">${avgAttendance === "-" ? "-" : `${avgAttendance}%`}</td>
         <td style="text-align:center;">${escapeHtml(course.graded_count ?? 0)}</td>
       `;
       body.appendChild(tr);

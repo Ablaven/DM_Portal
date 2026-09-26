@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { 
@@ -744,7 +744,7 @@
       return;
     }
 
-    if (title) title.textContent = doctorName ? `${doctorName} — Availability` : "Doctor Availability";
+    if (title) title.textContent = doctorName ? `${doctorName} - Availability` : "Doctor Availability";
     if (subtitle) subtitle.textContent = "Manage availability for the selected week";
   }
 

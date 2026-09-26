@@ -207,7 +207,7 @@ if ($errors) {
     $hint = '';
     if (stripos($errors[0], 'already exists') !== false && !$replaceExisting) {
         $hint = "\n\nTip: Leave \"Skip DROP before CREATE\" unchecked (default). You checked it but your "
-            . 'database already has tables — either import into an empty database or leave skip unchecked '
+            . 'database already has tables - either import into an empty database or leave skip unchecked '
             . 'so each CREATE is preceded by DROP TABLE IF EXISTS.';
     } elseif (stripos($errors[0], 'errno: 150') !== false
         || stripos($errors[0], 'Foreign key constraint is incorrectly formed') !== false) {

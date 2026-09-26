@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --egg-bg:     #05020f;
   --egg-purple: #a240ff;
   --egg-pink:   #ff66d8;
@@ -107,7 +107,7 @@ body.ablaven-egg .egg-wrap::after {
 }
 
 .egg-enter {
-  /* perspective is applied inline via JS perspective() in the card transform — no CSS perspective needed */
+  /* perspective is applied inline via JS perspective() in the card transform - no CSS perspective needed */
 }
 
 /* ─────────────────────────────────────────────
@@ -133,7 +133,7 @@ body.ablaven-egg .egg-wrap::after {
   will-change: transform;
 }
 
-/* Spotlight that follows mouse — pure ::after, no ::before conflict */
+/* Spotlight that follows mouse - pure ::after, no ::before conflict */
 .egg-card::after {
   content: "";
   position: absolute;
@@ -151,7 +151,7 @@ body.ablaven-egg .egg-wrap::after {
     );
 }
 
-/* ::before — subtle top highlight edge only */
+/* ::before - subtle top highlight edge only */
 .egg-card::before {
   content: "";
   position: absolute;
@@ -358,7 +358,7 @@ body.ablaven-egg .egg-wrap::after {
 }
 
 /* ─────────────────────────────────────────────
-   BADGE — neon flicker
+   BADGE - neon flicker
 ───────────────────────────────────────────── */
 .egg-badge {
   display: inline-flex;
@@ -415,7 +415,7 @@ body.ablaven-egg .btn:hover {
 
 /* ─────────────────────────────────────────────
    ENTRANCE ANIMATION
-   — opacity only on .egg-enter, JS owns transform on .egg-card
+   - opacity only on .egg-enter, JS owns transform on .egg-card
 ───────────────────────────────────────────── */
 .egg-enter {
   opacity: 0;
@@ -425,7 +425,7 @@ body.ablaven-egg .btn:hover {
   transition: opacity .65s cubic-bezier(.22,1,.36,1);
 }
 
-/* No CSS transform/animation on .egg-card — JS RAF owns transform entirely */
+/* No CSS transform/animation on .egg-card - JS RAF owns transform entirely */
 
 /* ─────────────────────────────────────────────
    PARTICLE CANVAS
@@ -474,10 +474,10 @@ body.ablaven-egg .btn:hover {
 /* ─────────────────────────────────────────────
    NEUTRALISE style.css .card overrides on egg card
 ───────────────────────────────────────────── */
-/* Kill any CSS transform transition — JS RAF is sole driver of the tilt */
+/* Kill any CSS transform transition - JS RAF is sole driver of the tilt */
 body.ablaven-egg .egg-card,
 body.ablaven-egg .egg-card:hover {
-  /* no transform transition — would fight the JS lerp */
+  /* no transform transition - would fight the JS lerp */
 }
 
 /* ─────────────────────────────────────────────

@@ -157,7 +157,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
 
       firstAdminForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        setFirstStatus('Creating…', true);
+        setFirstStatus('Creatingâ€¦', true);
         try {
           const fd = new FormData(firstAdminForm);
           const resp = await fetch('php/auth_create_first_admin.php', { method: 'POST', body: fd });
@@ -175,7 +175,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        setStatus('Logging in…');
+        setStatus('Logging inâ€¦');
         const fd = new FormData(form);
 
         try {

@@ -46,7 +46,7 @@ function render_portal_navbar(string $activePage): void
     auth_render_nav_link('availability.php', 'Availability', $activePage);
     auth_render_nav_link('attendance.php', 'Attendance', $activePage);
 
-    // Student Schedule — label depends on role.
+    // Student Schedule - label depends on role.
     if ($role === 'student') {
         auth_render_nav_link('students.php', 'My Schedule', $activePage);
     } else {
@@ -55,12 +55,12 @@ function render_portal_navbar(string $activePage): void
 
     auth_render_nav_link('evaluation.php', 'Evaluation', $activePage);
 
-    // My Schedule (doctor.php) — teachers only.
+    // My Schedule (doctor.php) - teachers only.
     if ($role === 'teacher' && auth_can_access_page('doctor.php')) {
         auth_render_nav_link('doctor.php', 'My Schedule', $activePage);
     }
 
-    // Lectures — show in primary navbar for ALL roles except admin/management
+    // Lectures - show in primary navbar for ALL roles except admin/management
     // (admin/management see it in the Admin dropdown instead)
     if ($role === 'teacher' || $role === 'student') {
         auth_render_nav_link('lectures.php', 'Lectures', $activePage);
@@ -86,7 +86,7 @@ function render_portal_navbar(string $activePage): void
         echo '</button>';
         echo '<div class="dropdown" role="menu" aria-label="Admin menu">';
 
-        // — Section: Manage ——————————————————————————————————————————
+        // - Section: Manage ------------------------------------------
         // Helper: render a rich dropdown item with icon + label + optional sub-text
         $ddItem = function(string $href, string $icon, string $label, string $sub, bool $isActive) {
             $activeClass = $isActive ? ' active' : '';

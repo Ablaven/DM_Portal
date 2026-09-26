@@ -39,6 +39,28 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
 
     <div id="evaluationAlert" class="alert" role="alert" hidden></div>
 
+    <!-- Summary Stats -->
+    <section class="card" id="evaluationSummaryStats" style="margin-bottom:20px; display:none;">
+      <div style="display:flex; gap:20px; flex-wrap:wrap; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="flex:1; min-width:150px;">
+          <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Total Students</div>
+          <div style="font-size:1.8rem; font-weight:700;" id="statTotalStudents">—</div>
+        </div>
+        <div style="flex:1; min-width:150px;">
+          <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Graded</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--success);" id="statGraded">—</div>
+        </div>
+        <div style="flex:1; min-width:150px;">
+          <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Pending</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--danger);" id="statPending">—</div>
+        </div>
+        <div style="flex:1; min-width:150px;">
+          <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Class Average</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--accent);" id="statAvgScore">—</div>
+        </div>
+      </div>
+    </section>
+
     <section class="card">
       <div class="schedule-header">
         <div class="filter-bar">
@@ -98,21 +120,23 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
       <div class="tab-panels">
         <?php if ($canConfigure) { ?>
           <section class="tab-panel" data-tab-panel="config">
-            <div class="card-header mt-12">
-              <h2>Parameters</h2>
-              <button id="saveEvaluationConfig" class="btn btn-small" type="button">Save Configuration</button>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
+              <div>
+                <h2 style="font-size:1.125rem; font-weight:700; margin:0 0 4px 0;">Evaluation Parameters</h2>
+                <p class="muted" style="margin:0; font-size:0.875rem;">Add items per category. Total marks across all items must equal 100.</p>
+              </div>
+              <button id="saveEvaluationConfig" class="btn btn-primary btn-small" type="button">Save Configuration</button>
             </div>
 
-            <p class="muted mb-8">Add items per category. Total marks across all items must equal 100.</p>
-            <div id="evaluationConfigTotal" class="muted mb-8"></div>
+            <div id="evaluationConfigTotal" class="muted" style="margin-bottom:16px; font-weight:600;"></div>
 
-            <div class="schedule-wrap table-wrap">
-              <table class="schedule-grid" aria-label="Evaluation parameters">
+            <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--card-border); margin-bottom:16px;">
+              <table class="schedule-grid" aria-label="Evaluation parameters" style="margin:0;">
                 <thead>
                   <tr>
                     <th style="width:200px;">Category</th>
-                    <th style="width:260px;">Item Name</th>
-                    <th style="width:160px;" class="col-number">Mark</th>
+                    <th style="width:auto;">Item Name</th>
+                    <th style="width:140px;" class="col-number">Mark</th>
                     <th style="width:180px;">Actions</th>
                   </tr>
                 </thead>
@@ -120,36 +144,37 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
               </table>
             </div>
 
-            <div class="legend mt-12">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <button id="addEvaluationItem" class="btn btn-secondary btn-small" type="button">Add Item</button>
-              <span class="muted" style="margin-left:8px;">Attendance can be included to auto-calculate from attendance records.</span>
+              <span class="muted" style="font-size:0.875rem;">Attendance can be included to auto-calculate from attendance records.</span>
             </div>
 
-            <div id="evaluationConfigStatus" class="status" role="status" aria-live="polite"></div>
+            <div id="evaluationConfigStatus" class="status" role="status" aria-live="polite" style="margin-top:16px;"></div>
           </section>
         <?php } ?>
 
         <section class="tab-panel" data-tab-panel="grading" <?php echo $canConfigure ? 'hidden' : ''; ?>>
-          <div class="card-header mt-12">
-            <h2>Student Grades</h2>
-            <button id="saveEvaluationGrades" class="btn btn-small" type="button">Save Grades</button>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:20px; flex-wrap:wrap;">
+            <div>
+              <h2 style="font-size:1.125rem; font-weight:700; margin:0 0 4px 0;">Student Grades</h2>
+              <p class="muted" style="margin:0; font-size:0.875rem;">Attendance is calculated automatically. Each grade must be between 0 and the assigned mark.</p>
+            </div>
+            <button id="saveEvaluationGrades" class="btn btn-primary btn-small" type="button">Save Grades</button>
           </div>
 
-          <p class="muted mb-8">Attendance is calculated automatically from the Attendance page. Each grade must be between 0 and the assigned mark.</p>
-
-          <div class="field mb-12" style="max-width:320px;">
-            <label for="evaluationStudentSearch">Search</label>
-            <input id="evaluationStudentSearch" type="text" placeholder="Type a student nameâ€¦" />
+          <div class="field" style="max-width:400px; margin-bottom:20px;">
+            <label for="evaluationStudentSearch" style="font-size:0.875rem; font-weight:600;">Search Students</label>
+            <input id="evaluationStudentSearch" type="text" placeholder="Type a student name..." />
           </div>
 
-          <div class="schedule-wrap table-wrap" style="max-height:60vh;">
-            <table class="schedule-grid eval-grades-table" aria-label="Evaluation grades list">
+          <div style="overflow:auto; max-height:60vh; border-radius:12px; border:1px solid var(--card-border);">
+            <table class="schedule-grid eval-grades-table" aria-label="Evaluation grades list" style="margin:0;">
               <thead id="evaluationGradesHead"></thead>
               <tbody id="evaluationGradesBody"></tbody>
             </table>
           </div>
 
-          <div id="evaluationGradesStatus" class="status" role="status" aria-live="polite"></div>
+          <div id="evaluationGradesStatus" class="status" role="status" aria-live="polite" style="margin-top:16px;"></div>
         </section>
       </div>
     </section>

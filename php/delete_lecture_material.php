@@ -80,7 +80,7 @@ try {
     $stmt->execute([':material_id' => $materialId]);
 
     if ($stmt->rowCount() === 0) {
-        // Row was already gone — treat as 404
+        // Row was already gone - treat as 404
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Material not found.']);
         exit;
@@ -96,7 +96,7 @@ try {
                 . $filePath
                 . ' for material_id=' . $materialId
             );
-            // Log error but still return success — DB row is already deleted
+            // Log error but still return success - DB row is already deleted
         }
     }
 

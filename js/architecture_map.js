@@ -1,4 +1,4 @@
-/* ============================================
+﻿/* ============================================
    ARCHITECTURE MAP - MODERN CLEAN VERSION
    ============================================ */
 
@@ -177,7 +177,7 @@
         const cells = roles.map(role =>
           page.roles.includes(role)
             ? '<td class="arch-access-yes">✓</td>'
-            : '<td class="arch-access-no">—</td>'
+            : '<td class="arch-access-no">-</td>'
         ).join('');
 
         return `<tr><td>${escapeHtml(page.name)}</td>${cells}</tr>`;

@@ -7,7 +7,7 @@ require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_lecture_materials_helpers.php';
 
 // ---------------------------------------------------------------------------
-// Auth — 401 if not logged in
+// Auth - 401 if not logged in
 // ---------------------------------------------------------------------------
 auth_require_login(true);
 

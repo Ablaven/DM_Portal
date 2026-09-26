@@ -7,7 +7,7 @@ declare(strict_types=1);
  * No database required.
  *
  * Policy:
- *   - 5 failed attempts within 10 minutes → 15-minute lockout
+ *   - 5 failed attempts within 10 minutes â†’ 15-minute lockout
  *   - After lockout expires, counter resets
  */
 

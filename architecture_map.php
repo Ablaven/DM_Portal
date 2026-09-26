@@ -43,7 +43,7 @@ auth_require_roles(['admin']);
         </div>
         <div class="arch-stat-content">
           <div class="arch-stat-label">Database Tables</div>
-          <div class="arch-stat-value" id="statsTableCount">—</div>
+          <div class="arch-stat-value" id="statsTableCount">-</div>
         </div>
       </div>
       
@@ -56,7 +56,7 @@ auth_require_roles(['admin']);
         </div>
         <div class="arch-stat-content">
           <div class="arch-stat-label">PHP Pages</div>
-          <div class="arch-stat-value" id="statsPageCount">—</div>
+          <div class="arch-stat-value" id="statsPageCount">-</div>
         </div>
       </div>
       
@@ -69,7 +69,7 @@ auth_require_roles(['admin']);
         </div>
         <div class="arch-stat-content">
           <div class="arch-stat-label">API Endpoints</div>
-          <div class="arch-stat-value" id="statsEndpointCount">—</div>
+          <div class="arch-stat-value" id="statsEndpointCount">-</div>
         </div>
       </div>
       

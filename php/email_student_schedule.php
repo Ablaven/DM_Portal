@@ -134,7 +134,7 @@ try {
     }
 
     $xlsx = new SimpleXlsxWriter();
-    $title = "Student Schedule — {$program} — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $title = "Student Schedule - {$program} - Year {$yearLevel} - Sem {$semester} - {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];
@@ -219,7 +219,7 @@ try {
     $xlsxBytes = $xlsx->downloadToString($fileName);
 
     $weekTypePrefix = $isRamadanWeek ? 'Ramadan ' : '';
-    $subject = "{$weekTypePrefix}Student Schedule — Year {$yearLevel} — Sem {$semester} — {$weekLabel}";
+    $subject = "{$weekTypePrefix}Student Schedule - Year {$yearLevel} - Sem {$semester} - {$weekLabel}";
     $body = "Dear Students,\n\nPlease find attached the " . ($isRamadanWeek ? 'Ramadan ' : '') . "schedule for {$program} (Year {$yearLevel}, Semester {$semester}) for {$weekLabel}." .
         "\n\nIf you have any questions or require clarification, please contact the Academic Office." .
         "\n\nKind regards,\nDigital Marketing Portal";

@@ -39,27 +39,27 @@ $isTeacher = $role === 'teacher';
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Professors</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalDoctors">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalDoctors">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalCourses">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalCourses">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Allocated Hours</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalAllocated">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="hoursReportTotalAllocated">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Assigned Hours</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportTotalAssigned">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportTotalAssigned">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Done Hours</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="hoursReportTotalDone">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="hoursReportTotalDone">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Completion Rate</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportCompletionRate">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="hoursReportCompletionRate">-</div>
           </div>
         </div>
       </div>

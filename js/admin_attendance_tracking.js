@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, setStatusById, escapeHtml } = window.dmportal || {};
@@ -285,11 +285,11 @@
         const d = new Date(item.lecture_date + 'T00:00:00');
         dateCell.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       } else {
-        dateCell.textContent = "—";
+        dateCell.textContent = "-";
       }
 
       // Day
-      row.insertCell().textContent = item.day_of_week || "—";
+      row.insertCell().textContent = item.day_of_week || "-";
 
       // Time
       const timeCell = row.insertCell();
@@ -297,7 +297,7 @@
         const [start, end] = item.lecture_time.split(' - ');
         timeCell.innerHTML = `<div style="white-space:nowrap;">${start}</div><div style="white-space:nowrap;font-size:0.85rem;color:var(--muted);">${end}</div>`;
       } else {
-        timeCell.textContent = "—";
+        timeCell.textContent = "-";
       }
 
       // Course

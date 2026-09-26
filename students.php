@@ -36,7 +36,7 @@ if ($isStudent) {
     }
 }
 
-// Combined student schedule by Program + Year (Sun–Thu).
+// Combined student schedule by Program + Year (Sunâ€“Thu).
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -81,7 +81,7 @@ if ($isStudent) {
           <div class="field">
             <label for="studentWeekSelect">Week</label>
             <select id="studentWeekSelect">
-              <option value="">Loading…</option>
+              <option value="">Loadingâ€¦</option>
             </select>
           </div>
         </div>
@@ -90,7 +90,7 @@ if ($isStudent) {
           <div class="field">
             <label for="studentWeekSelect">Week</label>
             <select id="studentWeekSelect">
-              <option value="">Loading…</option>
+              <option value="">Loadingâ€¦</option>
             </select>
           </div>
         </div>

@@ -50,19 +50,19 @@ $isTeacher = $role === 'teacher';
       <div id="reportsHubStats" style="display:flex; gap:20px; flex-wrap:wrap; padding:14px 0;">
         <div style="flex:1; min-width:150px;">
           <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">📊 Active Courses</div>
-          <div style="font-size:1.8rem; font-weight:700;" id="statsActiveCourses">—</div>
+          <div style="font-size:1.8rem; font-weight:700;" id="statsActiveCourses">-</div>
         </div>
         <div style="flex:1; min-width:150px;">
           <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">👥 Total Students</div>
-          <div style="font-size:1.8rem; font-weight:700;" id="statsTotalStudents">—</div>
+          <div style="font-size:1.8rem; font-weight:700;" id="statsTotalStudents">-</div>
         </div>
         <div style="flex:1; min-width:150px;">
           <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">👨‍🏫 Professors</div>
-          <div style="font-size:1.8rem; font-weight:700;" id="statsTotalDoctors">—</div>
+          <div style="font-size:1.8rem; font-weight:700;" id="statsTotalDoctors">-</div>
         </div>
         <div style="flex:1; min-width:150px;">
           <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">⏱️ Total Hours</div>
-          <div style="font-size:1.8rem; font-weight:700; color:var(--accent);" id="statsTotalHours">—</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--accent);" id="statsTotalHours">-</div>
         </div>
       </div>
     </section>

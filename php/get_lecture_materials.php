@@ -16,7 +16,7 @@ $role = (string)($u['role'] ?? '');
 try {
     $pdo = get_pdo();
 
-    // Must run before any query — uses static $done guard so safe to call here.
+    // Must run before any query - uses static $done guard so safe to call here.
     dmportal_ensure_lecture_materials_table($pdo);
 
     $hasCourseId = isset($_GET['course_id']) && $_GET['course_id'] !== '';

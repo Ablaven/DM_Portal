@@ -36,19 +36,19 @@ auth_require_roles(['admin','management']);
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Doctors</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="doctorsTotalCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="doctorsTotalCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Egyptian</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="doctorsEgyptianCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#10b981;" id="doctorsEgyptianCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">French</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="doctorsFrenchCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#3b82f6;" id="doctorsFrenchCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">With Phone</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="doctorsWithPhoneCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="doctorsWithPhoneCount">-</div>
           </div>
         </div>
       </div>

@@ -93,23 +93,23 @@ if ($doctorId > 0) {
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Courses</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorCourses">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorCourses">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 1</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear1">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear1">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 2</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear2">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear2">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Year 3</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear3">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorYear3">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Hours</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorHours">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorHours">-</div>
           </div>
         </div>
       </div>

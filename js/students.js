@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, getGlobalFilters, setGlobalFilters, initPageFiltersUI, formatWeekLabelWithRange, formatWeekDisplayLabel } = window.dmportal || {};
@@ -55,7 +55,7 @@
             cell.innerHTML = `<div class="slot-title">${escapeHtml(assigned.course_name)}</div><div class="slot-sub">${line2}</div>`;
           }
         } else {
-          cell.innerHTML = `<div class="slot-title">—</div><div class="slot-sub">Empty</div>`;
+          cell.innerHTML = `<div class="slot-title">-</div><div class="slot-sub">Empty</div>`;
         }
 
         td.appendChild(cell);

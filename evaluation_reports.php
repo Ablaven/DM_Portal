@@ -118,11 +118,11 @@ $isTeacher = $role === 'teacher';
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Avg Final Grade</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="evaluationReportsAvgFinal">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="evaluationReportsAvgFinal">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Avg Attendance</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="evaluationReportsAvgAttendance">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="evaluationReportsAvgAttendance">-</div>
           </div>
         </div>
       </div>

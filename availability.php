@@ -47,19 +47,19 @@ if ($role === 'teacher') {
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Available Slots</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsAvailableSlots">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsAvailableSlots">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Not Set</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsUnavailableSlots">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsUnavailableSlots">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Blocked Periods</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="statsBlockedSlots">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="statsBlockedSlots">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Availability</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="statsAvailabilityPercent">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="statsAvailabilityPercent">-</div>
           </div>
         </div>
       </div>

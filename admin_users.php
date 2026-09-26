@@ -36,23 +36,23 @@ auth_require_roles(['admin']);
         <div style="display:flex; gap:20px; flex-wrap:wrap;">
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Users</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="usersTotalCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="usersTotalCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Admins</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="usersAdminCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="usersAdminCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Teachers</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersTeacherCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersTeacherCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Students</div>
-            <div style="font-size:1.5rem; font-weight:700; color:#60a5fa;" id="usersStudentCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#60a5fa;" id="usersStudentCount">-</div>
           </div>
           <div>
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Active</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersActiveCount">—</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="usersActiveCount">-</div>
           </div>
         </div>
       </div>

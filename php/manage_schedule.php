@@ -118,11 +118,11 @@ try {
 
     // Prevent scheduling on unavailable time ranges
     // Slot times (must match JS):
-    // 1) 08:30–10:00
-    // 2) 10:10–11:30
-    // 3) 11:40–13:00
-    // 4) 13:10–14:40
-    // 5) 14:50–16:20
+    // 1) 08:30â€“10:00
+    // 2) 10:10â€“11:30
+    // 3) 11:40â€“13:00
+    // 4) 13:10â€“14:40
+    // 5) 14:50â€“16:20
     $slotStarts = [
         1 => '08:30:00',
         2 => '10:10:00',
@@ -344,7 +344,7 @@ try {
 
     // If slot was empty OR course changed, ensure remaining hours allow this assignment.
     // When course_doctor_hours has rows for the course, cap by that doctor's split (matches get_courses.php).
-    // Otherwise use course-level remaining: total_hours − scheduled slot hours (excluding cancellations).
+    // Otherwise use course-level remaining: total_hours âˆ’ scheduled slot hours (excluding cancellations).
     if ((!$existing || $existingCourseId !== $courseId) && $countsTowardsHours === 1 && !$isZeroHourCourse) {
         $hasSplitHours = false;
         $doctorAllocated = 0.0;

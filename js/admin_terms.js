@@ -1,4 +1,4 @@
-(() => {
+﻿(() => {
   const { fetchJson, setStatusById } = window.dmportal || {};
   if (!fetchJson) return;
 
@@ -67,7 +67,7 @@
           body: new URLSearchParams({ term_id: resetPendingTermId, start_date: startDate }),
         });
         closeResetModal();
-        setStatusById("termStatus", "Weeks reset — Week 1 created.", "success");
+        setStatusById("termStatus", "Weeks reset - Week 1 created.", "success");
         await loadData();
       } catch (err) {
         setStatusById("resetWeeksStatus", err.message || "Failed to reset weeks.", "error");
@@ -162,7 +162,7 @@
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    // Show all terms grouped — filter by selected year
+    // Show all terms grouped - filter by selected year
     const filtered = state.selectedYearId
       ? state.terms.filter((t) => Number(t.academic_year_id) === Number(state.selectedYearId))
       : state.terms;

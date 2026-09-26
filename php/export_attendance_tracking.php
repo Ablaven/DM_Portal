@@ -150,7 +150,7 @@ try {
 
         // Format course info better
         $courseInfo = $row['course_name'];
-        $subjectCode = $row['subject_code'] ? $row['subject_code'] : '—';
+        $subjectCode = $row['subject_code'] ? $row['subject_code'] : '-';
         $programInfo = $row['program'] . ' Y' . $row['year_level'] . ' S' . $row['semester'];
 
         // Data

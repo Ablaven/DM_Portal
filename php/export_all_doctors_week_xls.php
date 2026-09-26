@@ -171,8 +171,8 @@ try {
         // Note: each scheduled cell can have a different color (per-year overrides),
         // so we compute the fill style per cell below.
 
-        $termLabel = $termSemester > 0 ? " — Sem {$termSemester}" : '';
-        $title = "{$docName}{$termLabel} — {$weekLabel}";
+        $termLabel = $termSemester > 0 ? " - Sem {$termSemester}" : '';
+        $title = "{$docName}{$termLabel} - {$weekLabel}";
 
         $dataRows = [];
         $styleMap = [];

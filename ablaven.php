@@ -21,7 +21,7 @@ require_once __DIR__ . '/php/require_easter_egg.php';
   <div id="achievementContainer" class="achievement-container"></div>
   
   <!-- Sound Toggle Button -->
-  <button id="soundToggle" class="sound-toggle-btn" aria-label="Toggle sound">🔊 Sound ON</button>
+  <button id="soundToggle" class="sound-toggle-btn" aria-label="Toggle sound">ðŸ”Š Sound ON</button>
 
   <?php require_once __DIR__ . '/php/_navbar.php'; render_portal_brand_header('index.php'); ?>
 
@@ -44,7 +44,7 @@ require_once __DIR__ . '/php/require_easter_egg.php';
 
             <p class="egg-sub">
               Thanks for checking it out. <strong>Click anywhere for fireworks!</strong><br>
-              <em style="opacity:0.6;">Hint: Try the Konami code... ↑↑↓↓←→←→BA</em>
+              <em style="opacity:0.6;">Hint: Try the Konami code... â†‘â†‘â†“â†“â†â†’â†â†’BA</em>
             </p>
 
             <div class="egg-actions">

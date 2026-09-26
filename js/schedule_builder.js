@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl, formatWeekLabelWithRange, formatWeekDisplayLabel } = window.dmportal || {};
@@ -221,7 +221,7 @@
   const list = document.getElementById("coursesList");
   if (!list) return;
 
-  // Zero-hour courses may have 0 remaining hours by design — include them regardless.
+  // Zero-hour courses may have 0 remaining hours by design - include them regardless.
   // We treat either:
   // - course_type === "ZH" (explicit zero-hour type), OR
   // - total_hours === 0 (legacy/explicit 0-hour course)
@@ -1249,7 +1249,7 @@
   if (roomInput) roomInput.value = preferredRoomCode ? String(preferredRoomCode) : "";
 
   // counts towards hours
-  // Zero-hour courses default to NOT counting towards hours — their purpose is scheduling
+  // Zero-hour courses default to NOT counting towards hours - their purpose is scheduling
   // without affecting hour tracking. If explicitly saved otherwise, respect that saved value.
   const cth = document.getElementById("modal_counts_towards_hours");
   if (cth) {

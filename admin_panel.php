@@ -98,7 +98,7 @@ $importStatus = $_GET['import_status'] ?? '';
 
       <!-- STEP 2a: Sem 1→2 confirm -->
       <div id="wizStep2a" class="wiz-step" style="display:none;">
-        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance — here's what will happen:</p>
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance - here's what will happen:</p>
         <div id="wizStep2aSummary" style="background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px; padding:16px 18px; margin-bottom:18px; line-height:2;"></div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button id="wizStep2aConfirm" class="btn" type="button">Advance to Semester 2</button>
@@ -107,7 +107,7 @@ $importStatus = $_GET['import_status'] ?? '';
         <div id="wizStep2aStatus" class="status" role="status" style="margin-top:10px;"></div>
       </div>
 
-      <!-- STEP 2b: Sem 2→Year — student rule -->
+      <!-- STEP 2b: Sem 2→Year - student rule -->
       <div id="wizStep2b" class="wiz-step" style="display:none;">
         <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">What should happen to students?</p>
         <div class="field" style="margin:0 0 16px; max-width:360px;">
@@ -149,7 +149,7 @@ $importStatus = $_GET['import_status'] ?? '';
 
       <!-- STEP 3b: Year advance confirm -->
       <div id="wizStep3b" class="wiz-step" style="display:none;">
-        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance — here's what will happen:</p>
+        <p class="muted" style="margin:0 0 14px; font-size:0.95rem;">Ready to advance - here's what will happen:</p>
         <div id="wizStep3bSummary" style="background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px; padding:16px 18px; margin-bottom:18px; line-height:2;"></div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button id="wizStep3bConfirm" class="btn" type="button">Start New Academic Year</button>

@@ -29,7 +29,7 @@ try {
         $hasCdh = false;
     }
 
-    // Joins for per-course remaining subquery (alias c0) — avoids row multiplication from course_doctors before GROUP BY.
+    // Joins for per-course remaining subquery (alias c0) - avoids row multiplication from course_doctors before GROUP BY.
     $hJoinC0 = $hasCdh
         ? 'LEFT JOIN course_doctor_hours h ON h.course_id = c0.course_id AND h.doctor_id = :doctor_id_h'
         : 'LEFT JOIN (SELECT NULL AS course_id, NULL AS doctor_id, NULL AS allocated_hours) h ON 1=0';

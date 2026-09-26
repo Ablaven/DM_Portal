@@ -26,7 +26,7 @@ try {
         bad_request('A valid semester (1 or 2) is required.');
     }
 
-    // Auto-generate label from semester number — no free-text label allowed.
+    // Auto-generate label from semester number - no free-text label allowed.
     // This ensures labels are always "Semester 1" or "Semester 2" and never
     // contain raw term IDs or confusing custom text like "Year X Semester X Term X".
     $label = 'Semester ' . $semester;

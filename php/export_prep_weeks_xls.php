@@ -66,7 +66,7 @@ try {
     ];
 
     $xlsx = new SimpleXlsxWriter();
-    $termLabel = $termSemester > 0 ? " — Sem {$termSemester}" : '';
+    $termLabel = $termSemester > 0 ? " - Sem {$termSemester}" : '';
 
     // Create a sheet for each prep week
     foreach ($prepWeeks as $week) {
@@ -182,7 +182,7 @@ try {
         $rowHeights = [];
 
         // Row 1: title
-        $title = "Prep Week Schedule{$termLabel} — {$weekLabel}";
+        $title = "Prep Week Schedule{$termLabel} - {$weekLabel}";
         $dataRows[] = [$title, '', '', '', '', ''];
         $styleMap[] = [0 => $xlsx->styleTitle()];
         $rowHeights[] = 24;

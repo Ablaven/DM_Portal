@@ -49,7 +49,7 @@ auth_require_roles(['admin','management']);
           <div class="field" style="flex:1; min-width:220px;">
             <label class="field-label" for="weekSelect">Week</label>
             <select id="weekSelect" class="form-control">
-              <option value="">Loading weeks…</option>
+              <option value="">Loading weeksâ€¦</option>
             </select>
           </div>
 
@@ -57,7 +57,7 @@ auth_require_roles(['admin','management']);
           <div class="field" style="flex:1; min-width:220px;">
             <label class="field-label" for="doctorSelect">Doctor</label>
             <select id="doctorSelect" class="form-control">
-              <option value="">Loading doctors…</option>
+              <option value="">Loading doctorsâ€¦</option>
             </select>
           </div>
 
@@ -252,7 +252,7 @@ auth_require_roles(['admin','management']);
 
       <section class="panel">
         <div class="schedule-header">
-          <div id="scheduleMetaHint" class="muted">Week starts Sunday • Each slot = 1 hour 30 minutes</div>
+          <div id="scheduleMetaHint" class="muted">Week starts Sunday â€¢ Each slot = 1 hour 30 minutes</div>
           <div class="page-actions">
             <div class="field" style="margin:0;"><label class="muted" style="font-size:0.85rem;" for="studentProgramSelect">Student Program</label><select id="studentProgramSelect" class="navlink"><option value="">Select program</option></select></div>
             <div class="field" style="margin:0;"><label class="muted" style="font-size:0.85rem;" for="studentYearSelect">Student Year</label><select id="studentYearSelect" class="navlink"><option value="">Year</option><option value="1">Year 1</option><option value="2">Year 2</option><option value="3">Year 3</option></select></div>
@@ -348,7 +348,7 @@ auth_require_roles(['admin','management']);
 
         <div class="field">
           <label for="modal_room_code">Room / Lab</label>
-          <input id="modal_room_code" type="text" placeholder="e.g. Lab A • 101" maxlength="50" />
+          <input id="modal_room_code" type="text" placeholder="e.g. Lab A â€¢ 101" maxlength="50" />
         </div>
         <small class="hint">Enter the room or lab name/code (optional).</small>
 

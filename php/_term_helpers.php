@@ -205,7 +205,7 @@ function dmportal_reset_weeks_for_term(PDO $pdo, int $termId, ?string $startDate
     $pdo->prepare("UPDATE weeks SET status='closed', end_date = COALESCE(end_date, CURDATE()) WHERE term_id = :term_id AND status='active'")
         ->execute([':term_id' => $termId]);
 
-    // Always start at Week 1 on reset — existing weeks are closed and a fresh week 1 begins.
+    // Always start at Week 1 on reset - existing weeks are closed and a fresh week 1 begins.
     $label = 'Week 1';
 
     $stmt = $pdo->prepare('INSERT INTO weeks (term_id, label, start_date, status, is_prep) VALUES (:term_id, :label, :start_date, :status, :is_prep)');
@@ -318,7 +318,7 @@ function dmportal_apply_student_actions(PDO $pdo, array $actions): void
         }
     }
 
-    // "repeat" students stay at their current year_level — no DB change needed
+    // "repeat" students stay at their current year_level - no DB change needed
 
     foreach ($graduate as $studentId) {
         $studentId = (int)$studentId;

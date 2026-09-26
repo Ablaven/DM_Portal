@@ -201,10 +201,10 @@ try {
     $lateCount = (int)($attendanceRow['late_count'] ?? 0);
 
     // Step 6: Calculate attendance rate
-    // attendance_rate = (present_count / total_scheduled) × 100
+    // attendance_rate = (present_count / total_scheduled) Ã— 100
     // Round to one decimal place
     // Handle division by zero (no scheduled classes)
-    // Requirement 4.5: Compute attendance_rate as (present_count / total_scheduled_count) × 100
+    // Requirement 4.5: Compute attendance_rate as (present_count / total_scheduled_count) Ã— 100
     // Requirement 4.7: Handle zero attendance records scenario
     // Requirement 4.8: Round attendance_rate to one decimal place
     $attendanceRate = 0.0;

@@ -200,14 +200,25 @@
     const hasStatus = status === "PRESENT" || status === "ABSENT";
     const isLocked = scheduleLocked || (!isAdmin && Boolean(s.attendance_locked));
 
-    // Default is unchecked => Absent
     tr.innerHTML = `
-      <td class="muted">${escapeHtml(s.student_code || s.student_id || "")}</td>
-      <td class="student-name">${escapeHtml(s.full_name || "")}</td>
-      <td class="attendance-cell">
-        <label class="chk">
-          <input type="checkbox" class="attendance-present" ${isPresent ? "checked" : ""} ${isLocked ? "disabled" : ""} />
-        </label>
+      <td class="muted" style="font-family: 'Courier New', monospace; font-weight:600;">${escapeHtml(s.student_code || s.student_id || "")}</td>
+      <td class="student-name" style="font-weight:600;">${escapeHtml(s.full_name || "")}</td>
+      <td style="text-align:center;">
+        <div class="attendance-status-btns">
+          <button type="button" class="attendance-status-btn present ${isPresent ? 'active' : ''}" data-status="PRESENT" ${isLocked ? 'disabled' : ''}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle; margin-right:4px;">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Present
+          </button>
+          <button type="button" class="attendance-status-btn absent ${!isPresent ? 'active' : ''}" data-status="ABSENT" ${isLocked ? 'disabled' : ''}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M15 9l-6 6M9 9l6 6"/>
+            </svg>
+            Absent
+          </button>
+        </div>
       </td>
     `;
 
@@ -401,26 +412,34 @@
       setStatusById("attendanceModalStatus", "Unsaved changes", "warn");
     }
 
-    document.getElementById("attendanceModalBody")?.addEventListener("change", (e) => {
-      const inp = e.target;
-      if (!(inp instanceof HTMLInputElement)) return;
-      if (inp.type !== "checkbox" || !inp.classList.contains("attendance-present")) return;
+    document.getElementById("attendanceModalBody")?.addEventListener("click", (e) => {
+      const btn = e.target.closest(".attendance-status-btn");
+      if (!btn || btn.disabled) return;
 
-      const tr = inp.closest("tr");
+      const tr = btn.closest("tr");
       const studentId = Number(tr?.dataset?.studentId || 0);
       if (!studentId || !currentCtx?.schedule_id) return;
 
       if (!isAdmin) {
         const sched = currentCtx?.schedule || {};
         if (sched.lecture_window_state === "ended") {
-          inp.checked = String((currentCtx.items || []).find((x) => Number(x.student_id) === studentId)?.attendance_status || "").toUpperCase() === "PRESENT";
           return;
         }
       }
 
-      const status = inp.checked ? "PRESENT" : "ABSENT";
+      const status = btn.dataset.status;
       const target = (currentCtx.items || []).find((x) => Number(x.student_id) === studentId);
       if (target) target.attendance_status = status;
+
+      // Update button states
+      const buttons = tr.querySelectorAll(".attendance-status-btn");
+      buttons.forEach(b => {
+        if (b.dataset.status === status) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
 
       markDirty(studentId);
     });

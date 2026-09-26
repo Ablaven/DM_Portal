@@ -187,8 +187,8 @@ try {
     $docName = (string)$doctor['full_name'];
     $xlsx = new SimpleXlsxWriter();
 
-    $termLabel = $termSemester > 0 ? " — Sem {$termSemester}" : '';
-    $title = "{$docName}{$termLabel} — {$weekLabel}";
+    $termLabel = $termSemester > 0 ? " - Sem {$termSemester}" : '';
+    $title = "{$docName}{$termLabel} - {$weekLabel}";
 
     $dataRows = [];
     $styleMap = [];

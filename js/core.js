@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   "use strict";
 
   async function fetchJson(url, options = {}) {
@@ -182,7 +182,7 @@
       }
     }
 
-    // Only listen to keydown — keypress and keyup would triple-fire the same event
+    // Only listen to keydown - keypress and keyup would triple-fire the same event
     document.addEventListener("keydown", function handleDigitKey(e) {
       // Skip if user is typing in an input/textarea/select
       const tag = document.activeElement?.tagName?.toLowerCase();
@@ -205,7 +205,7 @@
       }
     });
 
-    // Hidden input fallback (no placeholder hint — it's a secret)
+    // Hidden input fallback (no placeholder hint - it's a secret)
     const testInput = document.getElementById("easterEggInput");
     if (testInput) {
       testInput.addEventListener("input", () => {
@@ -373,7 +373,7 @@
 
       // ── Digital corruption overlay ──
 
-      // 1. Macro codec blocks — large solid rectangles snapped to a 16px grid (broken codec look)
+      // 1. Macro codec blocks - large solid rectangles snapped to a 16px grid (broken codec look)
       const macroCount = Math.floor(intensity * 14) + 2;
       for (let i = 0; i < macroCount; i++) {
         const gx = Math.floor(Math.random() * (W / 16)) * 16;
@@ -396,7 +396,7 @@
           const b = Math.floor(Math.random() * 140 + 60);
           color = "rgba(" + r + "," + g + "," + b + "," + (intensity * 0.75) + ")";
         } else {
-          // Fully saturated random color — like GPU memory garbage
+          // Fully saturated random color - like GPU memory garbage
           color = "rgba(" + Math.floor(Math.random()*256) + "," +
                             Math.floor(Math.random()*256) + "," +
                             Math.floor(Math.random()*256) + "," + (intensity * 0.65) + ")";
@@ -405,7 +405,7 @@
         ctx.fillRect(gx, gy, gw, gh);
       }
 
-      // 2. Pixel-sort columns — tall narrow strips of wrong solid color (like pixel sorting artifact)
+      // 2. Pixel-sort columns - tall narrow strips of wrong solid color (like pixel sorting artifact)
       const sortCount = Math.floor(intensity * 10);
       for (let i = 0; i < sortCount; i++) {
         const sx = Math.random() * W;
@@ -417,7 +417,7 @@
         ctx.fillRect(sx, sy, sw, sh);
       }
 
-      // 3. Bit-flip noise — tiny 1–4px random pixels scattered everywhere
+      // 3. Bit-flip noise - tiny 1–4px random pixels scattered everywhere
       const noiseCount = Math.floor(intensity * 200);
       for (let i = 0; i < noiseCount; i++) {
         const nx = Math.random() * W;
@@ -428,7 +428,7 @@
         ctx.fillRect(nx, ny, ns, ns);
       }
 
-      // 4. Full-width horizontal corruption bands — like a hard seek error on a video file
+      // 4. Full-width horizontal corruption bands - like a hard seek error on a video file
       const bandCount = Math.floor(intensity * 5);
       for (let i = 0; i < bandCount; i++) {
         const by2 = Math.random() * H;

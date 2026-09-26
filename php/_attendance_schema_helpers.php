@@ -61,7 +61,7 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
     try {
         $pdo->exec("ALTER TABLE attendance_records DROP INDEX uq_attendance_schedule_student");
     } catch (PDOException $e) {
-        // 1091 = Can't DROP; key doesn't exist — that's fine.
+        // 1091 = Can't DROP; key doesn't exist - that's fine.
         $code = (int)($e->errorInfo[1] ?? 0);
         if ($code !== 1091) {
             throw $e;
@@ -72,7 +72,7 @@ function dmportal_ensure_attendance_records_table(PDO $pdo): void
     try {
         $pdo->exec("ALTER TABLE attendance_records ADD UNIQUE KEY uq_attendance_term_schedule_student (term_id, schedule_id, student_id)");
     } catch (PDOException $e) {
-        // 1061 = duplicate key name — already correct, fine.
+        // 1061 = duplicate key name - already correct, fine.
         $code = (int)($e->errorInfo[1] ?? 0);
         if ($code !== 1061) {
             throw $e;

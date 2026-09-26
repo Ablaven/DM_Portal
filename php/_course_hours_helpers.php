@@ -43,7 +43,7 @@ function dmportal_schedule_hours_base_where_sql(): string
 }
 
 /**
- * Scheduled hours per course (all doctors) — course-level remaining.
+ * Scheduled hours per course (all doctors) - course-level remaining.
  *
  * @param string $courseAlias Table alias for courses (e.g. "c" or "c0")
  * @param string $joinAlias   Alias for the joined aggregate subquery

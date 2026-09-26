@@ -16,7 +16,7 @@ try {
     $u = auth_current_user();
     $studentId = (int)($u['student_id'] ?? 0);
 
-    // No student_id linked to this user — return zeroed context, not an error.
+    // No student_id linked to this user - return zeroed context, not an error.
     if ($studentId <= 0) {
         echo json_encode(['success' => true, 'data' => $zeroedContext]);
         exit;
@@ -34,7 +34,7 @@ try {
     $stmt->execute([':student_id' => $studentId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Student row not found — return zeroed context.
+    // Student row not found - return zeroed context.
     if ($row === false) {
         echo json_encode(['success' => true, 'data' => $zeroedContext]);
         exit;

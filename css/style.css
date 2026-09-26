@@ -65,11 +65,11 @@ html[data-theme="light"] {
   /* Page background: clean off-white, easy on the eyes */
   --bg: #c8d8f0;
 
-  /* Cards: pure white — maximum contrast against bg */
+  /* Cards: pure white - maximum contrast against bg */
   --card: rgba(255, 255, 255, 0.22);
   --card-border: rgba(255, 255, 255, 0.55);
 
-  /* Text: rich navy — WCAG AA compliant on white */
+  /* Text: rich navy - WCAG AA compliant on white */
   --text: #0a1628;
   --muted: rgba(10, 24, 52, 0.58);
   --text-strong: #050d1a;
@@ -77,7 +77,7 @@ html[data-theme="light"] {
   --surface-strong: rgba(190, 210, 240, 1);
   --line-strong: rgba(18, 72, 200, 0.18);
 
-  /* Accent: deep blue — AA on white (contrast ≥ 4.5:1) */
+  /* Accent: deep blue - AA on white (contrast = 4.5:1) */
   --accent: #1248c8;
   --accent-rgb: 18, 72, 200;
   --accent-2: #6aa0ff;
@@ -331,7 +331,7 @@ body.page-transitioning::before {
   box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
 }
 
-/* Animate to × when open */
+/* Animate to � when open */
 .navbar.nav-open .nav-toggle span:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
   width: 20px;
@@ -3799,7 +3799,7 @@ html[data-theme="light"] .course-progress-legend {
   overflow: hidden;
 }
 
-/* Assigned hours layer — purple, sits behind done */
+/* Assigned hours layer - purple, sits behind done */
 .course-progress-fill-assigned {
   position: absolute;
   top: 0;
@@ -3811,7 +3811,7 @@ html[data-theme="light"] .course-progress-legend {
   transition: width 600ms ease;
 }
 
-/* Done hours layer — overlaps assigned */
+/* Done hours layer - overlaps assigned */
 .course-progress-fill {
   position: absolute;
   top: 0;
@@ -4369,7 +4369,7 @@ body.dashboard .schedule-grid {
    Utility classes referenced by JS but not previously defined
    ============================================================ */
 
-/* .course-title — student name/title inside a course-item card */
+/* .course-title - student name/title inside a course-item card */
 .course-title {
   font-size: 1rem;
   font-weight: 600;
@@ -4377,14 +4377,14 @@ body.dashboard .schedule-grid {
   line-height: 1.3;
 }
 
-/* .builder-popup — differentiates the schedule-builder availability popup
+/* .builder-popup - differentiates the schedule-builder availability popup
    from other availability-popup instances; inherits base styles from
    .availability-popup, this selector allows targeted overrides. */
 .availability-popup.builder-popup {
   z-index: 1100;
 }
 
-/* .is-loading — applied to buttons during async operations */
+/* .is-loading - applied to buttons during async operations */
 .is-loading {
   opacity: 0.65;
   cursor: wait;
@@ -4392,7 +4392,7 @@ body.dashboard .schedule-grid {
 }
 
 /* ============================================================
-   DIGITAL MARKETING PORTAL — COMPONENT EXTENSIONS
+   DIGITAL MARKETING PORTAL - COMPONENT EXTENSIONS
    Appended additions: layout helpers, tables, stats, alerts,
    auth, navbar extras, wizard, spacing utilities.
    ============================================================ */
@@ -4569,7 +4569,7 @@ html[data-theme='light'] .data-table tbody td {
 
 /* 13. Mobile improvements */
 @media (max-width: 640px) {
-  /* ── Global: prevent any element from causing horizontal scroll ── */
+  /* -- Global: prevent any element from causing horizontal scroll -- */
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -4620,7 +4620,7 @@ html[data-theme='light'] .data-table tbody td {
     grid-template-columns: 1fr;
   }
 
-  /* ── Tables: scrollable, never overflow ── */
+  /* -- Tables: scrollable, never overflow -- */
   .table-wrap,
   .table-responsive {
     overflow-x: auto;
@@ -4633,7 +4633,7 @@ html[data-theme='light'] .data-table tbody td {
     min-width: 500px; /* allow horizontal scroll instead of squishing */
   }
 
-  /* ── Schedule builder ── */
+  /* -- Schedule builder -- */
   .schedule-header {
     flex-direction: column;
     align-items: stretch;
@@ -4670,14 +4670,14 @@ html[data-theme='light'] .data-table tbody td {
     gap: 8px;
   }
 
-  /* ── Stat cards & summary cards ── */
+  /* -- Stat cards & summary cards -- */
   .stat-cards,
   .summary-cards {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
 
-  /* ── Modals ── */
+  /* -- Modals -- */
   .modal-card {
     width: calc(100vw - 24px);
     max-width: 100%;
@@ -4687,7 +4687,7 @@ html[data-theme='light'] .data-table tbody td {
     overflow-y: auto;
   }
 
-  /* ── Forms inside cards ── */
+  /* -- Forms inside cards -- */
   .form-row {
     flex-direction: column;
     gap: 8px;
@@ -4698,51 +4698,51 @@ html[data-theme='light'] .data-table tbody td {
     width: 100%;
   }
 
-  /* ── Buttons: allow wrapping ── */
+  /* -- Buttons: allow wrapping -- */
   .btn-row,
   .actions-row {
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  /* ── Attendance grid ── */
+  /* -- Attendance grid -- */
   .attendance-grid-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── Hours report ── */
+  /* -- Hours report -- */
   .hours-detail-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── Evaluation ── */
+  /* -- Evaluation -- */
   .eval-grid {
     grid-template-columns: 1fr;
   }
 
-  /* ── Student dashboard ── */
+  /* -- Student dashboard -- */
   .student-schedule-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* ── Profile page ── */
+  /* -- Profile page -- */
   .profile-card {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
 
-  /* ── Tabs: scrollable ── */
+  /* -- Tabs: scrollable -- */
   .tabs {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap;
   }
 
-  /* ── Ensure inputs/selects don't overflow ── */
+  /* -- Ensure inputs/selects don't overflow -- */
   input, select, textarea, button {
     max-width: 100%;
   }
@@ -4801,13 +4801,13 @@ html[data-theme='light'] .data-table tbody td {
   background: rgba(var(--accent-rgb), 0.1);
 }
 
-/* ── Admin dropdown: polished grouped menu ──────────────────────────────── */
+/* -- Admin dropdown: polished grouped menu -------------------------------- */
 #adminNav > .dropdown {
   width: min(260px, 96vw);
   padding: 6px;
 }
 
-/* ── Rich dropdown item: icon + label + sub-text ───────────────────────── */
+/* -- Rich dropdown item: icon + label + sub-text ------------------------- */
 .dropdown-item-rich {
   display: flex;
   align-items: center;
@@ -5211,7 +5211,7 @@ html[data-theme="light"] .card .empty-state {
   }
 }
 
-/* ── 18. Print styles ───────────────────────────────────────────────────── */
+/* -- 18. Print styles ----------------------------------------------------- */
 @media print {
   /* Hide interactive chrome */
   .navbar,
@@ -5547,16 +5547,16 @@ body.student-dashboard .dashboard-card:focus-visible {
 }
 
 
-/* ── Attendance slot window states ───────────────────────────────────── */
+/* -- Attendance slot window states ------------------------------------- */
 
-/* Active: lecture is happening right now — green accent */
+/* Active: lecture is happening right now - green accent */
 .slot.slot-state-active {
   border-color: rgba(var(--success-rgb), 0.70) !important;
   box-shadow: 0 0 0 2px rgba(var(--success-rgb), 0.18), 0 8px 20px rgba(0,0,0,0.25);
   cursor: pointer;
 }
 
-/* Upcoming: lecture hasn't started yet — muted blue, clearly not clickable */
+/* Upcoming: lecture hasn't started yet - muted blue, clearly not clickable */
 .slot.slot-state-upcoming {
   opacity: 0.55;
   border-color: rgba(var(--accent-rgb), 0.25) !important;
@@ -5567,7 +5567,7 @@ body.student-dashboard .dashboard-card:focus-visible {
   box-shadow: none;
 }
 
-/* Ended: lecture window closed — dimmed, red tint border */
+/* Ended: lecture window closed - dimmed, red tint border */
 .slot.slot-state-ended {
   opacity: 0.45;
   border-color: rgba(var(--danger-rgb), 0.30) !important;
@@ -5578,7 +5578,7 @@ body.student-dashboard .dashboard-card:focus-visible {
   box-shadow: none;
 }
 
-/* Recorded: attendance already taken — success tint, no hover effect */
+/* Recorded: attendance already taken - success tint, no hover effect */
 .slot.slot-state-recorded {
   border-color: rgba(var(--success-rgb), 0.45) !important;
   background: rgba(var(--success-rgb), 0.06) !important;
@@ -5749,4 +5749,489 @@ html[data-theme="light"] .course-card {
 html[data-theme="light"] .course-card:hover {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+
+/* ============================================
+   ATTENDANCE MODAL - IMPROVED DESIGN
+   ============================================ */
+
+.attendance-modal {
+  width: min(1400px, 96vw) !important;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.attendance-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--card-border);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--card) 100%);
+}
+
+.attendance-modal-header h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text);
+}
+
+.attendance-modal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 28px;
+  gap: 20px;
+  min-height: 0;
+}
+
+.attendance-controls {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.attendance-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.attendance-table-wrapper {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--bg);
+  min-height: 0;
+  max-height: 500px;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9375rem;
+}
+
+.attendance-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.attendance-table thead th {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
+  color: var(--text);
+  font-weight: 700;
+  text-align: left;
+  border-bottom: 2px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.attendance-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.attendance-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.attendance-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.attendance-table tbody tr:hover {
+  background: var(--surface-1);
+}
+
+.attendance-table tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--card);
+}
+
+.attendance-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.attendance-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.attendance-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Attendance Status Buttons */
+.attendance-status-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.attendance-status-btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.attendance-status-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  transform: scale(1.05);
+}
+
+.attendance-status-btn.active {
+  border-color: currentColor;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.attendance-status-btn.present {
+  background: linear-gradient(135deg, rgba(var(--success-rgb), 0.2), rgba(var(--success-rgb), 0.1));
+  color: var(--success);
+}
+
+.attendance-status-btn.present.active {
+  background: var(--success);
+  color: white;
+}
+
+.attendance-status-btn.absent {
+  background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.2), rgba(var(--danger-rgb), 0.1));
+  color: var(--danger);
+}
+
+.attendance-status-btn.absent.active {
+  background: var(--danger);
+  color: white;
+}
+
+.attendance-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 28px;
+  border-top: 1px solid var(--card-border);
+  background: var(--surface-2);
+}
+
+/* Success Button Style */
+.btn-success {
+  background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
+  color: white;
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #22c55e 0%, var(--success) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--success-rgb), 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .attendance-modal {
+    width: 100% !important;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .attendance-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .attendance-quick-actions {
+    width: 100%;
+  }
+
+  .attendance-quick-actions button {
+    flex: 1;
+  }
+
+  .attendance-table {
+    font-size: 0.8125rem;
+  }
+
+  .attendance-table thead th,
+  .attendance-table tbody td {
+    padding: 12px 14px;
+  }
+
+  .attendance-status-btn {
+    padding: 6px 14px;
+    font-size: 0.8125rem;
+  }
+}
+
+
+/* ============================================
+   EVALUATION TABLES - MODERN STYLING
+   ============================================ */
+
+/* Config Table Modernization */
+.tab-panel[data-tab-panel="config"] .schedule-grid {
+  border-spacing: 0;
+  width: 100%;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid thead th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--card-border);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid thead th.col-number {
+  text-align: center;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody td {
+  padding: 14px 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody tr:hover td {
+  background: var(--surface-1);
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody td:first-child {
+  font-weight: 600;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody td:nth-child(3) {
+  text-align: center;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid tbody td:last-child {
+  text-align: center;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid select,
+.tab-panel[data-tab-panel="config"] .schedule-grid input[type="text"],
+.tab-panel[data-tab-panel="config"] .schedule-grid input[type="number"] {
+  padding: 10px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.875rem;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid select:focus,
+.tab-panel[data-tab-panel="config"] .schedule-grid input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid .btn {
+  margin: 2px 4px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid .btn-danger {
+  background: linear-gradient(135deg, rgba(var(--danger-rgb), 0.15), rgba(var(--danger-rgb), 0.08));
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid .btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid .btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+}
+
+.tab-panel[data-tab-panel="config"] .schedule-grid .btn-secondary:hover {
+  background: var(--surface-1);
+  border-color: var(--accent);
+}
+
+/* Grading Table Modernization */
+.eval-grades-table {
+  border-spacing: 0;
+  width: 100%;
+}
+
+.eval-grades-table thead th {
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  padding: 12px 10px;
+  border-bottom: 2px solid var(--card-border);
+  font-size: 0.8125rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  vertical-align: top;
+  text-align: center;
+  min-width: 100px;
+}
+
+.eval-grades-table thead th:first-child {
+  border-top-left-radius: 12px;
+  position: sticky;
+  left: 0;
+  z-index: 11;
+  text-align: left;
+  min-width: 80px;
+}
+
+.eval-grades-table thead th:nth-child(2) {
+  text-align: left;
+  min-width: 200px;
+}
+
+.eval-grades-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.eval-grades-table thead th .grade-max {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  margin-top: 3px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.eval-grades-table tbody td {
+  padding: 12px 10px;
+  background: var(--card);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.eval-grades-table tbody tr:hover td {
+  background: var(--surface-1);
+}
+
+.eval-grades-table tbody td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface-2);
+  font-weight: 600;
+  z-index: 5;
+  border-right: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.eval-grades-table tbody td:nth-child(2) {
+  text-align: left;
+}
+
+.eval-grades-table tbody tr:hover td:first-child {
+  background: var(--surface-1);
+}
+
+.eval-grades-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.eval-grades-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.eval-grades-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.eval-grades-table tbody td.col-id {
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 0.8125rem;
+}
+
+.eval-grades-table tbody td.col-student {
+  font-weight: 600;
+}
+
+.eval-grades-table tbody td.col-number {
+  text-align: center;
+  font-family: monospace;
+}
+
+.eval-grades-table tbody td.col-grade {
+  text-align: center;
+}
+
+.eval-grades-table tbody td input[type="number"] {
+  padding: 8px 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+  width: 75px;
+  text-align: center;
+  font-family: monospace;
+}
+
+.eval-grades-table tbody td input[type="number"]:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+/* Final score column highlight */
+.eval-grades-table tbody td.col-final,
+.eval-grades-table tbody td[data-final-score] {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.9375rem;
+  text-align: center;
 }
