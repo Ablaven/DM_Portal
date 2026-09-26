@@ -82,7 +82,6 @@ auth_require_roles(['admin','management']);
           <div class="dashboard-card-title">Course Progress (Done vs Remaining)</div>
           <div class="dashboard-card-subtitle muted">Stacked bars per course</div>
           <div class="dashboard-chart-legend" aria-label="Chart legend">
-            <span class="legend-item"><span class="legend-swatch legend-assigned"></span>Assigned</span>
             <span class="legend-item"><span class="legend-swatch legend-done"></span>Done</span>
             <span class="legend-item"><span class="legend-swatch legend-remaining"></span>Remaining</span>
           </div>
