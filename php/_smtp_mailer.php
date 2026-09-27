@@ -15,12 +15,12 @@ final class DmportalSmtpMailer
 
     public function __construct()
     {
-        $this->host = (string)dmportal_env('DM_PORTAL_SMTP_HOST', '');
-        $this->port = (int)dmportal_env('DM_PORTAL_SMTP_PORT', '0');
-        $this->encryption = strtolower((string)dmportal_env('DM_PORTAL_SMTP_ENCRYPTION', 'tls'));
-        $this->username = (string)dmportal_env('DM_PORTAL_SMTP_USER', '');
-        $this->password = (string)dmportal_env('DM_PORTAL_SMTP_PASS', '');
-        $this->from = (string)dmportal_env('DM_PORTAL_SMTP_FROM', $this->username);
+        $this->host = (string)dmportal_env('DMPORTAL_SMTP_HOST', '');
+        $this->port = (int)dmportal_env('DMPORTAL_SMTP_PORT', '0');
+        $this->encryption = strtolower((string)dmportal_env('DMPORTAL_SMTP_ENCRYPTION', 'tls'));
+        $this->username = (string)dmportal_env('DMPORTAL_SMTP_USER', '');
+        $this->password = (string)dmportal_env('DMPORTAL_SMTP_PASS', '');
+        $this->from = (string)dmportal_env('DMPORTAL_SMTP_FROM', $this->username);
     }
 
     public function isConfigured(): bool

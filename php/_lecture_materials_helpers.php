@@ -17,7 +17,7 @@ function dmportal_ensure_lecture_materials_table(PDO $pdo): void
         . "  doctor_id           BIGINT UNSIGNED NOT NULL,\n"
         . "  original_filename   VARCHAR(255) NOT NULL,\n"
         . "  stored_filename     VARCHAR(255) NOT NULL,\n"
-        . "  file_type           ENUM('pdf','pptx') NOT NULL,\n"
+        . "  file_type           ENUM('pdf','pptx','zip','rar') NOT NULL,\n"
         . "  file_size_bytes     BIGINT UNSIGNED NOT NULL,\n"
         . "  uploaded_by_user_id BIGINT UNSIGNED NOT NULL,\n"
         . "  created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"

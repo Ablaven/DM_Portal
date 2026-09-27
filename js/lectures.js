@@ -210,20 +210,93 @@
     uploadSection.appendChild(uploadTitle);
     const form = document.createElement("form");
     form.className = "lectures-upload-form";
-    const fileLabel = document.createElement("label");
-    fileLabel.htmlFor = "lmFileInput";
-    fileLabel.className = "file-input-label";
-    fileLabel.textContent = "Choose file (.pdf or .pptx, max 50 MB):";
+    
+    // Create drag-and-drop area
+    const dropZone = document.createElement("div");
+    dropZone.className = "file-drop-zone";
+    dropZone.innerHTML = `
+      <div class="drop-zone-content">
+        <svg viewBox="0 0 24 24" width="48" height="48" style="opacity:0.5; margin-bottom:12px;">
+          <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z"/>
+        </svg>
+        <p class="drop-zone-text">Drag and drop files here</p>
+        <p class="drop-zone-or">or</p>
+        <label for="lmFileInput" class="drop-zone-btn">Browse Files</label>
+        <p class="drop-zone-hint">PDF, PPTX, ZIP, or RAR (max 50 MB)</p>
+      </div>
+      <div class="drop-zone-hover-overlay">
+        <svg viewBox="0 0 24 24" width="64" height="64">
+          <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12,19L8,15H10.5V12H13.5V15H16L12,19Z"/>
+        </svg>
+        <p>Drop files to upload</p>
+      </div>
+    `;
+    
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.id = "lmFileInput";
     fileInput.name = "file";
-    fileInput.accept = ".pdf,.pptx";
+    fileInput.accept = ".pdf,.pptx,.zip,.rar";
     fileInput.className = "file-input";
     fileInput.required = true;
-    const sizeNote = document.createElement("p");
-    sizeNote.className = "file-size-note";
-    sizeNote.textContent = "Maximum file size: 50 MB. Allowed types: PDF, PPTX.";
+    fileInput.style.display = "none"; // Hide the default input
+    
+    // Handle drag-and-drop events
+    let dragCounter = 0; // Fix flickering by using a counter
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    dropZone.addEventListener('dragenter', () => {
+      dragCounter++;
+      dropZone.classList.add('drag-over');
+    }, false);
+    
+    dropZone.addEventListener('dragleave', () => {
+      dragCounter--;
+      if (dragCounter === 0) {
+        dropZone.classList.remove('drag-over');
+      }
+    }, false);
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    }, false);
+    
+    dropZone.addEventListener('drop', (e) => {
+      dragCounter = 0;
+      dropZone.classList.remove('drag-over');
+      
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (files.length > 0) {
+        fileInput.files = files;
+        updateDropZoneText(dropZone, files[0].name);
+      }
+    }, false);
+    
+    // Update text when file is selected via browse button
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        updateDropZoneText(dropZone, e.target.files[0].name);
+      }
+    });
+    
+    function updateDropZoneText(zone, filename) {
+      const textEl = zone.querySelector('.drop-zone-text');
+      if (textEl) {
+        textEl.innerHTML = `<strong>Selected:</strong> ${escapeHtml(filename)}`;
+        textEl.style.color = 'var(--success)';
+      }
+    }
     const uploadStatusEl = document.createElement("p");
     uploadStatusEl.className = "status";
     uploadStatusEl.style.display = "none";
@@ -232,9 +305,9 @@
     submitBtn.type = "submit";
     submitBtn.className = "btn btn-primary";
     submitBtn.textContent = "Upload";
-    form.appendChild(fileLabel);
+    
+    form.appendChild(dropZone);
     form.appendChild(fileInput);
-    form.appendChild(sizeNote);
     form.appendChild(uploadStatusEl);
     form.appendChild(submitBtn);
     uploadSection.appendChild(form);
@@ -421,7 +494,10 @@
       if (!resp.ok || !data.success) {
         throw new Error(data.error || "Upload failed (HTTP " + resp.status + ").");
       }
+      
+      // Single file upload success message
       statusEl.textContent = "File uploaded successfully.";
+      
       statusEl.className = "status status-success";
       statusEl.style.display = "";
       fileInput.value = "";

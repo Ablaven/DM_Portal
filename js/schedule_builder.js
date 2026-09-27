@@ -1,18 +1,18 @@
-﻿(function () {
+(function () {
   "use strict";
 
   const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl, formatWeekLabelWithRange, formatWeekDisplayLabel } = window.dmportal || {};
 
-  // Week starts Sunday (Sun–Thu). Weekend Fri/Sat are not scheduled.
+  // Week starts Sunday (Sun�Thu). Weekend Fri/Sat are not scheduled.
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
   const SLOT_HOURS = 1.5;
   const SLOT_TIMES = {
-    1: "8:30 AM–10:00 AM",
-    2: "10:10 AM–11:30 AM",
-    3: "11:40 AM–1:00 PM",
-    4: "1:10 PM–2:40 PM",
-    5: "2:50 PM–4:20 PM",
+    1: "8:30 AM�10:00 AM",
+    2: "10:10 AM�11:30 AM",
+    3: "11:40 AM�1:00 PM",
+    4: "1:10 PM�2:40 PM",
+    5: "2:50 PM�4:20 PM",
   };
 
   const STUDENT_SCHEDULE_DAYS = DAYS;
@@ -20,7 +20,7 @@
   function slotLabel(slot) {
   const t = SLOT_TIMES[slot] || "";
   // Cleaner label than "#1 (...)" (also looks better in exports/screenshots).
-  return t ? `Slot ${slot} • ${t}` : `Slot ${slot}`;
+  return t ? `Slot ${slot} � ${t}` : `Slot ${slot}`;
   }
 
 
@@ -128,7 +128,7 @@
         if (course.subject_code) metaParts.push(course.subject_code);
         if (course.year_level) metaParts.push(`Year ${course.year_level}`);
         if (course.semester) metaParts.push(`Sem ${course.semester}`);
-        const meta = metaParts.length ? metaParts.join(" • ") : "";
+        const meta = metaParts.length ? metaParts.join(" � ") : "";
 
         return `
           <div class="course-progress-item subject-progress-item">
@@ -157,7 +157,7 @@
         <div class="course-progress-top">
           <div>
             <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
-            <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
+            <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} � ${doctor.courses?.length || 0} courses</div>
           </div>
           <span class="muted">${formatHours(doneT)}h / ${formatHours(totalT)}h</span>
         </div>
@@ -249,7 +249,7 @@
     left.innerHTML = `
       <div>
         <div class="muted" style="font-size:0.85rem; margin-top:2px;">${escapeHtml(c.program)}</div>
-        <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</div>
+        <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} � Sem ${escapeHtml(c.semester)}</div>
         <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
           <span class="pill">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span>
           <div><strong>${escapeHtml(c.course_name)}</strong></div>
@@ -330,7 +330,7 @@
     optCode.value = String(c.course_id);
     const codeLabel = String(c.subject_code || "").trim();
     const codeText = codeLabel
-      ? `${makeCourseLabel(c.course_type, c.subject_code)} • Y${c.year_level} S${c.semester} • ${c.course_name}`
+      ? `${makeCourseLabel(c.course_type, c.subject_code)} � Y${c.year_level} S${c.semester} � ${c.course_name}`
       : `(ID ${c.course_id})`;
     optCode.textContent = isZeroHour
       ? `${codeText} [Zero Hours]`
@@ -455,7 +455,7 @@
   const popup = document.createElement("div");
   popup.className = "availability-popup builder-popup";
   const names = items.map((i) => i.full_name).filter(Boolean);
-  const list = names.length ? names.join(" • ") : "Doctor available";
+  const list = names.length ? names.join(" � ") : "Doctor available";
   popup.innerHTML = `<div class="availability-popup-title">Doctor Available</div><div class="availability-popup-body">${escapeHtml(list)}</div>`;
 
   document.body.appendChild(popup);
@@ -489,7 +489,7 @@
         <div><strong>Unavailable</strong></div>
         <button class="btn btn-secondary btn-small" type="button" data-unavail-del="1" data-id="${escapeHtml(u.unavailability_id)}">Remove</button>
       </div>
-      <div class="muted" style="font-size:0.9rem;">${start} → ${end}${reason ? " • " + reason : ""}</div>
+      <div class="muted" style="font-size:0.9rem;">${start} ? ${end}${reason ? " � " + reason : ""}</div>
     `;
     wrap.appendChild(card);
   }
@@ -520,7 +520,7 @@
   // // ignore
   // }
 
-  setStatusById("scheduleStatus", "Loading…");
+  setStatusById("scheduleStatus", "Loading�");
   await loadSchedule(doctorId);
   await loadCourses();
   renderCoursesSidebar();
@@ -547,9 +547,9 @@
   if (wkLabel) parts.push(wkLabel);
   parts.push("Week starts Sunday");
   parts.push("Each slot = 1 hour 30 minutes");
-  parts.push(`Scope: ${y} • ${s}`);
+  parts.push(`Scope: ${y} � ${s}`);
 
-  el.textContent = parts.join(" • ");
+  el.textContent = parts.join(" � ");
   }
 
   function renderScheduleGrid() {
@@ -638,8 +638,8 @@
           const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
             <div class="slot-title">Occupied</div>
-            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.course_name || "")}</div>
-            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} • Sem ${escapeHtml(assigned.semester)}</div>
+            <div class="slot-sub">${escapeHtml(label)} � ${escapeHtml(assigned.course_name || "")}</div>
+            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} � Sem ${escapeHtml(assigned.semester)}</div>
           `;
           cell.style.cursor = "not-allowed";
           td.appendChild(cell);
@@ -655,7 +655,7 @@
         const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
         cell.innerHTML = `
           <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
-          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
+          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " � " + room : ""}</div>
         `;
       } else {
         cell.innerHTML = `
@@ -705,7 +705,7 @@
           const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
             <div class="slot-title">${escapeHtml(assigned.course_name || "")}</div>
-            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.doctor_name || "")}</div>
+            <div class="slot-sub">${escapeHtml(label)} � ${escapeHtml(assigned.doctor_name || "")}</div>
           `;
         } else {
           cell.innerHTML = `
@@ -728,7 +728,7 @@
       meta.textContent = "Select program/year/semester";
       return;
     }
-    meta.textContent = `${program} • Year ${year} • Sem ${semester}`;
+    meta.textContent = `${program} � Year ${year} � Sem ${semester}`;
   }
 
   function renderStudentProgramOptions(coursesOverride = null) {
@@ -789,7 +789,7 @@
     }
 
     if (status) {
-      status.textContent = "Loading…";
+      status.textContent = "Loading�";
       status.className = "status";
     }
 
@@ -1077,7 +1077,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Saving…");
+    setStatusById("modalStatus", "Saving�");
 
     const fd = new FormData();
     fd.append("doctor_id", doctorId);
@@ -1127,7 +1127,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Canceling slot…");
+    setStatusById("modalStatus", "Canceling slot�");
     const reason = document.getElementById("modal_slot_cancel_reason")?.value || "";
 
     try {
@@ -1162,7 +1162,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Restoring slot…");
+    setStatusById("modalStatus", "Restoring slot�");
 
     try {
       const fd = new FormData();
@@ -1195,7 +1195,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Removing…");
+    setStatusById("modalStatus", "Removing�");
 
     const fd = new FormData();
     fd.append("doctor_id", doctorId);
@@ -1409,7 +1409,7 @@
   }
 
   function normalizeSeparator(input) {
-  return String(input || "").replace(/\s*[•·\u2022]+\s*/g, " • ");
+  return String(input || "").replace(/\s*[��\u2022]+\s*/g, " � ");
   }
 
   async function loadWeeks() {
@@ -1451,7 +1451,7 @@
 
   async function initDashboard() {
   try {
-    setStatusById("scheduleStatus", "Loading…");
+    setStatusById("scheduleStatus", "Loading�");
 
     initPageFiltersUI({ yearSelectId: "builderYearFilterMain", semesterSelectId: "builderSemesterFilterMain" });
 
@@ -1600,7 +1600,7 @@
           }
           
           const weekLabel = payload.data?.label || "Week";
-          setStatusById("weekManagementStatus", `✓ ${weekLabel} created (${weekType})`, "success");
+          setStatusById("weekManagementStatus", `? ${weekLabel} created (${weekType})`, "success");
           
           // Clear the date input for next use
           const dateInput = document.getElementById("weekStartDate");
@@ -1617,7 +1617,7 @@
       } catch (err) {
         console.error("Caught error in startWeekBtn handler:", err);
         console.error("Error stack:", err.stack);
-        setStatusById("weekManagementStatus", "✗ " + (err.message || "Failed to start week."), "error");
+        setStatusById("weekManagementStatus", "? " + (err.message || "Failed to start week."), "error");
       }
     });
 
@@ -1714,6 +1714,59 @@
       window.location.href = `php/export_prep_weeks_xls.php?${qs.toString()}`;
     });
 
+    // Send schedule to all teachers
+    document.getElementById("emailAllTeachers")?.addEventListener("click", async () => {
+      if (!state.activeWeekId) {
+        showEmailAllTeachersResultModal("Error", "Please select a week first.", "error");
+        return;
+      }
+
+      const weekLabel = getWeekLabel(state.activeWeekId) || `Week ${state.activeWeekId}`;
+      
+      // Get preview of who will be sent/skipped
+      try {
+        const previewPayload = await fetchJson(`php/email_all_teachers_preview.php?week_id=${state.activeWeekId}`);
+        if (!previewPayload?.success) {
+          showEmailAllTeachersResultModal("Error", previewPayload?.error || "Failed to load preview.", "error");
+          return;
+        }
+        
+        showEmailAllTeachersConfirmModal(weekLabel, previewPayload.data, async () => {
+          const btn = document.getElementById("emailAllTeachers");
+          try {
+            if (btn) {
+              btn.classList.add("is-loading");
+              btn.disabled = true;
+            }
+
+            const payload = await fetchJson("php/email_all_teachers_schedule.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                week_id: state.activeWeekId || 0,
+              }),
+            });
+
+            if (payload?.success) {
+              const msg = payload.message || `Sent ${payload.sent || 0} email(s), skipped ${payload.skipped || 0} teacher(s).`;
+              showEmailAllTeachersResultModal("Success", msg, "success", payload);
+            } else {
+              showEmailAllTeachersResultModal("Error", payload?.error || "Failed to send emails.", "error");
+            }
+          } catch (err) {
+            showEmailAllTeachersResultModal("Error", err?.message || "Failed to send emails.", "error");
+          } finally {
+            if (btn) {
+              btn.classList.remove("is-loading");
+              btn.disabled = false;
+            }
+          }
+        });
+      } catch (err) {
+        showEmailAllTeachersResultModal("Error", err?.message || "Failed to load preview.", "error");
+      }
+    });
+
     // Unavailability add/remove
     document.getElementById("addUnavailBtn")?.addEventListener("click", async () => {
       if (!state.activeDoctorId || !state.activeWeekId) {
@@ -1731,7 +1784,7 @@
       }
 
       try {
-        setStatusById("unavailStatus", "Saving…");
+        setStatusById("unavailStatus", "Saving�");
         const fd = new FormData();
         fd.append("doctor_id", String(state.activeDoctorId));
         // datetime-local returns YYYY-MM-DDTHH:mm
@@ -1758,7 +1811,7 @@
       if (!ok) return;
 
       try {
-        setStatusById("unavailStatus", "Removing…");
+        setStatusById("unavailStatus", "Removing�");
         const fd = new FormData();
         fd.append("unavailability_id", String(id));
         await fetchJson("php/delete_unavailability.php", { method: "POST", body: fd });
@@ -1873,3 +1926,212 @@
   window.dmportal = window.dmportal || {};
   window.dmportal.initScheduleBuilder = initDashboard;
 })();
+
+  // ==========================================
+  // Email All Teachers Modals
+  // ==========================================
+  
+  function showEmailAllTeachersConfirmModal(weekLabel, previewData, onConfirm) {
+    const escapeHtml = window.dmportal?.escapeHtml || ((s) => String(s));
+    let modal = document.getElementById("emailAllTeachersConfirmModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "emailAllTeachersConfirmModal";
+      modal.className = "modal";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.appendChild(modal);
+    }
+
+    const willSend = previewData?.will_send || [];
+    const willSkip = previewData?.will_skip || [];
+
+    const willSendList = willSend.length > 0
+      ? `<div style="display:grid; gap:8px; max-height:220px; overflow-y:auto; padding:4px;">
+           ${willSend.map(name => `
+             <div style="padding:10px 14px; background:rgba(34, 197, 94, 0.1); border:1px solid rgba(34, 197, 94, 0.25); border-radius:8px; font-size:0.9rem;">
+               <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; color:#22c55e;">
+                 <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+               </svg>
+               ${escapeHtml(name)}
+             </div>
+           `).join('')}
+         </div>`
+      : `<p class="muted" style="margin:8px 0 0; font-size:0.9rem;">No teachers with schedules for this week.</p>`;
+
+    const willSkipList = willSkip.length > 0
+      ? `<div style="display:grid; gap:8px; max-height:220px; overflow-y:auto; padding:4px;">
+           ${willSkip.map(name => `
+             <div style="padding:10px 14px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px; font-size:0.9rem; color:var(--muted);">
+               <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; opacity:0.6;">
+                 <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+               </svg>
+               ${escapeHtml(name)}
+             </div>
+           `).join('')}
+         </div>`
+      : `<p class="muted" style="margin:8px 0 0; font-size:0.9rem;">All teachers have schedules.</p>`;
+
+    modal.innerHTML = `
+      <div class="modal-backdrop" data-email-confirm-close="1"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="emailAllTeachersConfirmTitle" style="max-width:720px;">
+        <div class="modal-header">
+          <h3 id="emailAllTeachersConfirmTitle">Send Schedule to All Teachers</h3>
+        </div>
+        <div class="modal-body">
+          <p style="margin:0 0 20px; font-size:0.95rem;">Send schedule emails for <strong>${escapeHtml(weekLabel)}</strong>?</p>
+          
+          <div style="margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" style="color:#22c55e;">
+                <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+              </svg>
+              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--success);">Will be sent (${willSend.length})</strong>
+            </div>
+            ${willSendList}
+          </div>
+          
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" style="opacity:0.6;">
+                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+              </svg>
+              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted);">Will be skipped (${willSkip.length})</strong>
+            </div>
+            ${willSkipList}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-email-confirm-close="1">Cancel</button>
+          <button id="emailAllTeachersConfirmBtn" class="btn btn-primary" type="button">Send Emails</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+
+    const closeModal = () => {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    };
+
+    modal.querySelectorAll("[data-email-confirm-close]").forEach((el) => {
+      el.addEventListener("click", closeModal, { once: true });
+    });
+
+    document.getElementById("emailAllTeachersConfirmBtn")?.addEventListener("click", () => {
+      closeModal();
+      onConfirm();
+    }, { once: true });
+  }
+
+  function showEmailAllTeachersResultModal(title, message, type = "", payload = null) {
+    const escapeHtml = window.dmportal?.escapeHtml || ((s) => String(s));
+    let modal = document.getElementById("emailAllTeachersResultModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "emailAllTeachersResultModal";
+      modal.className = "modal";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.appendChild(modal);
+    }
+
+    const iconSvg = type === "success"
+      ? `<svg viewBox="0 0 24 24" width="48" height="48" style="color:#22c55e;">
+           <path fill="currentColor" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2m-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+         </svg>`
+      : `<svg viewBox="0 0 24 24" width="48" height="48" style="color:#ef4444;">
+           <path fill="currentColor" d="M13 13h-2V7h2m0 10h-2v-2h2M12 2A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2z"/>
+         </svg>`;
+
+    // Build detailed lists if we have payload data
+    let detailsHtml = '';
+    if (type === "success" && payload) {
+      const sent = payload.sent || 0;
+      const skipped = payload.skipped || 0;
+      const sentList = payload.sent_list || [];
+      const skippedList = payload.skipped_list || [];
+      
+      detailsHtml = `
+        <div style="margin-top:20px; padding-top:20px; border-top:1px solid var(--card-border);">
+          ${sent > 0 ? `
+            <div style="margin-bottom:${skipped > 0 ? '20px' : '0'};">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <svg viewBox="0 0 24 24" width="20" height="20" style="color:#22c55e;">
+                  <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+                </svg>
+                <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--success);">Sent (${sent})</strong>
+              </div>
+              <div style="display:grid; gap:8px; max-height:200px; overflow-y:auto; padding:4px;">
+                ${sentList.map(name => `
+                  <div style="padding:10px 14px; background:rgba(34, 197, 94, 0.1); border:1px solid rgba(34, 197, 94, 0.25); border-radius:8px; font-size:0.9rem;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; color:#22c55e;">
+                      <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+                    </svg>
+                    ${escapeHtml(name)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          ${skipped > 0 ? `
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <svg viewBox="0 0 24 24" width="20" height="20" style="opacity:0.6;">
+                  <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                </svg>
+                <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted);">Skipped (${skipped})</strong>
+              </div>
+              <div style="display:grid; gap:8px; max-height:200px; overflow-y:auto; padding:4px;">
+                ${skippedList.map(name => `
+                  <div style="padding:10px 14px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px; font-size:0.9rem; color:var(--muted);">
+                    <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; opacity:0.6;">
+                      <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                    ${escapeHtml(name)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    modal.innerHTML = `
+      <div class="modal-backdrop" data-email-result-close="1"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="emailAllTeachersResultTitle" style="max-width:720px;">
+        <div class="modal-header">
+          <h3 id="emailAllTeachersResultTitle">${escapeHtml(title)}</h3>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="flex-shrink:0;">
+              ${iconSvg}
+            </div>
+            <div style="flex:1; padding-top:8px;">
+              <p style="margin:0; line-height:1.5; font-size:0.95rem;">${escapeHtml(message)}</p>
+            </div>
+          </div>
+          ${detailsHtml}
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" type="button" data-email-result-close="1">OK</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+
+    const closeModal = () => {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    };
+
+    modal.querySelectorAll("[data-email-result-close]").forEach((el) => {
+      el.addEventListener("click", closeModal, { once: true });
+    });
+  }
+

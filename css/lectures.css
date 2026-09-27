@@ -391,3 +391,113 @@
     align-items: flex-start;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Drag and Drop File Upload Zone
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.file-drop-zone {
+  position: relative;
+  border: 2px dashed var(--card-border);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--surface-2);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.file-drop-zone:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: var(--surface-1);
+}
+
+.file-drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-style: solid;
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none; /* Prevent flickering by ignoring pointer events on children */
+}
+
+.drop-zone-content svg {
+  color: var(--muted);
+}
+
+.drop-zone-text {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.drop-zone-or {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 4px 0;
+}
+
+.drop-zone-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  pointer-events: all; /* Re-enable pointer events for the button */
+}
+
+.drop-zone-btn:hover {
+  background: rgba(var(--accent-rgb), 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+
+.drop-zone-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+.drop-zone-hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--accent-rgb), 0.95);
+  border-radius: 12px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  pointer-events: none; /* Prevent overlay from triggering drag events */
+}
+
+.file-drop-zone.drag-over .drop-zone-hover-overlay {
+  display: flex;
+}
+
+.file-drop-zone.drag-over .drop-zone-content {
+  opacity: 0;
+}
+
+/* Hide old file input styles */
+.file-input-label,
+.file-size-note {
+  display: none;
+}
