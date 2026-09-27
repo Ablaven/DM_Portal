@@ -1,18 +1,18 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const { fetchJson, setStatusById, escapeHtml, makeCourseLabel, parseDoctorIdsCsv, formatHours, applyPageFiltersToCourses, doesItemMatchGlobalFilters, getGlobalFilters, setGlobalFilters, initPageFiltersUI, buildMailtoHref, buildDoctorScheduleGreetingText, buildDoctorScheduleExportUrl, triggerBackgroundDownload, normalizePhoneForWhatsApp, buildWhatsAppSendUrl, formatWeekLabelWithRange, formatWeekDisplayLabel } = window.dmportal || {};
 
-  // Week starts Sunday (Sun�Thu). Weekend Fri/Sat are not scheduled.
+  // Week starts Sunday (Sun–Thu). Weekend Fri/Sat are not scheduled.
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu"];
   const SLOTS = [1, 2, 3, 4, 5];
   const SLOT_HOURS = 1.5;
   const SLOT_TIMES = {
-    1: "8:30 AM�10:00 AM",
-    2: "10:10 AM�11:30 AM",
-    3: "11:40 AM�1:00 PM",
-    4: "1:10 PM�2:40 PM",
-    5: "2:50 PM�4:20 PM",
+    1: "8:30 AM•10:00 AM",
+    2: "10:10 AM•11:30 AM",
+    3: "11:40 AM•1:00 PM",
+    4: "1:10 PM•2:40 PM",
+    5: "2:50 PM•4:20 PM",
   };
 
   const STUDENT_SCHEDULE_DAYS = DAYS;
@@ -20,7 +20,7 @@
   function slotLabel(slot) {
   const t = SLOT_TIMES[slot] || "";
   // Cleaner label than "#1 (...)" (also looks better in exports/screenshots).
-  return t ? `Slot ${slot} � ${t}` : `Slot ${slot}`;
+  return t ? `Slot ${slot} • ${t}` : `Slot ${slot}`;
   }
 
 
@@ -128,7 +128,7 @@
         if (course.subject_code) metaParts.push(course.subject_code);
         if (course.year_level) metaParts.push(`Year ${course.year_level}`);
         if (course.semester) metaParts.push(`Sem ${course.semester}`);
-        const meta = metaParts.length ? metaParts.join(" � ") : "";
+        const meta = metaParts.length ? metaParts.join(" • ") : "";
 
         return `
           <div class="course-progress-item subject-progress-item">
@@ -157,7 +157,7 @@
         <div class="course-progress-top">
           <div>
             <div class="course-progress-title">${escapeHtml(doctor.full_name || "")}</div>
-            <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} � ${doctor.courses?.length || 0} courses</div>
+            <div class="course-progress-meta">Doctor ID: ${escapeHtml(doctor.doctor_id)} • ${doctor.courses?.length || 0} courses</div>
           </div>
           <span class="muted">${formatHours(doneT)}h / ${formatHours(totalT)}h</span>
         </div>
@@ -249,7 +249,7 @@
     left.innerHTML = `
       <div>
         <div class="muted" style="font-size:0.85rem; margin-top:2px;">${escapeHtml(c.program)}</div>
-        <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} � Sem ${escapeHtml(c.semester)}</div>
+        <div class="muted" style="font-size:0.85rem; margin-top:2px;">Year ${escapeHtml(c.year_level)} • Sem ${escapeHtml(c.semester)}</div>
         <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; margin-top:4px;">
           <span class="pill">${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}</span>
           <div><strong>${escapeHtml(c.course_name)}</strong></div>
@@ -330,7 +330,7 @@
     optCode.value = String(c.course_id);
     const codeLabel = String(c.subject_code || "").trim();
     const codeText = codeLabel
-      ? `${makeCourseLabel(c.course_type, c.subject_code)} � Y${c.year_level} S${c.semester} � ${c.course_name}`
+      ? `${makeCourseLabel(c.course_type, c.subject_code)} • Y${c.year_level} S${c.semester} • ${c.course_name}`
       : `(ID ${c.course_id})`;
     optCode.textContent = isZeroHour
       ? `${codeText} [Zero Hours]`
@@ -455,7 +455,7 @@
   const popup = document.createElement("div");
   popup.className = "availability-popup builder-popup";
   const names = items.map((i) => i.full_name).filter(Boolean);
-  const list = names.length ? names.join(" � ") : "Doctor available";
+  const list = names.length ? names.join(" • ") : "Doctor available";
   popup.innerHTML = `<div class="availability-popup-title">Doctor Available</div><div class="availability-popup-body">${escapeHtml(list)}</div>`;
 
   document.body.appendChild(popup);
@@ -489,7 +489,7 @@
         <div><strong>Unavailable</strong></div>
         <button class="btn btn-secondary btn-small" type="button" data-unavail-del="1" data-id="${escapeHtml(u.unavailability_id)}">Remove</button>
       </div>
-      <div class="muted" style="font-size:0.9rem;">${start} ? ${end}${reason ? " � " + reason : ""}</div>
+      <div class="muted" style="font-size:0.9rem;">${start} ? ${end}${reason ? " • " + reason : ""}</div>
     `;
     wrap.appendChild(card);
   }
@@ -520,7 +520,7 @@
   // // ignore
   // }
 
-  setStatusById("scheduleStatus", "Loading�");
+  setStatusById("scheduleStatus", "Loading•");
   await loadSchedule(doctorId);
   await loadCourses();
   renderCoursesSidebar();
@@ -547,9 +547,9 @@
   if (wkLabel) parts.push(wkLabel);
   parts.push("Week starts Sunday");
   parts.push("Each slot = 1 hour 30 minutes");
-  parts.push(`Scope: ${y} � ${s}`);
+  parts.push(`Scope: ${y} • ${s}`);
 
-  el.textContent = parts.join(" � ");
+  el.textContent = parts.join(" • ");
   }
 
   function renderScheduleGrid() {
@@ -638,8 +638,8 @@
           const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
             <div class="slot-title">Occupied</div>
-            <div class="slot-sub">${escapeHtml(label)} � ${escapeHtml(assigned.course_name || "")}</div>
-            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} � Sem ${escapeHtml(assigned.semester)}</div>
+            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.course_name || "")}</div>
+            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} • Sem ${escapeHtml(assigned.semester)}</div>
           `;
           cell.style.cursor = "not-allowed";
           td.appendChild(cell);
@@ -655,7 +655,7 @@
         const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
         cell.innerHTML = `
           <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
-          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " � " + room : ""}</div>
+          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
         `;
       } else {
         cell.innerHTML = `
@@ -705,7 +705,7 @@
           const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
             <div class="slot-title">${escapeHtml(assigned.course_name || "")}</div>
-            <div class="slot-sub">${escapeHtml(label)} � ${escapeHtml(assigned.doctor_name || "")}</div>
+            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.doctor_name || "")}</div>
           `;
         } else {
           cell.innerHTML = `
@@ -728,7 +728,7 @@
       meta.textContent = "Select program/year/semester";
       return;
     }
-    meta.textContent = `${program} � Year ${year} � Sem ${semester}`;
+    meta.textContent = `${program} • Year ${year} • Sem ${semester}`;
   }
 
   function renderStudentProgramOptions(coursesOverride = null) {
@@ -789,7 +789,7 @@
     }
 
     if (status) {
-      status.textContent = "Loading�";
+      status.textContent = "Loading•";
       status.className = "status";
     }
 
@@ -1077,7 +1077,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Saving�");
+    setStatusById("modalStatus", "Saving•");
 
     const fd = new FormData();
     fd.append("doctor_id", doctorId);
@@ -1127,7 +1127,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Canceling slot�");
+    setStatusById("modalStatus", "Canceling slot•");
     const reason = document.getElementById("modal_slot_cancel_reason")?.value || "";
 
     try {
@@ -1162,7 +1162,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Restoring slot�");
+    setStatusById("modalStatus", "Restoring slot•");
 
     try {
       const fd = new FormData();
@@ -1195,7 +1195,7 @@
       return;
     }
 
-    setStatusById("modalStatus", "Removing�");
+    setStatusById("modalStatus", "Removing•");
 
     const fd = new FormData();
     fd.append("doctor_id", doctorId);
@@ -1409,7 +1409,7 @@
   }
 
   function normalizeSeparator(input) {
-  return String(input || "").replace(/\s*[��\u2022]+\s*/g, " � ");
+  return String(input || "").replace(/\s*[••\u2022]+\s*/g, " • ");
   }
 
   async function loadWeeks() {
@@ -1451,7 +1451,7 @@
 
   async function initDashboard() {
   try {
-    setStatusById("scheduleStatus", "Loading�");
+    setStatusById("scheduleStatus", "Loading•");
 
     initPageFiltersUI({ yearSelectId: "builderYearFilterMain", semesterSelectId: "builderSemesterFilterMain" });
 
@@ -1784,7 +1784,7 @@
       }
 
       try {
-        setStatusById("unavailStatus", "Saving�");
+        setStatusById("unavailStatus", "Saving•");
         const fd = new FormData();
         fd.append("doctor_id", String(state.activeDoctorId));
         // datetime-local returns YYYY-MM-DDTHH:mm
@@ -1811,7 +1811,7 @@
       if (!ok) return;
 
       try {
-        setStatusById("unavailStatus", "Removing�");
+        setStatusById("unavailStatus", "Removing•");
         const fd = new FormData();
         fd.append("unavailability_id", String(id));
         await fetchJson("php/delete_unavailability.php", { method: "POST", body: fd });
