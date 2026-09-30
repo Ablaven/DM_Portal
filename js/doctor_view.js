@@ -227,7 +227,7 @@
       year1: filtered.filter(c => c.year_level === 1).length,
       year2: filtered.filter(c => c.year_level === 2).length,
       year3: filtered.filter(c => c.year_level === 3).length,
-      totalHours: filtered.reduce((sum, c) => sum + parseFloat(c.total_hours || 0), 0).toFixed(2)
+      totalHours: filtered.reduce((sum, c) => sum + parseFloat(c.allocated_hours || c.total_hours || 0), 0).toFixed(2)
     };
     
     // Update summary stats
@@ -278,7 +278,7 @@
           <span style="padding:6px 12px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:8px; font-size:0.875rem; font-weight:600;">
             ${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}
           </span>
-          <span class="muted" style="font-size:0.875rem; padding:6px 0;">Total: ${formatHours(c.total_hours)}h</span>
+          <span class="muted" style="font-size:0.875rem; padding:6px 0;">Total: ${formatHours(c.allocated_hours || c.total_hours)}h</span>
         </div>
       `;
 

@@ -58,14 +58,46 @@ try {
 
     $semesterFilter = $activeSemester > 0 ? 'AND c.semester = :semester' : '';
 
+    // Check if course_doctor_hours table exists
+    $hasCdh = false;
+    try {
+        $pdo->query('SELECT 1 FROM course_doctor_hours LIMIT 0');
+        $hasCdh = true;
+    } catch (Throwable $ignore) {
+    }
+
+    $hJoin = $hasCdh
+        ? 'LEFT JOIN course_doctor_hours h ON h.course_id = c.course_id AND h.doctor_id = :doctor_id_h'
+        : '';
+    $allocJoin = $hasCdh
+        ? 'LEFT JOIN (SELECT course_id, COUNT(*) AS alloc_cnt FROM course_doctor_hours GROUP BY course_id) ha ON ha.course_id = c.course_id'
+        : '';
+
+    // For split courses: use doctor's allocated hours - doctor's scheduled hours
+    // For non-split: use total_hours - total scheduled hours for all doctors
     $stmt = $pdo->prepare(
         "SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester, c.course_type, c.subject_code, c.total_hours,
-                GREATEST(0, ROUND(c.total_hours - (COALESCE(x.scheduled_base_hours,0) + COALESCE(x.scheduled_extra_hours,0)), 2)) AS remaining_hours
+                CASE
+                  WHEN COALESCE(ha.alloc_cnt, 0) > 0 THEN COALESCE(h.allocated_hours, 0)
+                  ELSE c.total_hours
+                END AS allocated_hours,
+                GREATEST(0, ROUND(
+                  (
+                    CASE
+                      WHEN COALESCE(ha.alloc_cnt, 0) > 0 THEN COALESCE(h.allocated_hours, 0)
+                      ELSE c.total_hours
+                    END
+                  ) - (
+                    COALESCE(xdoc.scheduled_base_hours, 0) + COALESCE(xdoc.scheduled_extra_hours, 0)
+                  ),
+                2)) AS remaining_hours
          FROM courses c
          JOIN course_doctors cd ON cd.course_id = c.course_id AND cd.doctor_id = :doctor_id
+         $hJoin
+         $allocJoin
          LEFT JOIN (
            " . dmportal_done_hours_course_subquery_sql('s.doctor_id = :doctor_id_done', $activeTermId) . "
-         ) x ON x.course_id = c.course_id
+         ) xdoc ON xdoc.course_id = c.course_id
          WHERE 1=1 $semesterFilter
          ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC"
     );
@@ -74,6 +106,9 @@ try {
         ':doctor_id'      => $doctorId,
         ':doctor_id_done' => $doctorId,
     ];
+    if ($hasCdh) {
+        $params[':doctor_id_h'] = $doctorId;
+    }
     if ($activeSemester > 0) {
         $params[':semester'] = $activeSemester;
     }
