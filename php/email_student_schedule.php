@@ -41,7 +41,6 @@ if ($semester < 1 || $semester > 2) {
 try {
     $pdo = get_pdo();
 
-    $defaultCc = ['asmaa.sharif@ufe.edu.eg', 'Sherrost@yahoo.com'];
     $emailStmt = $pdo->prepare(
         'SELECT DISTINCT email FROM students WHERE program = :program AND year_level = :year_level AND email IS NOT NULL AND TRIM(email) <> "" ORDER BY full_name ASC'
     );
@@ -54,11 +53,15 @@ try {
         exit;
     }
 
-    $recipient = array_shift($emails);
-    $cc = array_values(array_unique(array_filter(array_merge($emails, $defaultCc), function ($email) use ($recipient) {
-        $value = trim((string)$email);
-        return $value !== '' && $value !== $recipient;
+    // Add default CCs
+    $defaultCc = ['asmaa.sharif@ufe.edu.eg', 'Sherrost@yahoo.com'];
+    $allEmails = array_values(array_unique(array_filter(array_merge($emails, $defaultCc), function ($email) {
+        return trim((string)$email) !== '';
     })));
+    
+    // Use first email as TO, rest as BCC for better deliverability
+    $recipient = array_shift($allEmails);
+    $bcc = $allEmails;
 
     dmportal_ensure_doctor_year_colors_table($pdo);
 
@@ -234,7 +237,8 @@ try {
             'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'data' => $xlsxBytes,
         ]],
-        $cc
+        [], // No CC
+        $bcc // Use BCC instead for better deliverability
     );
 
     echo json_encode(['success' => true]);

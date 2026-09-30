@@ -31,8 +31,9 @@ final class DmportalSmtpMailer
     /**
      * @param array<int, array{name:string,mime:string,data:string}> $attachments
      * @param array<int, string> $cc
+     * @param array<int, string> $bcc
      */
-    public function send(string $to, string $subject, string $body, array $attachments = [], array $cc = []): void
+    public function send(string $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = []): void
     {
         if (!$this->isConfigured()) {
             throw new RuntimeException('SMTP is not configured.');
@@ -44,6 +45,7 @@ final class DmportalSmtpMailer
         }
 
         $ccList = $this->normalizeAddressList($cc);
+        $bccList = $this->normalizeAddressList($bcc);
 
         $socket = $this->connect();
         try {
@@ -74,6 +76,10 @@ final class DmportalSmtpMailer
             $this->expect($socket, 250);
             foreach ($ccList as $ccAddress) {
                 $this->command($socket, 'RCPT TO:<' . $ccAddress . '>');
+                $this->expect($socket, 250);
+            }
+            foreach ($bccList as $bccAddress) {
+                $this->command($socket, 'RCPT TO:<' . $bccAddress . '>');
                 $this->expect($socket, 250);
             }
 
