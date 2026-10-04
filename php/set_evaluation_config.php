@@ -81,8 +81,16 @@ try {
     }
 
     $sum = dmportal_eval_items_sum($items);
+    
+    // Debug logging
+    error_log("=== EVALUATION CONFIG DEBUG ===");
+    error_log("Items JSON: " . json_encode($items));
+    error_log("Sum calculated: $sum");
+    error_log("Difference from 100: " . abs($sum - 100.0));
+    error_log("Check (abs(sum - 100) > 0.01): " . (abs($sum - 100.0) > 0.01 ? 'FAIL' : 'PASS'));
+    
     if (abs($sum - 100.0) > 0.01) {
-        bad_request('Total marks must equal 100.');
+        bad_request("Total marks must equal 100. (Current total: $sum)");
     }
 
     $counts = [];
