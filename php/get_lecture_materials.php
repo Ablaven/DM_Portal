@@ -45,7 +45,20 @@ try {
         $stmt->execute();
         $rows = $stmt->fetchAll();
 
-        echo json_encode(['success' => true, 'data' => $rows]);
+        // Filter out materials where the physical file doesn't exist
+        $validRows = [];
+        foreach ($rows as $row) {
+            $storedFilename = (string)$row['stored_filename'];
+            $courseIdForFile = (int)$row['course_id'];
+            $filePath = dmportal_get_stored_file_path($pdo, $courseIdForFile, $storedFilename);
+            
+            // Only include if the file physically exists
+            if (is_file($filePath)) {
+                $validRows[] = $row;
+            }
+        }
+
+        echo json_encode(['success' => true, 'data' => $validRows]);
         exit;
     }
 
@@ -122,7 +135,19 @@ try {
     $stmt->execute([':course_id' => $courseId]);
     $rows = $stmt->fetchAll();
 
-    echo json_encode(['success' => true, 'data' => $rows]);
+    // Filter out materials where the physical file doesn't exist
+    $validRows = [];
+    foreach ($rows as $row) {
+        $storedFilename = (string)$row['stored_filename'];
+        $filePath = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
+        
+        // Only include if the file physically exists
+        if (is_file($filePath)) {
+            $validRows[] = $row;
+        }
+    }
+
+    echo json_encode(['success' => true, 'data' => $validRows]);
 
 } catch (Throwable $e) {
     http_response_code(500);

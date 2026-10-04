@@ -104,12 +104,23 @@ function dmportal_get_course_folder_name(PDO $pdo, int $courseId): string
 function dmportal_get_upload_dir(PDO $pdo, int $courseId): string
 {
     $folderName = dmportal_get_course_folder_name($pdo, $courseId);
-    return __DIR__ . '/../lectures/' . $folderName . '/';
+    // Use realpath to resolve the absolute path correctly
+    $baseDir = realpath(__DIR__ . '/../lectures/');
+    if ($baseDir === false) {
+        // Fallback if realpath fails
+        $baseDir = __DIR__ . '/../lectures';
+    }
+    return rtrim($baseDir, '/\\') . '/' . $folderName . '/';
 }
 
 function dmportal_ensure_upload_dir(PDO $pdo, int $courseId): bool
 {
-    $lecturesRoot = __DIR__ . '/../lectures/';
+    // Use realpath for correct absolute path resolution
+    $lecturesRoot = realpath(__DIR__ . '/../lectures/');
+    if ($lecturesRoot === false) {
+        $lecturesRoot = __DIR__ . '/../lectures';
+    }
+    $lecturesRoot = rtrim($lecturesRoot, '/\\') . '/';
     $folderName   = dmportal_get_course_folder_name($pdo, $courseId);
     $courseDir    = $lecturesRoot . $folderName . '/';
 

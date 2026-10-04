@@ -103,7 +103,9 @@ try {
     $filePath       = dmportal_get_stored_file_path($pdo, $courseId, $storedFilename);
 
     if (!is_file($filePath)) {
-        json_error(404, 'File not found.');
+        // Log the attempted path for debugging (only visible to admins in logs)
+        error_log("File not found at path: " . $filePath);
+        json_error(404, 'File not found on server. Path checked: ' . basename($filePath));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -95,7 +95,7 @@ html[data-theme="light"] {
 
   /* Navbar: solid white, clearly separated from page bg */
   --nav-bg: rgba(255, 255, 255, 0.18);
-  --nav-panel-bg: rgba(255, 255, 255, 0.28);
+  --nav-panel-bg: rgba(210, 225, 245, 0.98); /* More opaque for mobile menu */
   --overlay: rgba(18, 72, 200, 0.15);
 
   /* Surfaces inside cards: 3 clearly distinct tiers */
@@ -2740,12 +2740,14 @@ html[data-theme="light"] .slot.available-slot {
 #attendanceModal .schedule-grid th,
 #attendanceModal .schedule-grid td {
   font-size: 1.05rem;
+  padding: 10px 12px;
 }
 
 #attendanceModal .schedule-grid th {
   font-size: 1.05rem;
   border-top: 1px solid var(--card-border);
   border-bottom: 1px solid var(--card-border);
+  padding: 12px;
 }
 
 #attendanceModal .schedule-grid th,
@@ -2910,7 +2912,7 @@ html[data-theme="light"] .slot.available-slot {
 
   #attendanceModal .modal-body {
     text-align: left;
-    gap: 8px;
+    gap: 12px;
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -2918,6 +2920,7 @@ html[data-theme="light"] .slot.available-slot {
     height: 100%;
     overflow: hidden;
     max-height: none !important;
+    padding: 16px;
   }
 
   #attendanceModal .modal-body > .muted,
@@ -2941,7 +2944,7 @@ html[data-theme="light"] .slot.available-slot {
   #attendanceModal .modal-body > .muted,
   #attendanceModal .field,
   #attendanceModal .modal-actions {
-    padding: 8px 10px;
+    padding: 12px 14px;
     border-radius: 12px;
     background: var(--surface-2);
     border: 1px solid var(--card-border);
@@ -2949,7 +2952,7 @@ html[data-theme="light"] .slot.available-slot {
   }
 
   #attendanceModal .schedule-wrap {
-    padding: 6px;
+    padding: 8px;
     border-radius: 14px;
     background: var(--surface-2);
     border: 1px solid var(--card-border);
@@ -2959,29 +2962,36 @@ html[data-theme="light"] .slot.available-slot {
   }
 
   #attendanceModal .field label {
-    font-size: 0.85rem;
-    margin-bottom: 4px;
+    font-size: 1rem;
+    margin-bottom: 6px;
+    font-weight: 600;
   }
 
   #attendanceModal .field input,
   #attendanceModal .field select {
-    font-size: 0.92rem;
-    padding: 8px 10px;
+    font-size: 16px; /* Prevents iOS zoom */
+    padding: 14px 12px;
+    min-height: 48px; /* Touch-friendly */
   }
 
   #attendanceModal .modal-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
     flex: 0 0 auto;
     margin-top: 0;
+    padding: 12px;
+    background: var(--surface-1);
+    border-top: 1px solid var(--card-border);
   }
 
   #attendanceModal .modal-actions .btn,
   #attendanceModal .modal-header .btn {
-    font-size: 0.9rem;
-    padding: 8px 10px;
-    width: 100%;
+    font-size: 1rem;
+    padding: 12px 16px;
+    min-height: 48px; /* Touch-friendly */
+    flex: 1;
+    min-width: 120px;
   }
 
   #attendanceModal .schedule-wrap {
@@ -3012,32 +3022,58 @@ html[data-theme="light"] .slot.available-slot {
 
   #attendanceModal .schedule-grid th,
   #attendanceModal .schedule-grid td {
-    padding: 12px 8px;
-    font-size: 0.9rem;
+    padding: 10px 8px;
+    font-size: 0.95rem;
   }
 
   #attendanceModal .schedule-grid th {
     position: sticky;
     top: 0;
     z-index: 2;
-    background: var(--surface-2);
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
   }
 
   #attendanceModal .schedule-grid th:nth-child(1),
   #attendanceModal .schedule-grid td:nth-child(1) {
-    width: 80px;
+    min-width: 90px;
   }
 
   #attendanceModal .schedule-grid th:nth-child(3),
   #attendanceModal .schedule-grid td:nth-child(3) {
-    width: 96px;
+    min-width: 110px;
     text-align: center;
   }
 
   #attendanceModal .student-name {
     white-space: normal;
+    word-break: break-word;
+  }
+
+  #attendanceModal .chk input[type="checkbox"] {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    cursor: pointer;
+  }
+
+  #attendanceModal .modal-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex: 0 0 auto;
+    padding: 16px;
+  }
+
+  #attendanceModal .modal-header h3 {
+    font-size: 1.15rem;
+    margin: 0;
   }
 }
 
@@ -6234,4 +6270,462 @@ html[data-theme="light"] .course-card:hover {
   color: var(--accent);
   font-size: 0.9375rem;
   text-align: center;
+}
+
+
+/* ============================================
+   COMPREHENSIVE MOBILE IMPROVEMENTS
+   ============================================ */
+
+/* Better touch targets on mobile */
+@media (max-width: 760px) and (pointer: coarse) {
+  .btn, .btn-small, .icon-btn, a.navlink, button.navlink {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+  }
+
+  .dropdown-item {
+    min-height: 48px;
+    padding: 14px 16px;
+  }
+
+  input, select, textarea {
+    min-height: 48px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  .schedule-grid th, .schedule-grid td {
+    min-height: 48px;
+  }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 760px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Better modal sizing on mobile */
+@media (max-width: 760px) {
+  .modal {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal-card:not(#attendanceModal .modal-card) {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 16px;
+    flex-shrink: 0;
+  }
+
+  .modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-actions {
+    padding: 16px;
+    gap: 12px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--card-border);
+    background: var(--surface-1);
+  }
+
+  .modal-actions .btn {
+    min-width: 100px;
+    flex: 1;
+  }
+}
+
+/* Responsive tables */
+@media (max-width: 760px) {
+  .schedule-grid,
+  table {
+    font-size: 0.9rem;
+  }
+
+  .schedule-grid th,
+  .schedule-grid td {
+    padding: 12px 8px;
+  }
+
+  .schedule-grid .slot {
+    min-height: 60px;
+  }
+}
+
+/* Better dropdown on mobile */
+@media (max-width: 760px) {
+  .dropdown {
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-dropdown .dropdown {
+    position: static;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
+
+  .nav-dropdown .dropdown-item {
+    border-radius: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+/* Cards and panels */
+@media (max-width: 760px) {
+  .card, .panel {
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .container {
+    padding: 12px;
+  }
+
+  .main {
+    padding: 12px;
+  }
+}
+
+/* Better navbar z-index management */
+.navbar {
+  z-index: 1000;
+}
+
+.navbar.nav-open .navlinks {
+  z-index: 1002;
+}
+
+.navbar.nav-open::after {
+  z-index: 1001;
+}
+
+/* Landscape mobile improvements */
+@media (max-width: 760px) and (orientation: landscape) {
+  .navbar .navlinks {
+    padding: 60px 18px 18px 18px;
+  }
+
+  #attendanceModal .modal-card {
+    max-height: 100vh;
+  }
+
+  .modal-card {
+    max-height: 95vh;
+  }
+}
+
+
+/* ============================================
+   ATTENDANCE MODAL - MOBILE FIX (OVERRIDE ALL)
+   ============================================ */
+@media (max-width: 760px) {
+  /* Force full screen on mobile */
+  #attendanceModal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  #attendanceModal .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Compact header */
+  #attendanceModal .modal-header {
+    flex: 0 0 auto !important;
+    padding: 12px 16px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    border-bottom: 1px solid var(--card-border);
+    background: var(--surface-1);
+  }
+
+  #attendanceModal .modal-header h3 {
+    font-size: 1rem !important;
+    margin: 0 !important;
+    flex: 1;
+    text-align: left !important;
+  }
+
+  #attendanceModal .modal-header .btn {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+    margin: 0 !important;
+  }
+
+  /* Body with proper scroll */
+  #attendanceModal .modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 12px !important;
+    gap: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: left !important;
+  }
+
+  /* Compact form fields */
+  #attendanceModal .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #attendanceModal .field label {
+    font-size: 0.9rem !important;
+    margin-bottom: 4px !important;
+    font-weight: 600 !important;
+  }
+
+  #attendanceModal .field input,
+  #attendanceModal .field select {
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+    width: 100% !important;
+  }
+
+  /* Compact status */
+  #attendanceModal #attendanceModalStatus {
+    width: 100% !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  /* Table wrapper - CRITICAL FOR SCROLL */
+  #attendanceModal .schedule-wrap {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 8px !important;
+  }
+
+  /* Compact table */
+  #attendanceModal .schedule-grid {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 0.85rem !important;
+    table-layout: fixed !important;
+  }
+
+  #attendanceModal .schedule-grid th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background: var(--card) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    padding: 6px 4px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid var(--card-border) !important;
+  }
+
+  #attendanceModal .schedule-grid td {
+    padding: 8px 4px !important;
+    font-size: 0.85rem !important;
+    border-bottom: 1px solid var(--card-border) !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Hide Student ID column on mobile - FORCE */
+  #attendanceModal .schedule-grid th:first-child,
+  #attendanceModal .schedule-grid td:first-child,
+  #attendanceModal .schedule-grid th:nth-child(1),
+  #attendanceModal .schedule-grid td:nth-child(1) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  /* Student Name - now first visible column */
+  #attendanceModal .schedule-grid th:nth-child(2),
+  #attendanceModal .schedule-grid td:nth-child(2) {
+    text-align: left !important;
+    padding: 8px 12px !important;
+    width: 55% !important;
+    max-width: 55% !important;
+    font-weight: 600 !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Attendance Buttons - now second visible column */
+  #attendanceModal .schedule-grid th:nth-child(3),
+  #attendanceModal .schedule-grid td:nth-child(3) {
+    width: 45% !important;
+    max-width: 45% !important;
+    text-align: center !important;
+    padding: 8px 6px !important;
+  }
+
+  /* Student names */
+  #attendanceModal .student-name {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Checkboxes */
+  #attendanceModal .chk {
+    display: flex !important;
+    gap: 6px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #attendanceModal .chk input[type="checkbox"] {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    margin: 0 !important;
+  }
+
+  #attendanceModal .chk label {
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+  }
+
+  /* Compact attendance buttons */
+  #attendanceModal .attendance-status-btns {
+    display: flex !important;
+    gap: 4px !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+  }
+
+  #attendanceModal .attendance-status-btn {
+    padding: 6px 10px !important;
+    font-size: 0.7rem !important;
+    border-radius: 6px !important;
+    min-height: auto !important;
+    white-space: nowrap !important;
+    line-height: 1 !important;
+  }
+
+  #attendanceModal .attendance-status-btn svg {
+    width: 11px !important;
+    height: 11px !important;
+    margin-right: 3px !important;
+  }
+
+  /* Actions at bottom */
+  #attendanceModal .modal-actions {
+    flex: 0 0 auto !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    border-top: 1px solid var(--card-border) !important;
+    background: var(--surface-1) !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #attendanceModal .modal-actions .btn {
+    flex: 1 !important;
+    min-width: 100px !important;
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Search input */
+  #attendanceModal input[type="search"],
+  #attendanceModal input[placeholder*="student"] {
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+  }
+}
+
+
+/* ============================================
+   MOBILE ATTENDANCE FIX - ABSOLUTE OVERRIDE
+   ============================================ */
+@media screen and (max-width: 760px) {
+  /* FORCE HIDE STUDENT ID COLUMN */
+  #attendanceModal table.schedule-grid th:first-child,
+  #attendanceModal table.schedule-grid td:first-child {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+  }
+  
+  /* Student Name Column - Full Space */
+  #attendanceModal table.schedule-grid th:nth-child(2),
+  #attendanceModal table.schedule-grid td:nth-child(2) {
+    width: 50% !important;
+    max-width: 50% !important;
+    padding: 10px 8px !important;
+    text-align: left !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Buttons Column */
+  #attendanceModal table.schedule-grid th:nth-child(3),
+  #attendanceModal table.schedule-grid td:nth-child(3) {
+    width: 50% !important;
+    max-width: 50% !important;
+    padding: 10px 4px !important;
+    text-align: center !important;
+  }
+  
+  /* Make buttons smaller */
+  #attendanceModal table.schedule-grid .attendance-status-btn {
+    padding: 6px 8px !important;
+    font-size: 0.7rem !important;
+  }
 }
