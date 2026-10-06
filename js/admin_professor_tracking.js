@@ -9,98 +9,74 @@
   async function loadTermsAndWeeks() {
     console.log("[Professor Tracking] Starting initialization...");
     try {
-      // Check if attendance tracking has already loaded terms/weeks
-      const attendanceTermSelect = document.getElementById("attendanceTrackingTermFilter");
-      if (attendanceTermSelect && attendanceTermSelect.options.length > 1) {
-        console.log("[Professor Tracking] Copying from attendance tracking...");
-        
-        // Copy terms
-        const termSelect = document.getElementById("professorTrackingTermFilter");
-        if (termSelect && attendanceTermSelect) {
-          termSelect.innerHTML = attendanceTermSelect.innerHTML;
-          // Auto-select the same active term
-          termSelect.value = attendanceTermSelect.value;
-          console.log("[Professor Tracking] Copied", termSelect.options.length - 1, "terms");
-          console.log("[Professor Tracking] Auto-selected term:", termSelect.value);
-        }
-        
-        // Copy weeks
-        const attendanceFromWeek = document.getElementById("attendanceTrackingFromWeek");
-        const professorFromWeek = document.getElementById("professorTrackingFromWeek");
-        if (attendanceFromWeek && professorFromWeek) {
-          professorFromWeek.innerHTML = attendanceFromWeek.innerHTML;
-          console.log("[Professor Tracking] Copied", professorFromWeek.options.length - 1, "weeks to From");
-        }
-        
-        const attendanceToWeek = document.getElementById("attendanceTrackingToWeek");
-        const professorToWeek = document.getElementById("professorTrackingToWeek");
-        if (attendanceToWeek && professorToWeek) {
-          professorToWeek.innerHTML = attendanceToWeek.innerHTML;
-          console.log("[Professor Tracking] Copied", professorToWeek.options.length - 1, "weeks to To");
-        }
-        
-        console.log("[Professor Tracking] ✅ Initialization complete (copied from attendance tracking)!");
-        return;
-      }
-      
-      // Otherwise load independently
+      // Load terms first
       const termsPayload = await fetchJson("php/get_terms.php");
       if (!termsPayload?.success) {
         console.error("Failed to load terms:", termsPayload?.error);
         return;
       }
 
-      const terms = termsPayload.data?.terms || [];
+      const terms = termsPayload.data || [];
       console.log("[Professor Tracking] Loaded", terms.length, "terms");
+      
       const termSelect = document.getElementById("professorTrackingTermFilter");
-      console.log("[Professor Tracking] Term select found:", !!termSelect);
       if (termSelect) {
         termSelect.innerHTML = '<option value="">All Terms</option>';
         let activeTermId = null;
-        terms.forEach((t) => {
-          const opt = document.createElement("option");
-          opt.value = t.term_id;
-          opt.textContent = t.label || `Semester ${t.semester_number}`;
-          termSelect.appendChild(opt);
-          
-          // Check if this is the active term
-          if (t.is_active === 1 || t.is_active === "1" || t.is_active === true) {
-            activeTermId = t.term_id;
-          }
-        });
         
-        // Auto-select the active term
+        for (const term of terms) {
+          const option = document.createElement("option");
+          option.value = term.term_id;
+          
+          // Build label with academic year info
+          let label = term.label || `Semester ${term.semester}`;
+          
+          if (term.academic_year_label) {
+            label += ` - ${term.academic_year_label}`;
+          } else if (term.academic_year_id) {
+            label += ` (Year ${term.academic_year_id})`;
+          }
+          
+          if (term.status === 'active') {
+            label += ' (Active)';
+            activeTermId = term.term_id;
+          }
+          
+          option.textContent = label;
+          termSelect.appendChild(option);
+        }
+        
+        // Auto-select active term
         if (activeTermId) {
           termSelect.value = activeTermId;
           console.log("[Professor Tracking] Auto-selected active term:", activeTermId);
         }
       }
 
-      // Load all weeks
-      const weeksPayload = await fetchJson("php/get_weeks.php");
-      if (!weeksPayload?.success) {
-        console.error("Failed to load weeks:", weeksPayload?.error);
-        return;
+      // Load weeks for all terms
+      let allWeeks = [];
+      for (const term of terms) {
+        const payload = await fetchJson(`php/get_weeks.php?term_id=${term.term_id}`);
+        if (payload.success && payload.data) {
+          const weeksWithTerm = payload.data.map(w => ({ ...w, term_id: term.term_id }));
+          allWeeks.push(...weeksWithTerm);
+        }
       }
-
-      const weeks = weeksPayload.data?.weeks || [];
-      console.log("[Professor Tracking] Loaded", weeks.length, "weeks");
       
-      // Store weeks globally for filtering
-      window._professorTrackingWeeks = weeks;
+      allWeeks.sort((a, b) => a.week_id - b.week_id);
+      console.log("[Professor Tracking] Loaded", allWeeks.length, "total weeks");
       
-      populateWeekDropdowns(weeks);
-      console.log("[Professor Tracking] Week dropdowns populated");
-
+      // Store weeks globally
+      window._professorTrackingWeeks = allWeeks;
+      
+      // Populate and filter week dropdowns
+      filterWeeksByTerm(allWeeks, termSelect?.value || "");
+      
       // Setup term filter listener
       if (termSelect) {
-        termSelect.addEventListener("change", () => filterWeeksByTerm(weeks));
-        
-        // Trigger filter if we auto-selected an active term
-        if (termSelect.value) {
-          filterWeeksByTerm(weeks);
-          console.log("[Professor Tracking] Filtered weeks by active term");
-        }
+        termSelect.addEventListener("change", () => {
+          filterWeeksByTerm(allWeeks, termSelect.value);
+        });
       }
       
       console.log("[Professor Tracking] ✅ Initialization complete!");
@@ -109,68 +85,34 @@
     }
   }
 
-  function populateWeekDropdowns(weeks) {
+  function filterWeeksByTerm(weeks, selectedTermId) {
     const fromSelect = document.getElementById("professorTrackingFromWeek");
     const toSelect = document.getElementById("professorTrackingToWeek");
 
     if (!fromSelect || !toSelect) return;
 
+    // Filter weeks by selected term
+    const filteredWeeks = selectedTermId 
+      ? weeks.filter(w => String(w.term_id) === String(selectedTermId))
+      : weeks;
+
+    console.log("[Professor Tracking] Filtering:", filteredWeeks.length, "weeks for term:", selectedTermId);
+
+    // Repopulate week selectors
     fromSelect.innerHTML = '<option value="">Select week…</option>';
     toSelect.innerHTML = '<option value="">Select week…</option>';
 
-    weeks.forEach((w) => {
-      const opt1 = document.createElement("option");
-      opt1.value = w.week_id;
-      opt1.textContent = w.label;
-      opt1.dataset.termId = w.term_id || "";
+    for (const week of filteredWeeks) {
+      const option1 = document.createElement("option");
+      option1.value = week.week_id;
+      option1.textContent = week.label || `Week ${week.week_id}`;
 
-      const opt2 = document.createElement("option");
-      opt2.value = w.week_id;
-      opt2.textContent = w.label;
-      opt2.dataset.termId = w.term_id || "";
+      const option2 = document.createElement("option");
+      option2.value = week.week_id;
+      option2.textContent = week.label || `Week ${week.week_id}`;
 
-      fromSelect.appendChild(opt1);
-      toSelect.appendChild(opt2);
-    });
-  }
-
-  function filterWeeksByTerm(weeks) {
-    const selectedTermId = document.getElementById("professorTrackingTermFilter")?.value || "";
-    const fromSelect = document.getElementById("professorTrackingFromWeek");
-    const toSelect = document.getElementById("professorTrackingToWeek");
-
-    if (!fromSelect || !toSelect) return;
-
-    const currentFrom = fromSelect.value;
-    const currentTo = toSelect.value;
-
-    fromSelect.innerHTML = '<option value="">Select week…</option>';
-    toSelect.innerHTML = '<option value="">Select week…</option>';
-
-    weeks.forEach((w) => {
-      const termId = String(w.term_id || "");
-      if (!selectedTermId || termId === selectedTermId) {
-        const opt1 = document.createElement("option");
-        opt1.value = w.week_id;
-        opt1.textContent = w.label;
-        opt1.dataset.termId = termId;
-
-        const opt2 = document.createElement("option");
-        opt2.value = w.week_id;
-        opt2.textContent = w.label;
-        opt2.dataset.termId = termId;
-
-        fromSelect.appendChild(opt1);
-        toSelect.appendChild(opt2);
-      }
-    });
-
-    // Restore selections if still valid
-    if (currentFrom && fromSelect.querySelector(`option[value="${currentFrom}"]`)) {
-      fromSelect.value = currentFrom;
-    }
-    if (currentTo && toSelect.querySelector(`option[value="${currentTo}"]`)) {
-      toSelect.value = currentTo;
+      fromSelect.appendChild(option1);
+      toSelect.appendChild(option2);
     }
   }
 
