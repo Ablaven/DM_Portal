@@ -15,6 +15,17 @@ function bad_request(string $m): void {
     die($m);
 }
 
+// Slot time definitions
+const SLOT_TIMES = [
+    1 => ['start' => '8:30 AM', 'end' => '10:00 AM'],
+    2 => ['start' => '10:10 AM', 'end' => '11:30 AM'],
+    3 => ['start' => '11:40 AM', 'end' => '1:00 PM'],
+    4 => ['start' => '1:10 PM', 'end' => '2:40 PM'],
+    5 => ['start' => '2:50 PM', 'end' => '4:20 PM'],
+];
+
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
+
 try {
     $pdo = get_pdo();
     dmportal_ensure_attendance_sessions_table($pdo);
@@ -68,7 +79,7 @@ try {
         WHERE s.week_id >= :week_id_from
           AND s.week_id <= :week_id_to
           AND s.counts_towards_hours = 1
-        ORDER BY s.week_id ASC, s.day_of_week ASC, s.slot_number ASC, c.course_name ASC
+        ORDER BY s.week_id ASC, c.year_level ASC, s.day_of_week ASC, s.slot_number ASC
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -79,123 +90,177 @@ try {
 
     $rows = $stmt->fetchAll();
 
-    // Build data rows for export
-    $exportRows = [];
+    // Organize data: [year][week_id][day][slot]
+    $dataByYear = [];
+    $weekLabels = [];
     
-    // Header row
-    $exportRows[] = [
-        'Week',
-        'Date',
-        'Day',
-        'Time',
-        'Course Name',
-        'Course Code',
-        'Type',
-        'Year',
-        'Professor',
-        'Teacher Attendance',
-    ];
-
-    // Style map: row => col => styleId
-    $styleMap = [];
-    $styleMap[0] = []; // header row - all cells get header style
-    for ($col = 0; $col < 10; $col++) {
-        $styleMap[0][$col] = 1; // header style
-    }
-
-    // We need custom fill styles for red/green cells
-    $xlsx = new SimpleXlsxWriter();
-
-    // Data rows
-    $rowNum = 1;
     foreach ($rows as $row) {
+        $year = (int)$row['year_level'];
+        $weekId = (int)$row['week_id'];
+        $day = $row['day_of_week'];
+        $slot = (int)$row['slot_number'];
+        
+        if (!isset($dataByYear[$year])) {
+            $dataByYear[$year] = [];
+        }
+        if (!isset($dataByYear[$year][$weekId])) {
+            $dataByYear[$year][$weekId] = [];
+        }
+        if (!isset($dataByYear[$year][$weekId][$day])) {
+            $dataByYear[$year][$weekId][$day] = [];
+        }
+        
         $isCanceled = (int)$row['is_canceled'] === 1;
         $attendanceTaken = $row['opened_at'] !== null;
-
-        // FILTER: Only export rows where professor was ABSENT (did not take attendance)
-        // Skip if attendance was taken (professor was present) or if canceled
-        if ($attendanceTaken || $isCanceled) {
-            continue;
+        
+        $status = 'present'; // Default
+        if ($isCanceled) {
+            $status = 'canceled';
+        } elseif (!$attendanceTaken) {
+            $status = 'absent';
         }
-
-        // Calculate lecture date/time
-        $weekStart = $row['start_date'];
-        $dayOfWeek = $row['day_of_week'];
-        $slotNumber = (int)$row['slot_number'];
-        $isRamadan = (int)$row['is_ramadan'] === 1;
-
-        $lectureRange = dmportal_schedule_lecture_range_from_parts(
-            $weekStart,
-            $isRamadan,
-            $dayOfWeek,
-            $slotNumber
-        );
-
-        $lectureDate = '';
-        $lectureTime = '';
-        if ($lectureRange) {
-            $lectureDate = $lectureRange['start']->format('M j, Y');
-            $lectureTime = $lectureRange['start']->format('g:i A') . ' - ' . $lectureRange['end']->format('g:i A');
-        }
-
-        // Format course info
-        $courseInfo = $row['course_name'];
-        $subjectCode = $row['subject_code'] ? $row['subject_code'] : '-';
-
-        // Teacher attendance is always "No" here due to the filter above
-        $teacherAttendance = 'No';
-
-        // Data
-        $exportRows[] = [
-            $row['week_label'],           // Week
-            $lectureDate,                  // Date
-            $dayOfWeek,                    // Day
-            $lectureTime,                  // Time
-            $courseInfo,                   // Course Name
-            $subjectCode,                  // Course Code
-            $row['course_type'],           // Type
-            $row['year_level'],            // Year
-            $row['doctor_name'],           // Professor
-            $teacherAttendance,            // Teacher Attendance (always "No")
+        
+        $dataByYear[$year][$weekId][$day][$slot] = [
+            'status' => $status,
+            'doctor_name' => $row['doctor_name'],
+            'course_name' => $row['course_name'],
+            'subject_code' => $row['subject_code'],
         ];
-
-        // Apply row styling
-        $styleMap[$rowNum] = [];
-        for ($col = 0; $col < 10; $col++) {
-            // Determine style for each cell
-            if ($col === 9) {
-                // Teacher Attendance column - always red since we only export "No" rows
-                $styleMap[$rowNum][$col] = $xlsx->styleFill('FEE2E2'); // red (absent)
-            } else {
-                $styleMap[$rowNum][$col] = 3; // normal cell style
-            }
+        
+        // Store week label
+        if (!isset($weekLabels[$weekId])) {
+            $weekLabels[$weekId] = $row['week_label'];
         }
-
-        $rowNum++;
     }
 
-    // Create XLSX
-    $xlsx->addSheet('Professor Attendance', $exportRows, [
-        'styleMap' => $styleMap,
-        'colWidths' => [
-            0 => 15,   // Week
-            1 => 16,   // Date
-            2 => 10,   // Day
-            3 => 18,   // Time
-            4 => 35,   // Course Name
-            5 => 15,   // Course Code
-            6 => 12,   // Type
-            7 => 8,    // Year
-            8 => 25,   // Professor
-            9 => 18,   // Teacher Attendance
-        ],
-        'rowHeights' => [
-            0 => 25, // header row height
-        ],
-    ]);
+    // Create XLSX with multiple sheets
+    $xlsx = new SimpleXlsxWriter();
+    
+    // Sort years
+    ksort($dataByYear);
+    
+    // Create a sheet for each year
+    foreach ([1, 2, 3] as $year) {
+        $yearData = $dataByYear[$year] ?? [];
+        
+        // Build rows for this year
+        $sheetRows = [];
+        $styleMap = [];
+        $rowHeights = [];
+        $merges = [];
+        
+        $currentRow = 0;
+        
+        // Get week IDs for this year and sort them
+        $weekIds = array_keys($yearData);
+        sort($weekIds);
+        
+        foreach ($weekIds as $weekId) {
+            $weekData = $yearData[$weekId];
+            $weekLabel = $weekLabels[$weekId] ?? "Week $weekId";
+            
+            // Add week header row (merged across all columns)
+            $sheetRows[] = [$weekLabel, '', '', '', '', ''];
+            $styleMap[$currentRow] = [
+                0 => $xlsx->styleTitle(), 
+                1 => $xlsx->styleTitle(), 
+                2 => $xlsx->styleTitle(), 
+                3 => $xlsx->styleTitle(), 
+                4 => $xlsx->styleTitle(), 
+                5 => $xlsx->styleTitle()
+            ];
+            $rowHeights[$currentRow] = 30;
+            $merges[] = "A" . ($currentRow + 1) . ":F" . ($currentRow + 1); // Excel is 1-indexed
+            $currentRow++;
+            
+            // Add table header
+            $sheetRows[] = ['Time', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+            $styleMap[$currentRow] = [
+                0 => $xlsx->styleHeader(),
+                1 => $xlsx->styleHeader(),
+                2 => $xlsx->styleHeader(),
+                3 => $xlsx->styleHeader(),
+                4 => $xlsx->styleHeader(),
+                5 => $xlsx->styleHeader()
+            ];
+            $rowHeights[$currentRow] = 25;
+            $currentRow++;
+            
+            // Add rows for each slot
+            foreach ([1, 2, 3, 4, 5] as $slot) {
+                $timeRange = SLOT_TIMES[$slot]['start'] . ' - ' . SLOT_TIMES[$slot]['end'];
+                $row = [$timeRange];
+                $styleMap[$currentRow] = [0 => $xlsx->styleSlot()];
+                
+                foreach (DAYS as $idx => $day) {
+                    $lecture = $weekData[$day][$slot] ?? null;
+                    
+                    if (!$lecture) {
+                        // No lecture scheduled - gray background
+                        $row[] = '';
+                        $styleMap[$currentRow][$idx + 1] = $xlsx->styleFill('F3F4F6'); // light gray
+                    } elseif ($lecture['status'] === 'present') {
+                        // Professor was present - green background
+                        $row[] = '✓';
+                        $styleMap[$currentRow][$idx + 1] = $xlsx->styleFill('D1FAE5'); // green
+                    } elseif ($lecture['status'] === 'canceled') {
+                        // Lecture was canceled - gray background
+                        $row[] = 'Canceled';
+                        $styleMap[$currentRow][$idx + 1] = $xlsx->styleFill('E5E7EB'); // gray
+                    } else {
+                        // Professor was absent - red background, show details on 3 lines
+                        $cellContent = $lecture['doctor_name'] . "\n" . 
+                                     $lecture['course_name'] . "\n" . 
+                                     $lecture['subject_code'];
+                        $row[] = $cellContent;
+                        $styleMap[$currentRow][$idx + 1] = $xlsx->styleFill('FEE2E2'); // red
+                    }
+                }
+                
+                $sheetRows[] = $row;
+                $rowHeights[$currentRow] = 80; // Taller rows for multi-line content (3 lines of text)
+                $currentRow++;
+            }
+            
+            // Add empty row between weeks
+            $sheetRows[] = ['', '', '', '', '', ''];
+            $styleMap[$currentRow] = [
+                0 => $xlsx->styleCell(),
+                1 => $xlsx->styleCell(),
+                2 => $xlsx->styleCell(),
+                3 => $xlsx->styleCell(),
+                4 => $xlsx->styleCell(),
+                5 => $xlsx->styleCell()
+            ];
+            $rowHeights[$currentRow] = 10;
+            $currentRow++;
+        }
+        
+        // If no data for this year, add a message
+        if (empty($sheetRows)) {
+            $sheetRows[] = ['No lectures scheduled for Year ' . $year];
+            $styleMap[0] = [0 => $xlsx->styleCell()];
+        }
+        
+        // Add sheet with freeze panes (freeze first column = time, freeze top 2 rows for each week)
+        $xlsx->addSheet("Year $year", $sheetRows, [
+            'colWidths' => [
+                0 => 22,  // Time column
+                1 => 35,  // Sunday (wider for professor names)
+                2 => 35,  // Monday
+                3 => 35,  // Tuesday
+                4 => 35,  // Wednesday
+                5 => 35,  // Thursday
+            ],
+            'rowHeights' => $rowHeights,
+            'styleMap' => $styleMap,
+            'merges' => $merges,
+            'freezeTopRows' => 2, // Freeze week header + table header
+        ]);
+    }
 
     // Output file
-    $filename = 'professor_attendance_' . date('Y-m-d_His') . '.xlsx';
+    $filename = 'professor_attendance_timetable_' . date('Y-m-d_His') . '.xlsx';
 
     $xlsx->download($filename);
     exit;
