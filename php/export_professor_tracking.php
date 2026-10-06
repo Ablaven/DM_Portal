@@ -46,13 +46,9 @@ try {
             c.course_name,
             c.subject_code,
             c.course_type,
-            c.program,
             c.year_level,
-            c.semester,
             d.full_name AS doctor_name,
-            d.email AS doctor_email,
             ash.opened_at,
-            ash.hours_counted,
             CASE
                 WHEN cw.cancellation_id IS NOT NULL THEN 1
                 WHEN cs.slot_cancellation_id IS NOT NULL THEN 1
@@ -86,7 +82,7 @@ try {
     // Build data rows for export
     $exportRows = [];
     
-    // Header row (removed: Program, Sem, Email, Status, Hours)
+    // Header row
     $exportRows[] = [
         'Week',
         'Date',
@@ -97,7 +93,7 @@ try {
         'Type',
         'Year',
         'Professor',
-        'Attendance',
+        'Teacher Attendance',
     ];
 
     // Style map: row => col => styleId
@@ -115,10 +111,10 @@ try {
     foreach ($rows as $row) {
         $isCanceled = (int)$row['is_canceled'] === 1;
         $attendanceTaken = $row['opened_at'] !== null;
-        $hoursCounted = (int)($row['hours_counted'] ?? 0) === 1;
 
-        // FILTER: Only export rows where attendance was NOT taken
-        if ($attendanceTaken) {
+        // FILTER: Only export rows where professor was ABSENT (did not take attendance)
+        // Skip if attendance was taken (professor was present) or if canceled
+        if ($attendanceTaken || $isCanceled) {
             continue;
         }
 
@@ -146,7 +142,10 @@ try {
         $courseInfo = $row['course_name'];
         $subjectCode = $row['subject_code'] ? $row['subject_code'] : '-';
 
-        // Data (removed: Program, Sem, Email, Status, Hours)
+        // Teacher attendance is always "No" here due to the filter above
+        $teacherAttendance = 'No';
+
+        // Data
         $exportRows[] = [
             $row['week_label'],           // Week
             $lectureDate,                  // Date
@@ -157,7 +156,7 @@ try {
             $row['course_type'],           // Type
             $row['year_level'],            // Year
             $row['doctor_name'],           // Professor
-            'No',                          // Attendance (always "No" due to filter)
+            $teacherAttendance,            // Teacher Attendance (always "No")
         ];
 
         // Apply row styling
@@ -165,8 +164,8 @@ try {
         for ($col = 0; $col < 10; $col++) {
             // Determine style for each cell
             if ($col === 9) {
-                // Attendance column - always red since we only export "No" rows
-                $styleMap[$rowNum][$col] = $xlsx->styleFill('FEE2E2'); // red
+                // Teacher Attendance column - always red since we only export "No" rows
+                $styleMap[$rowNum][$col] = $xlsx->styleFill('FEE2E2'); // red (absent)
             } else {
                 $styleMap[$rowNum][$col] = 3; // normal cell style
             }
@@ -176,7 +175,7 @@ try {
     }
 
     // Create XLSX
-    $xlsx->addSheet('Attendance Tracking', $exportRows, [
+    $xlsx->addSheet('Professor Attendance', $exportRows, [
         'styleMap' => $styleMap,
         'colWidths' => [
             0 => 15,   // Week
@@ -188,7 +187,7 @@ try {
             6 => 12,   // Type
             7 => 8,    // Year
             8 => 25,   // Professor
-            9 => 14,   // Attendance
+            9 => 18,   // Teacher Attendance
         ],
         'rowHeights' => [
             0 => 25, // header row height
@@ -196,13 +195,13 @@ try {
     ]);
 
     // Output file
-    $filename = 'attendance_tracking_' . date('Y-m-d_His') . '.xlsx';
+    $filename = 'professor_attendance_' . date('Y-m-d_His') . '.xlsx';
 
     $xlsx->download($filename);
     exit;
 } catch (Throwable $e) {
     // Log error for debugging
-    error_log('Export attendance tracking error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    error_log('Export professor tracking error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
     header('Content-Type: text/plain');
     die('Failed to generate Excel file: ' . $e->getMessage() . "\n\nFile: " . $e->getFile() . "\nLine: " . $e->getLine() . "\n\nStack trace:\n" . $e->getTraceAsString());

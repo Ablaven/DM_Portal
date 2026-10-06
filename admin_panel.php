@@ -254,6 +254,104 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
     </section>
 
+    <!-- ── Professor Attendance Tracking ───────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="margin:0 0 6px;">Professor Attendance Tracking</h2>
+        <p class="muted" style="margin:0; font-size:0.9rem;">Track professor attendance based on whether they took attendance for scheduled lectures.</p>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+        <div class="field" style="margin:0;">
+          <label for="professorTrackingTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
+          <select id="professorTrackingTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">All Terms</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="professorTrackingFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
+          <select id="professorTrackingFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="professorTrackingToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
+          <select id="professorTrackingToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <button id="loadProfessorTrackingReport" class="btn btn-secondary" type="button">Load Report</button>
+        <button id="exportProfessorTrackingReport" class="btn" type="button" disabled>Export Excel</button>
+      </div>
+
+      <div id="professorTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+
+      <!-- Summary stats -->
+      <div id="professorTrackingSummary" style="display:none; margin-bottom:20px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Total Lectures</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingTotalLectures">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Professor Present</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="professorTrackingPresent">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Professor Absent</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--danger);" id="professorTrackingAbsent">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Canceled</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingCanceled">0</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Attendance Rate</div>
+            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingRate">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <div id="professorTrackingTableWrap" style="display:none;">
+        <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <select id="professorTrackingFilterCourse" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
+            <option value="">All Courses</option>
+          </select>
+          <select id="professorTrackingFilterProfessor" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
+            <option value="">All Professors</option>
+          </select>
+          <select id="professorTrackingFilterStatus" class="navlink" style="padding:8px 11px;">
+            <option value="">All Status</option>
+            <option value="present">Present Only</option>
+            <option value="absent">Absent Only</option>
+            <option value="canceled">Canceled Only</option>
+          </select>
+        </div>
+
+        <div class="table-wrap" style="max-height:600px; overflow:auto;">
+          <table class="data-table" id="professorTrackingTable">
+            <thead>
+              <tr>
+                <th>Week</th>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Course</th>
+                <th>Professor</th>
+                <th>Status</th>
+                <th>Teacher Attendance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
     <details id="manualOptionsPanel" style="margin-top:14px;">
       <summary style="cursor:pointer; font-weight:600; padding:10px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
@@ -448,8 +546,18 @@ $importStatus = $_GET['import_status'] ?? '';
   <script src="js/admin_terms.js?v=20260912a"></script>
   <script src="js/admin_advance.js?v=20260912a"></script>
   <script src="js/admin_attendance_tracking.js?v=20260922e"></script>
+  <script src="js/admin_professor_tracking.js?v=20261006a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
+    
+    // Initialize professor tracking when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        window.dmportal?.initProfessorTracking?.();
+      });
+    } else {
+      window.dmportal?.initProfessorTracking?.();
+    }
   </script>
 </body>
 </html>

@@ -2646,11 +2646,11 @@ html[data-theme="light"] .slot.available-slot {
   align-items: center;
   justify-content: center;
   padding: 18px;
-  z-index: 50;
+  z-index: 99999; /* INCREASED - Above navbar (9999) */
 }
 
 .modal.stack-top {
-  z-index: 80;
+  z-index: 99999;
 }
 
 .modal {
@@ -6728,4 +6728,2283 @@ html[data-theme="light"] .course-card:hover {
     padding: 6px 8px !important;
     font-size: 0.7rem !important;
   }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║                                                                          ║
+   ║                    MOBILE UI - COMPLETE REBUILD v2.0                     ║
+   ║                    Built from scratch for optimal UX                     ║
+   ║                                                                          ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ============================================================================
+   1. MOBILE FOUNDATION - Base Styles & Resets
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Prevent horizontal scroll ────────────────────────────────────────── */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  *, *::before, *::after {
+    /* Prevent any element from causing horizontal overflow */
+    max-width: 100%;
+  }
+  
+  /* ── Safe area for notched devices (iPhone X+) ────────────────────────── */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* ── Container responsiveness ──────────────────────────────────────────── */
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  
+  /* ── Improve touch targets (min 48x48px) ───────────────────────────────── */
+  .btn, 
+  .btn-small, 
+  .icon-btn, 
+  a.navlink, 
+  button.navlink,
+  .dropdown-item,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 16px !important;
+  }
+  
+  /* ── Typography scaling ─────────────────────────────────────────────────── */
+  h1, .h1 { font-size: 1.75rem !important; line-height: 1.2 !important; }
+  h2, .h2 { font-size: 1.5rem !important; line-height: 1.3 !important; }
+  h3, .h3 { font-size: 1.25rem !important; line-height: 1.3 !important; }
+  h4, .h4 { font-size: 1.125rem !important; line-height: 1.4 !important; }
+  
+  body, p {
+    font-size: 1rem !important;
+    line-height: 1.6 !important;
+  }
+  
+  /* ── Spacing system ─────────────────────────────────────────────────────── */
+  .section {
+    padding: 24px 0 !important;
+  }
+  
+  .card, .panel {
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* ── Form inputs - prevent zoom on focus (iOS) ──────────────────────────── */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important; /* 16px prevents iOS zoom */
+    padding: 14px 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* ── Disable iOS input shadows ──────────────────────────────────────────── */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+}
+
+/* ============================================================================
+   2. MOBILE NAVIGATION - Hamburger Menu & Navbar
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Navbar container ───────────────────────────────────────────────────── */
+  .navbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+    padding: 14px 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.40) !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  /* Light theme navbar - liquid glass */
+  html[data-theme="light"] .navbar {
+    background: var(--nav-bg) !important;
+    box-shadow: 0 8px 32px rgba(18, 72, 200, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.60) !important;
+  }
+  
+  /* Dark theme navbar - liquid glass */
+  html[data-theme="dark"] .navbar {
+    background: var(--nav-bg) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+  }
+  
+  /* ── Brand / Logo ───────────────────────────────────────────────────────── */
+  .brand {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+  }
+  
+  /* ── Hamburger toggle button - ENHANCED VISIBILITY ─────────────────────────── */
+  .nav-toggle {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid var(--card-border) !important;
+    background: var(--surface-2) !important;
+    cursor: pointer !important;
+    z-index: 10001 !important;
+    position: relative !important;
+    border-radius: 12px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  
+  /* Light theme burger */
+  html[data-theme="light"] .nav-toggle {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-color: rgba(18, 72, 200, 0.20) !important;
+    box-shadow: 0 4px 12px rgba(18, 72, 200, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.60) !important;
+  }
+  
+  /* Dark theme burger */
+  html[data-theme="dark"] .nav-toggle {
+    background: rgba(var(--accent-rgb), 0.15) !important;
+    border-color: rgba(var(--accent-rgb), 0.30) !important;
+  }
+  
+  /* Hover effect for burger - GLOWING */
+  .nav-toggle:hover {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 8px 20px rgba(var(--accent-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.40) !important;
+  }
+  
+  /* Hover - change icon color to white */
+  .nav-toggle:hover svg {
+    color: white !important;
+    stroke: white !important;
+  }
+  
+  /* Active state */
+  .nav-toggle:active {
+    transform: scale(0.95) !important;
+  }
+  
+  /* Burger icon bars - MORE VISIBLE */
+  .nav-toggle svg {
+    transition: all 0.3s ease !important;
+    width: 24px !important;
+    height: 24px !important;
+    stroke-width: 2.5 !important;
+    color: var(--text) !important;
+  }
+  
+  /* Rotate burger when menu is open */
+  .navlinks.open ~ .nav-row .nav-toggle svg,
+  .nav-toggle.active svg {
+    transform: rotate(90deg) !important;
+  }
+  
+  /* ── Mobile menu panel (slide-in from right) - LIQUID GLASS ──────────────── */
+  .navlinks {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 85% !important;
+    max-width: 340px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    padding: 90px 28px 28px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.4s cubic-bezier(0.34, 1.15, 0.64, 1) !important;
+    z-index: 10000 !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.25), inset 1px 0 0 rgba(255, 255, 255, 0.25) !important;
+    border-left: 1px solid var(--card-border) !important;
+  }
+  
+  /* Light theme menu - liquid glass */
+  html[data-theme="light"] .navlinks {
+    background: var(--nav-panel-bg) !important;
+    box-shadow: -8px 0 40px rgba(18, 72, 200, 0.20), inset 1px 0 0 rgba(255, 255, 255, 0.55) !important;
+  }
+  
+  /* Dark theme menu - liquid glass */
+  html[data-theme="dark"] .navlinks {
+    background: var(--nav-panel-bg) !important;
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.40), inset 1px 0 0 rgba(255, 255, 255, 0.20) !important;
+  }
+  
+  /* Menu open state */
+  .navlinks.open {
+    transform: translateX(0) !important;
+  }
+  
+  /* ── Backdrop overlay - ENHANCED BLUR ────────────────────────────────────── */
+  .nav-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.4) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s !important;
+    z-index: 9998 !important;
+    backdrop-filter: blur(12px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  }
+  
+  .nav-overlay.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  /* Light theme backdrop */
+  html[data-theme="light"] .nav-overlay {
+    background: rgba(18, 72, 200, 0.15) !important;
+  }
+  
+  /* ── Nav links styling - REFINED ──────────────────────────────────────────── */
+  .navlink {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 16px 18px !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    border-radius: 14px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    min-height: 56px !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  
+  .navlink:hover,
+  .navlink:active {
+    background: var(--surface-2) !important;
+    transform: translateX(6px) scale(1.02) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+  
+  /* Active link - LIQUID GLASS ACCENT */
+  .navlink.active {
+    background: linear-gradient(135deg, 
+      rgba(var(--accent-rgb), 0.25), 
+      rgba(var(--accent-rgb), 0.15)) !important;
+    border: 1px solid rgba(var(--accent-rgb), 0.40) !important;
+    box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.25), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    color: var(--accent) !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Light theme active link */
+  html[data-theme="light"] .navlink.active {
+    background: linear-gradient(135deg, 
+      rgba(var(--accent-rgb), 0.20), 
+      rgba(var(--accent-rgb), 0.10)) !important;
+    color: var(--accent) !important;
+  }
+  
+  /* ── Dropdowns in mobile menu ────────────────────────────────────────────── */
+  .dropdown {
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 8px !important;
+    margin-top: 8px !important;
+    padding: 8px !important;
+    background: var(--surface-1) !important;
+  }
+  
+  .dropdown-item {
+    padding: 14px 16px !important;
+    font-size: 0.9375rem !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* ============================================================================
+   3. MOBILE TABLES & GRIDS - Horizontal Scroll & Cards
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Horizontal scroll wrapper ───────────────────────────────────────────── */
+  .schedule-wrap,
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 -16px !important; /* Bleed to edges */
+    padding: 0 16px !important;
+    scroll-snap-type: x proximity !important;
+  }
+  
+  /* ── Schedule grid / tables ──────────────────────────────────────────────── */
+  .schedule-grid,
+  table {
+    min-width: 600px !important; /* Minimum width for readability */
+    border-collapse: collapse !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .schedule-grid th,
+  .schedule-grid td,
+  table th,
+  table td {
+    padding: 12px 10px !important;
+    vertical-align: middle !important;
+  }
+  
+  /* Sticky first column for tables */
+  .schedule-grid th:first-child,
+  .schedule-grid td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    background: var(--card) !important;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05) !important;
+  }
+  
+  /* ── Grid layouts become single column ────────────────────────────────────── */
+  .dashboard-grid,
+  .lectures-grid,
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  /* ── Schedule slots (attendance page) ─────────────────────────────────────── */
+  .slot {
+    min-height: 80px !important;
+    padding: 12px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .slot-title {
+    font-size: 0.9375rem !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .slot-sub,
+  .slot-sub-muted {
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* ============================================================================
+   4. MOBILE MODALS - Full Screen Experience
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Modal backdrop ──────────────────────────────────────────────────────── */
+  .modal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+  
+  /* ── Modal card ──────────────────────────────────────────────────────────── */
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* ── Modal header ────────────────────────────────────────────────────────── */
+  .modal-header {
+    flex-shrink: 0 !important;
+    padding: 16px 20px !important;
+    border-bottom: 1px solid var(--card-border) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+  
+  .modal-title {
+    font-size: 1.125rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+  }
+  
+  .modal-close {
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* ── Modal body ──────────────────────────────────────────────────────────── */
+  .modal-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 20px !important;
+  }
+  
+  /* ── Modal actions (footer) ───────────────────────────────────────────────── */
+  .modal-actions {
+    flex-shrink: 0 !important;
+    padding: 16px 20px !important;
+    border-top: 1px solid var(--card-border) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    background: var(--surface-1) !important;
+  }
+  
+  .modal-actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* Primary button comes first on mobile */
+  .modal-actions .btn-primary {
+    order: -1 !important;
+  }
+}
+
+/* ============================================================================
+   5. ATTENDANCE MODAL - Mobile Optimized
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Attendance modal specific ────────────────────────────────────────────── */
+  #attendanceModal .modal-card {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* ── Header with course info ──────────────────────────────────────────────── */
+  #attendanceModal .modal-header {
+    padding: 16px !important;
+  }
+  
+  #attendanceModal .modal-title {
+    font-size: 1rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* ── Search and quick actions ─────────────────────────────────────────────── */
+  #attendanceModal .attendance-controls {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    background: var(--surface-1) !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  #attendanceModal .attendance-search {
+    width: 100% !important;
+  }
+  
+  #attendanceModal .attendance-quick-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 8px !important;
+  }
+  
+  #attendanceModal .attendance-quick-actions .btn {
+    flex: 1 !important;
+    font-size: 0.875rem !important;
+    padding: 10px 12px !important;
+    min-height: 44px !important;
+  }
+  
+  /* ── Table wrapper with horizontal scroll ─────────────────────────────────── */
+  #attendanceModal .schedule-wrap {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* ── Attendance table ─────────────────────────────────────────────────────── */
+  #attendanceModal .schedule-grid {
+    width: 100% !important;
+    min-width: auto !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+  }
+  
+  /* Hide student ID column on mobile */
+  #attendanceModal .schedule-grid th:first-child,
+  #attendanceModal .schedule-grid td:first-child {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+  }
+  
+  /* Also target by nth-child(1) as backup */
+  #attendanceModal .schedule-grid th:nth-child(1),
+  #attendanceModal .schedule-grid td:nth-child(1) {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
+  }
+  
+  /* Student name column - NOW 60% width for more space */
+  #attendanceModal .schedule-grid th:nth-child(2),
+  #attendanceModal .schedule-grid td:nth-child(2) {
+    width: 60% !important;
+    max-width: 60% !important;
+    padding: 12px 16px !important;
+    text-align: left !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Attendance buttons column - NOW 40% width */
+  #attendanceModal .schedule-grid th:nth-child(3),
+  #attendanceModal .schedule-grid td:nth-child(3) {
+    width: 40% !important;
+    max-width: 40% !important;
+    padding: 12px 8px !important;
+    text-align: center !important;
+  }
+  
+  /* ── Attendance buttons ───────────────────────────────────────────────────── */
+  #attendanceModal .attendance-status-btns {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: center !important;
+  }
+  
+  #attendanceModal .attendance-status-btn {
+    flex: 1 !important;
+    padding: 10px 12px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+  
+  #attendanceModal .attendance-status-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* ── Footer actions ───────────────────────────────────────────────────────── */
+  #attendanceModal .modal-actions {
+    padding: 16px !important;
+    gap: 10px !important;
+  }
+  
+  #attendanceModal .modal-actions .btn {
+    min-height: 48px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+  }
+}
+
+/* ============================================================================
+   6. MOBILE FORMS - Better Input Experience
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Form groups ─────────────────────────────────────────────────────────── */
+  .form-group,
+  .field {
+    margin-bottom: 20px !important;
+  }
+  
+  label {
+    display: block !important;
+    margin-bottom: 8px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+  }
+  
+  /* ── Filter bar (schedule builder, etc) ───────────────────────────────────── */
+  .filter-bar {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  
+  .filter-bar .field {
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .filter-bar select,
+  .filter-bar input {
+    width: 100% !important;
+  }
+  
+  /* ── Action buttons in forms ──────────────────────────────────────────────── */
+  .form-actions,
+  .action-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 24px !important;
+  }
+  
+  .form-actions .btn,
+  .action-buttons .btn {
+    width: 100% !important;
+  }
+  
+  /* ── Select dropdowns ─────────────────────────────────────────────────────── */
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 40px !important;
+  }
+}
+
+/* ============================================================================
+   7. MOBILE CARDS & PANELS
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Dashboard cards ──────────────────────────────────────────────────────── */
+  .dashboard-card {
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+  
+  .dashboard-card-title {
+    font-size: 1.125rem !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* ── Teacher/Doctor cards ─────────────────────────────────────────────────── */
+  .teacher-card {
+    padding: 24px 20px !important;
+    min-height: 280px !important;
+  }
+  
+  .teacher-photo {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  
+  .teacher-name {
+    font-size: 1.125rem !important;
+  }
+  
+  /* ── Year selector cards (student lecture view) ────────────────────────────── */
+  .year-selector-card {
+    padding: 32px 20px !important;
+    min-height: 160px !important;
+  }
+  
+  .selector-card-icon {
+    font-size: 2.5rem !important;
+  }
+  
+  .selector-card-label {
+    font-size: 1.125rem !important;
+  }
+  
+  /* ── Report cards ─────────────────────────────────────────────────────────── */
+  .report-card {
+    padding: 20px 16px !important;
+  }
+  
+  /* ── Panels (admin sections) ──────────────────────────────────────────────── */
+  .panel {
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+  
+  .panel-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 16px !important;
+  }
+}
+
+/* ============================================================================
+   8. MOBILE TOASTS & NOTIFICATIONS
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  .toast-container {
+    top: auto !important;
+    bottom: 20px !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+  }
+  
+  .toast {
+    width: 100% !important;
+    padding: 16px !important;
+    border-radius: 12px !important;
+    font-size: 0.9375rem !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+/* ============================================================================
+   9. MOBILE UTILITIES & HELPERS
+   ============================================================================ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Hide on mobile ───────────────────────────────────────────────────────── */
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  /* ── Show only on mobile ──────────────────────────────────────────────────── */
+  .show-mobile {
+    display: block !important;
+  }
+  
+  /* ── Stack elements vertically ─────────────────────────────────────────────── */
+  .stack-mobile {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  /* ── Full width on mobile ──────────────────────────────────────────────────── */
+  .full-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* ── Better empty states ───────────────────────────────────────────────────── */
+  .empty-state {
+    padding: 48px 24px !important;
+    text-align: center !important;
+  }
+  
+  .empty-state-icon {
+    font-size: 3rem !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .empty-state-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .empty-state-subtitle {
+    font-size: 0.9375rem !important;
+  }
+}
+
+/* ============================================================================
+   10. TABLET OPTIMIZATIONS (768px - 1024px)
+   ============================================================================ */
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  
+  .container {
+    width: 96% !important;
+    max-width: 960px !important;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .schedule-grid {
+    font-size: 0.9375rem !important;
+  }
+}
+
+/* ============================================================================
+   11. LANDSCAPE MOBILE (height < 500px)
+   ============================================================================ */
+
+@media screen and (max-width: 768px) and (max-height: 500px) and (orientation: landscape) {
+  
+  /* Reduce navbar height */
+  .navbar {
+    padding: 8px 16px !important;
+  }
+  
+  /* Make modals scrollable with less header space */
+  .modal-header {
+    padding: 12px 16px !important;
+  }
+  
+  .modal-title {
+    font-size: 1rem !important;
+  }
+  
+  /* Compact menu */
+  .navlinks {
+    padding: 60px 20px 20px 20px !important;
+  }
+  
+  .navlink {
+    min-height: 44px !important;
+    padding: 12px 14px !important;
+  }
+}
+
+/* ============================================================================
+   12. SMALL PHONES (max-width: 375px)
+   ============================================================================ */
+
+@media screen and (max-width: 375px) {
+  
+  /* Further reduce spacing */
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .card, .panel {
+    padding: 14px !important;
+  }
+  
+  /* Smaller buttons */
+  .btn {
+    padding: 10px 14px !important;
+    font-size: 0.9375rem !important;
+  }
+  
+  /* Tighter modal spacing */
+  .modal-body {
+    padding: 16px !important;
+  }
+  
+  #attendanceModal .attendance-status-btn {
+    font-size: 0.75rem !important;
+    padding: 8px 10px !important;
+  }
+}
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║                       END OF MOBILE UI REBUILD                           ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  EMERGENCY FIX - HIDE STUDENT ID ON MOBILE (HIGHEST PRIORITY)           ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+/* This MUST be at the very end to override everything else */
+@media screen and (max-width: 768px) {
+  /* Nuclear option - hide Student ID column */
+  #attendanceModal table th:first-child,
+  #attendanceModal table td:first-child,
+  #attendanceModal table.schedule-grid th:first-child,
+  #attendanceModal table.schedule-grid td:first-child,
+  #attendanceModal .schedule-grid th:first-child,
+  #attendanceModal .schedule-grid td:first-child,
+  #attendanceModal .schedule-grid th:nth-child(1),
+  #attendanceModal .schedule-grid td:nth-child(1) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0px !important;
+    min-width: 0px !important;
+    max-width: 0px !important;
+    padding: 0px !important;
+    margin: 0px !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+  }
+  
+  /* Make student name take more space */
+  #attendanceModal table th:nth-child(2),
+  #attendanceModal table td:nth-child(2),
+  #attendanceModal .schedule-grid th:nth-child(2),
+  #attendanceModal .schedule-grid td:nth-child(2) {
+    width: 55% !important;
+    min-width: 55% !important;
+  }
+  
+  /* Make buttons take remaining space */
+  #attendanceModal table th:nth-child(3),
+  #attendanceModal table td:nth-child(3),
+  #attendanceModal .schedule-grid th:nth-child(3),
+  #attendanceModal .schedule-grid td:nth-child(3) {
+    width: 45% !important;
+    min-width: 45% !important;
+  }
+}
+
+/* Force on ANY screen size if it's showing (extra aggressive) */
+@media screen and (max-width: 900px) {
+  #attendanceModal .schedule-grid thead th:first-child,
+  #attendanceModal .schedule-grid tbody td:first-child {
+    display: none !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  SCHEDULE BUILDER - MOBILE UI REWORK                                     ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Page Layout ─────────────────────────────────────────────────────────── */
+  body.schedule-builder-page .container {
+    padding: 0 !important;
+  }
+  
+  /* ── Filter Bar - Card Style ──────────────────────────────────────────────── */
+  .filter-bar {
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    margin: 0 16px 16px 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .filter-bar .field {
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .filter-bar label {
+    display: block !important;
+    margin-bottom: 8px !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+  }
+  
+  .filter-bar select,
+  .filter-bar input {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+  }
+  
+  .filter-bar .btn {
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+  }
+  
+  /* ── Week Navigation - Compact Cards ───────────────────────────────────────── */
+  .week-controls {
+    display: flex !important;
+    gap: 8px !important;
+    padding: 0 16px 16px 16px !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .week-controls .btn {
+    flex: 1 !important;
+    min-width: calc(50% - 4px) !important;
+    padding: 12px 16px !important;
+    font-size: 0.9375rem !important;
+    border-radius: 12px !important;
+  }
+  
+  .week-controls select {
+    flex: 1 1 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* ── Schedule Table Wrapper ────────────────────────────────────────────────── */
+  .schedule-container,
+  .schedule-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 !important;
+    padding: 0 16px 80px 16px !important;
+    scroll-snap-type: x proximity !important;
+  }
+  
+  /* Add scroll indicator gradient */
+  .schedule-wrap::after {
+    content: '' !important;
+    position: sticky !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 40px !important;
+    background: linear-gradient(to left, var(--bg), transparent) !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+  }
+  
+  /* ── Schedule Grid ──────────────────────────────────────────────────────────── */
+  .schedule-grid {
+    min-width: 800px !important;
+    width: auto !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  /* Sticky time column */
+  .schedule-grid th:first-child,
+  .schedule-grid td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 3 !important;
+    background: var(--card) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Sticky header row */
+  .schedule-grid thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    background: var(--card) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 14px 10px !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 2px solid var(--card-border) !important;
+  }
+  
+  /* Corner cell (time + sticky) */
+  .schedule-grid thead th:first-child {
+    z-index: 4 !important;
+  }
+  
+  /* ── Slot Cells ─────────────────────────────────────────────────────────────── */
+  .schedule-grid td {
+    padding: 8px !important;
+    vertical-align: top !important;
+    min-width: 180px !important;
+    max-width: 200px !important;
+  }
+  
+  /* Time cells (first column) */
+  .schedule-grid td:first-child {
+    min-width: 100px !important;
+    max-width: 100px !important;
+    padding: 12px 10px !important;
+    font-size: 0.8125rem !important;
+    white-space: nowrap !important;
+  }
+  
+  /* ── Slot Content ───────────────────────────────────────────────────────────── */
+  .slot {
+    min-height: 100px !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    font-size: 0.8125rem !important;
+    line-height: 1.4 !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  .slot:hover:not(.slot-empty) {
+    transform: scale(1.03) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.20) !important;
+    z-index: 10 !important;
+  }
+  
+  .slot-title {
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+    line-height: 1.3 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  
+  .slot-sub {
+    font-size: 0.75rem !important;
+    margin-bottom: 4px !important;
+    opacity: 0.85 !important;
+  }
+  
+  .slot-sub-muted {
+    font-size: 0.75rem !important;
+    opacity: 0.65 !important;
+  }
+  
+  /* Empty slots - minimal */
+  .slot-empty {
+    min-height: 60px !important;
+    padding: 10px !important;
+    opacity: 0.5 !important;
+    cursor: default !important;
+  }
+  
+  .slot-empty .slot-title {
+    font-size: 0.75rem !important;
+    font-weight: 500 !important;
+  }
+  
+  /* ── Conflict Indicators ─────────────────────────────────────────────────────── */
+  .slot-conflict {
+    border: 2px solid var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.15), 
+                0 4px 16px rgba(var(--danger-rgb), 0.25) !important;
+  }
+  
+  .conflict-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 4px 8px !important;
+    background: var(--danger) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-size: 0.6875rem !important;
+    font-weight: 700 !important;
+    margin-top: 6px !important;
+  }
+  
+  /* ── Action Buttons (Bottom FAB Style) ──────────────────────────────────────── */
+  .schedule-actions {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 16px !important;
+    background: var(--card) !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    border-top: 1px solid var(--card-border) !important;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.30) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    gap: 12px !important;
+  }
+  
+  .schedule-actions .btn {
+    flex: 1 !important;
+    padding: 14px 20px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    min-height: 52px !important;
+  }
+  
+  .schedule-actions .btn-primary {
+    order: -1 !important;
+  }
+  
+  /* ── Floating Scroll Hint ───────────────────────────────────────────────────── */
+  .scroll-hint {
+    position: fixed !important;
+    bottom: 90px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 10px 20px !important;
+    background: var(--accent) !important;
+    color: white !important;
+    border-radius: 20px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.40) !important;
+    animation: slideUp 0.4s ease !important;
+    pointer-events: none !important;
+    opacity: 0.95 !important;
+    z-index: 999 !important;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    to {
+      opacity: 0.95;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  
+  /* Hide hint after scroll */
+  .schedule-wrap.scrolled .scroll-hint {
+    display: none !important;
+  }
+  
+  /* ── Loading State ───────────────────────────────────────────────────────────── */
+  .schedule-loading {
+    padding: 60px 20px !important;
+    text-align: center !important;
+  }
+  
+  .schedule-loading::before {
+    content: '⏳' !important;
+    font-size: 3rem !important;
+    display: block !important;
+    margin-bottom: 16px !important;
+    animation: spin 2s linear infinite !important;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* ── Empty State ─────────────────────────────────────────────────────────────── */
+  .schedule-empty {
+    padding: 80px 32px !important;
+    text-align: center !important;
+    background: var(--card) !important;
+    border-radius: 20px !important;
+    margin: 20px 16px !important;
+  }
+  
+  .schedule-empty-icon {
+    font-size: 4rem !important;
+    margin-bottom: 20px !important;
+    opacity: 0.6 !important;
+  }
+  
+  .schedule-empty-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .schedule-empty-subtitle {
+    font-size: 0.9375rem !important;
+    opacity: 0.7 !important;
+  }
+}
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  END OF SCHEDULE BUILDER MOBILE UI                                       ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  HOURS REPORT PAGE - MOBILE FIX (Content Cut Off)                        ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Page Container ─────────────────────────────────────────────────────── */
+  body.hours-report-page .container,
+  .hours-report-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* ── Teacher Cards Grid ─────────────────────────────────────────────────── */
+  .teacher-cards,
+  .doctor-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 16px !important;
+  }
+  
+  /* ── Individual Teacher Card ────────────────────────────────────────────── */
+  .teacher-card,
+  .doctor-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* ── Teacher Header ─────────────────────────────────────────────────────── */
+  .teacher-header,
+  .doctor-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  .teacher-name,
+  .doctor-name {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+    word-wrap: break-word !important;
+  }
+  
+  .teacher-meta,
+  .doctor-meta {
+    font-size: 0.875rem !important;
+    opacity: 0.75 !important;
+  }
+  
+  /* ── Stats Row ──────────────────────────────────────────────────────────── */
+  .teacher-stats,
+  .doctor-stats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .stat-item {
+    background: var(--surface-2) !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.7 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .stat-value {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+  }
+  
+  /* ── Progress Bar ───────────────────────────────────────────────────────── */
+  .progress-bar {
+    width: 100% !important;
+    height: 8px !important;
+    background: var(--surface-1) !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .progress-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+    border-radius: 4px !important;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  /* ── Course List ────────────────────────────────────────────────────────── */
+  .course-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  .course-item {
+    padding: 14px !important;
+    background: var(--surface-1) !important;
+    border-radius: 12px !important;
+    border-left: 4px solid var(--accent) !important;
+  }
+  
+  .course-title {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    line-height: 1.4 !important;
+    word-wrap: break-word !important;
+  }
+  
+  .course-meta {
+    font-size: 0.8125rem !important;
+    opacity: 0.7 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .course-hours {
+    display: flex !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  .course-hours span {
+    white-space: nowrap !important;
+  }
+  
+  /* ── Expandable Sections ────────────────────────────────────────────────── */
+  .expand-toggle {
+    width: 100% !important;
+    padding: 14px !important;
+    margin-top: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 12px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+  }
+  
+  .expand-toggle:hover {
+    background: var(--surface-1) !important;
+    border-color: var(--accent) !important;
+  }
+  
+  /* ── Build Schedule Section ─────────────────────────────────────────────── */
+  .schedule-builder-section {
+    padding: 20px 16px !important;
+    background: var(--card) !important;
+    border-top: 1px solid var(--card-border) !important;
+    margin-top: 20px !important;
+  }
+  
+  .schedule-builder-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* ── Schedule Builder Controls ──────────────────────────────────────────── */
+  .schedule-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+    padding: 16px !important;
+    background: var(--surface-1) !important;
+    border-radius: 16px !important;
+  }
+  
+  .schedule-controls .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .schedule-controls label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .schedule-controls select {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  .schedule-controls .btn {
+    width: 100% !important;
+    padding: 14px !important;
+    font-size: 1rem !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+  }
+  
+  /* ── Student Schedule Filter ────────────────────────────────────────────── */
+  .student-schedule-filter {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    background: var(--surface-1) !important;
+    border-radius: 16px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .student-schedule-filter .field {
+    width: 100% !important;
+  }
+  
+  .student-schedule-filter .btn {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+  
+  /* ── Schedule Table Info ────────────────────────────────────────────────── */
+  .schedule-info {
+    font-size: 0.8125rem !important;
+    padding: 12px 16px !important;
+    background: var(--surface-2) !important;
+    border-radius: 12px !important;
+    margin-bottom: 16px !important;
+    text-align: center !important;
+  }
+  
+  /* Fix any remaining overflow issues */
+  .hours-report-page * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure images don't overflow */
+  .teacher-photo,
+  .doctor-photo,
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  END OF HOURS REPORT PAGE FIX                                            ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  SCHEDULE BUILDER PAGE - COMPLETE MOBILE REBUILD                         ║
+   ║  Rebuilt from scratch with liquid glass styling                          ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Global Viewport Fix ───────────────────────────────────────────────── */
+  body.dashboard,
+  body.dashboard * {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+  
+  body.dashboard {
+    overflow-x: hidden !important;
+  }
+  
+  /* ── Page Layout Override ─────────────────────────────────────────────── */
+  body.dashboard .layout.layout-single {
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  body.dashboard .schedule-builder-layout {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Hours panel below main content, collapsible */
+  body.dashboard .schedule-hours-panel {
+    order: 2 !important;
+    position: static !important;
+    margin: 16px !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+    width: calc(100% - 32px) !important;
+    max-width: calc(100% - 32px) !important;
+    overflow: hidden !important;
+  }
+  
+  /* Fix hours panel content */
+  body.dashboard .schedule-hours-panel * {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.dashboard .hours-report-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  body.dashboard .main {
+    order: 1 !important;
+    padding: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* ── Hours Report Cards (Teacher Cards) ────────────────────────────────── */
+  body.dashboard .hours-remaining-item,
+  body.dashboard .panel-header,
+  body.dashboard .hours-report-panel > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+  }
+  
+  /* Doctor progress cards in hours panel */
+  body.dashboard .doctor-progress-item,
+  body.dashboard .course-progress-item,
+  body.dashboard .subject-progress-item {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard .course-progress-top {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  body.dashboard .course-progress-title {
+    font-size: 0.9375rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.dashboard .course-progress-meta {
+    font-size: 0.8125rem !important;
+    opacity: 0.8 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.dashboard .course-progress-legend {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  
+  body.dashboard .course-progress-legend .badge {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+  }
+  
+  body.dashboard .course-progress-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 8px !important;
+    border-radius: 4px !important;
+    background: var(--surface-1) !important;
+    overflow: hidden !important;
+    margin: 8px 0 !important;
+  }
+  
+  body.dashboard .hours-report-courses {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-top: 12px !important;
+    margin-top: 12px !important;
+    border-top: 1px solid var(--card-border) !important;
+  }
+  
+  /* Teacher/Doctor name cards in hours panel */
+  body.dashboard .schedule-hours-panel .hours-remaining-name {
+    font-size: 0.875rem !important;
+    line-height: 1.3 !important;
+    word-wrap: break-word !important;
+  }
+  
+  body.dashboard .schedule-hours-panel .hours-remaining-meta {
+    font-size: 0.75rem !important;
+    word-wrap: break-word !important;
+  }
+  
+  /* ── Header Section ────────────────────────────────────────────────────── */
+  body.dashboard .main-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard .main-header h2 {
+    font-size: 1.5rem !important;
+    margin: 0 !important;
+  }
+  
+  body.dashboard .main-header .muted {
+    font-size: 0.875rem !important;
+  }
+  
+  /* ── Main Controls Card ─────────────────────────────────────────────────── */
+  body.dashboard .card {
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  /* Override inline flex styles */
+  body.dashboard .card > div[style*="display:flex"],
+  body.dashboard .card > div[style*="display: flex"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    flex-wrap: nowrap !important;
+  }
+  
+  /* ── Form Fields ───────────────────────────────────────────────────────── */
+  body.dashboard .field {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    margin: 0 !important;
+  }
+  
+  body.dashboard .field-label,
+  body.dashboard .field label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    color: var(--text) !important;
+  }
+  
+  body.dashboard .form-control,
+  body.dashboard select.navlink,
+  body.dashboard select {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text) !important;
+    transition: all 0.3s !important;
+  }
+  
+  body.dashboard .form-control:focus,
+  body.dashboard select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
+    outline: none !important;
+  }
+  
+  /* ── Buttons ───────────────────────────────────────────────────────────── */
+  body.dashboard .btn,
+  body.dashboard .btn-secondary,
+  body.dashboard .btn-primary,
+  body.dashboard .btn-small {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    transition: all 0.3s !important;
+    cursor: pointer !important;
+  }
+  
+  body.dashboard .btn-small {
+    padding: 12px 16px !important;
+    font-size: 0.9375rem !important;
+  }
+  
+  /* ── Collapsible Details (Advanced Options) ────────────────────────────── */
+  body.dashboard details.card {
+    overflow: visible !important;
+  }
+  
+  body.dashboard details summary {
+    padding: 16px !important;
+    font-size: 0.9375rem !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: var(--surface-2) !important;
+    border-radius: 12px !important;
+    transition: all 0.3s !important;
+  }
+  
+  body.dashboard details[open] summary {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard details summary svg {
+    transition: transform 0.3s !important;
+  }
+  
+  body.dashboard details[open] summary svg {
+    transform: rotate(180deg) !important;
+  }
+  
+  /* Advanced options grid → stack */
+  body.dashboard details > div[style*="padding:24px"] {
+    padding: 16px !important;
+  }
+  
+  body.dashboard details > div[style*="padding:24px"] > div[style*="grid-template-columns"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  /* Week management boxes */
+  body.dashboard details div[style*="padding:20px"][style*="background:var(--surface-2)"] {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+  
+  body.dashboard details input[type="date"],
+  body.dashboard details input.form-control {
+    font-size: 16px !important;
+    padding: 12px !important;
+    min-height: 48px !important;
+  }
+  
+  /* ── Schedule Header (Filter Bar Above Table) ──────────────────────────── */
+  body.dashboard .schedule-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard .schedule-header #scheduleMetaHint {
+    font-size: 0.8125rem !important;
+    text-align: center !important;
+    padding: 12px !important;
+    background: var(--surface-2) !important;
+    border-radius: 12px !important;
+  }
+  
+  body.dashboard .schedule-header .page-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  /* Student schedule filters - keep 2-column for space */
+  body.dashboard .page-actions > .field {
+    width: 100% !important;
+  }
+  
+  /* Buttons in page-actions */
+  body.dashboard .page-actions .btn {
+    width: 100% !important;
+  }
+  
+  body.dashboard .page-actions .status {
+    text-align: center !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* ── Panel (Schedule Container) ────────────────────────────────────────── */
+  body.dashboard .panel {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  /* ── Schedule Table Wrapper ────────────────────────────────────────────── */
+  body.dashboard .schedule-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    /* Scroll hint shadows */
+    background:
+      linear-gradient(90deg, var(--card) 30%, transparent),
+      linear-gradient(90deg, transparent, var(--card) 70%) 100% 0,
+      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.2), transparent),
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.2), transparent) 100% 0;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+  
+  /* ── Schedule Table ─────────────────────────────────────────────────────── */
+  body.dashboard .schedule-grid {
+    min-width: 800px !important; /* Fits 5 days + time column comfortably */
+    width: max(800px, 100%) !important;
+    border-spacing: 8px !important;
+    table-layout: auto !important;
+  }
+  
+  /* ── Table Headers ──────────────────────────────────────────────────────── */
+  body.dashboard .schedule-grid thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background: var(--surface-2) !important;
+    padding: 12px 8px !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* ── Time Column (Sticky Left) ──────────────────────────────────────────── */
+  body.dashboard .schedule-grid .corner,
+  body.dashboard .schedule-grid th.corner,
+  body.dashboard .schedule-grid td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 11 !important;
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  body.dashboard .schedule-grid thead th.corner {
+    z-index: 12 !important; /* Above both sticky column and header */
+  }
+  
+  /* ── Slot Header (Time) ────────────────────────────────────────────────── */
+  body.dashboard .slot-hdr {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 8px !important;
+  }
+  
+  body.dashboard .slot-hdr-num {
+    font-size: 0.875rem !important;
+    font-weight: 800 !important;
+  }
+  
+  body.dashboard .slot-hdr-time {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+  }
+  
+  /* ── Slot Cells ─────────────────────────────────────────────────────────── */
+  body.dashboard .slot {
+    min-height: 90px !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--card-border) !important;
+    background: var(--surface-3) !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    backdrop-filter: blur(24px) saturate(160%) brightness(1.03) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) brightness(1.03) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  body.dashboard .slot:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  body.dashboard .slot.filled {
+    backdrop-filter: blur(32px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  body.dashboard .slot.available-slot {
+    border-color: rgba(var(--success-rgb), 0.6) !important;
+    box-shadow: 0 4px 16px rgba(var(--success-rgb), 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* ── Slot Content ───────────────────────────────────────────────────────── */
+  body.dashboard .slot-title {
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    margin-bottom: 6px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.dashboard .slot-sub {
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+    opacity: 0.8 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.dashboard .slot-sub-muted {
+    font-size: 0.6875rem !important;
+    margin-top: 4px !important;
+    opacity: 0.7 !important;
+  }
+  
+  /* ── Floating Student Schedule ──────────────────────────────────────────── */
+  body.dashboard .floating-schedule {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 16px !important;
+    right: auto !important;
+    transform: translateX(-50%) translateY(10px) scale(0.98) !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 600px !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  body.dashboard .floating-schedule.open {
+    transform: translateX(-50%) translateY(0) scale(1) !important;
+  }
+  
+  body.dashboard .floating-schedule-header {
+    padding: 16px !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  body.dashboard .floating-schedule-header > div:first-child {
+    width: 100% !important;
+  }
+  
+  body.dashboard .floating-schedule-header > div:last-child {
+    width: 100% !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+  
+  body.dashboard .floating-schedule-header .btn {
+    flex: 1 !important;
+    min-height: 44px !important;
+  }
+  
+  body.dashboard .floating-schedule-body {
+    max-height: 50vh !important;
+    padding: 0 16px 16px !important;
+  }
+  
+  body.dashboard .schedule-grid.mini {
+    min-width: 700px !important;
+  }
+  
+  body.dashboard .schedule-grid.mini .slot {
+    min-height: 70px !important;
+    padding: 10px !important;
+  }
+  
+  body.dashboard .schedule-grid.mini .slot-title {
+    font-size: 0.8125rem !important;
+  }
+  
+  body.dashboard .schedule-grid.mini .slot-sub {
+    font-size: 0.6875rem !important;
+  }
+  
+  /* ── Modal Overrides (Slot Assignment) ──────────────────────────────────── */
+  body.dashboard #slotModal .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    padding: 20px !important;
+  }
+  
+  body.dashboard #slotModal .modal-header {
+    padding-bottom: 16px !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard #slotModal .modal-header h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  body.dashboard #slotModal .modal-body {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding-right: 8px !important;
+  }
+  
+  body.dashboard #slotModal .modal-body .field {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+  
+  body.dashboard #slotModal .modal-body .field label {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+  }
+  
+  body.dashboard #slotModal .modal-body input,
+  body.dashboard #slotModal .modal-body select {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--input-border) !important;
+    background: var(--surface-2) !important;
+  }
+  
+  body.dashboard #slotModal .modal-body .grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  body.dashboard #slotModal .modal-body .hint,
+  body.dashboard #slotModal .modal-body small {
+    font-size: 0.8125rem !important;
+    display: block !important;
+    margin-top: 6px !important;
+    opacity: 0.75 !important;
+  }
+  
+  body.dashboard #slotModal .modal-actions {
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid var(--card-border) !important;
+    margin-top: 16px !important;
+  }
+  
+  body.dashboard #slotModal .modal-actions .btn {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  /* ── Status Messages ────────────────────────────────────────────────────── */
+  body.dashboard .status {
+    padding: 12px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    font-size: 0.875rem !important;
+    text-align: center !important;
+  }
+  
+  /* ── Scroll Hints ───────────────────────────────────────────────────────── */
+  body.dashboard .schedule-wrap::after {
+    content: "← Swipe to scroll →" !important;
+    position: absolute !important;
+    bottom: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-size: 0.75rem !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    background: var(--surface-2) !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Hide scroll hint after user scrolls */
+  body.dashboard .schedule-wrap.scrolled::after {
+    display: none !important;
+  }
+}
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  END OF SCHEDULE BUILDER MOBILE REBUILD                                  ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  PROFESSOR ATTENDANCE TRACKING TABLE STYLING                             ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+#professorTrackingTable .status-present {
+  background-color: rgba(var(--success-rgb), 0.15) !important;
+  color: var(--success) !important;
+}
+
+#professorTrackingTable .status-absent {
+  background-color: rgba(var(--danger-rgb), 0.15) !important;
+  color: var(--danger) !important;
+}
+
+#attendanceTrackingTable .status-missing {
+  background-color: rgba(var(--danger-rgb), 0.15) !important;
+  color: var(--danger) !important;
+}
+
+#attendanceTrackingTable .status-taken {
+  background-color: rgba(var(--success-rgb), 0.15) !important;
+  color: var(--success) !important;
 }
