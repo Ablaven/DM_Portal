@@ -1066,15 +1066,38 @@
       const avatarImg = document.createElement("img");
       avatarImg.className = "teacher-avatar-img";
       
-      // Generate image filename from doctor name (lowercase, spaces to underscores)
-      const imageName = String(doctor.full_name || "default")
-        .toLowerCase()
-        .replace(/\s+/g, "_")
-        .replace(/[^a-z0-9_]/g, "");
+      // Map of doctor names to their actual image filenames
+      const imageMap = {
+        'sherif rostom': 'sherif_rostom.jpg',
+        'prof. asmaa el sherif': 'Prof. Asmaa El Sherif.png',
+        'dr. farid': 'Dr._Farid.jpg',
+        'dr. chrsitophe lohou': 'chrsitophe lohou.jpg',
+        'dr. franck': 'Dr. Franck.jpg',
+        'dr. anne-céline cardot': 'Dr. Anne-Céline Cardot.jpg',
+        'dr. asmaa abd el magid': 'Dr. Asmaa Abd El Magid.jpg',
+        'dr. pascal ricaud att emmanuelle': 'Dr. Pascal Ricaud ATT Emmanuelle.jpg',
+        'cédric fournerie': 'Cédric Fournerie.jpg'
+      };
+      
+      // Get the actual filename from the map
+      const doctorNameLower = String(doctor.full_name || "").toLowerCase();
+      const actualFilename = imageMap[doctorNameLower];
       
       // Add cache buster to prevent browser from caching old images
       const cacheBuster = Date.now();
-      avatarImg.src = `images/professors/${imageName}.jpg?v=${cacheBuster}`;
+      
+      if (actualFilename) {
+        // Use the actual filename (URL encode it for safety)
+        avatarImg.src = `images/professors/${encodeURIComponent(actualFilename)}?v=${cacheBuster}`;
+      } else {
+        // Fallback: try generating from name (old behavior)
+        const imageName = String(doctor.full_name || "default")
+          .toLowerCase()
+          .replace(/\s+/g, "_")
+          .replace(/[^a-z0-9_]/g, "");
+        avatarImg.src = `images/professors/${imageName}.jpg?v=${cacheBuster}`;
+      }
+      
       avatarImg.alt = doctor.full_name;
       
       // Fallback to default image if professor image not found
