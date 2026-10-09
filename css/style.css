@@ -2371,22 +2371,53 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   padding: 0 2px;
 }
 
-/* Nicer slot header (left-most column) */
+/* Nicer slot header (left-most column) - DESKTOP */
 .slot-hdr {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  min-height: 70px;
+  justify-content: center;
 }
 .slot-hdr-num {
-  font-weight: 900;
+  font-weight: 800;
+  font-size: 0.9375rem;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 .slot-hdr-time {
-  font-weight: 700;
-  font-size: 0.82rem;
+  font-weight: 600;
+  font-size: 0.75rem;
   color: var(--muted);
+  line-height: 1.3;
+  opacity: 0.9;
 }
 
-.schedule-grid .corner { width: 70px; }
+/* Day headers styling - DESKTOP */
+.schedule-grid thead th {
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  text-align: center;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+}
+
+.schedule-grid .corner { 
+  width: 100px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+}
 
 .schedule-grid td {
   vertical-align: top;
@@ -2502,15 +2533,6 @@ html[data-theme="light"] .slot.available-slot {
   opacity: 0;
   transform: translateY(-6px) scale(0.98);
   transition: opacity 160ms ease, transform 160ms ease;
-}
-
-@media (max-width: 760px) {
-  .availability-popup {
-    left: 50% !important;
-    right: auto !important;
-    transform: translate(-50%, 0) scale(1);
-    width: min(360px, 92vw);
-  }
 }
 
 .availability-popup.open {
@@ -3296,10 +3318,6 @@ html[data-theme="light"] .slot.available-slot {
   .slot .slot-sub {
     font-size: 0.76rem;
     line-height: 1.35;
-  }
-
-  .availability-popup {
-    max-width: 92vw;
   }
 
   .course-progress-top {
@@ -4601,187 +4619,6 @@ html[data-theme='light'] .data-table tbody td {
   border-color: rgba(var(--accent-rgb), 0.3);
   background: rgba(var(--accent-rgb), 0.1);
   color: var(--accent);
-}
-
-/* 13. Mobile improvements */
-@media (max-width: 640px) {
-  /* -- Global: prevent any element from causing horizontal scroll -- */
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-
-  /* Filter bar: stack vertically */
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .filter-bar .field,
-  .filter-bar select,
-  .filter-bar input {
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  /* Page actions: wrap and align left */
-  .page-actions {
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  /* Card headers: stack vertically */
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .card-header .page-actions {
-    width: 100%;
-  }
-
-  /* Grids: single column */
-  .grid-3,
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  /* -- Tables: scrollable, never overflow -- */
-  .table-wrap,
-  .table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-  }
-
-  .data-table,
-  table {
-    min-width: 500px; /* allow horizontal scroll instead of squishing */
-  }
-
-  /* -- Schedule builder -- */
-  .schedule-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .schedule-header .filter-bar,
-  .schedule-header .page-actions {
-    width: 100%;
-  }
-
-  /* Weekbar: wrap days */
-  .weekbar {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .weekbar-type-update {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-  }
-
-  .weekbar-type-update select,
-  .weekbar-type-update button {
-    width: 100%;
-  }
-
-  /* Main layout header on schedule builder */
-  .main-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  /* -- Stat cards & summary cards -- */
-  .stat-cards,
-  .summary-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  /* -- Modals -- */
-  .modal-card {
-    width: calc(100vw - 24px);
-    max-width: 100%;
-    padding: 18px 14px;
-    margin: 12px auto;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  /* -- Forms inside cards -- */
-  .form-row {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .form-row .field {
-    min-width: 0;
-    width: 100%;
-  }
-
-  /* -- Buttons: allow wrapping -- */
-  .btn-row,
-  .actions-row {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  /* -- Attendance grid -- */
-  .attendance-grid-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* -- Hours report -- */
-  .hours-detail-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* -- Evaluation -- */
-  .eval-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* -- Student dashboard -- */
-  .student-schedule-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* -- Profile page -- */
-  .profile-card {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  /* -- Tabs: scrollable -- */
-  .tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
-  }
-
-  /* -- Ensure inputs/selects don't overflow -- */
-  input, select, textarea, button {
-    max-width: 100%;
-  }
 }
 
 /* 14. Login / auth page */
@@ -6744,6 +6581,21 @@ html[data-theme="light"] .course-card:hover {
 
 @media screen and (max-width: 768px) {
   
+  /* ── GLOBAL: Fix corner cell on ALL schedule grids ──────────────────────── */
+  .schedule-grid .corner,
+  .schedule-grid th.corner {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+  }
+  
   /* ── Prevent horizontal scroll ────────────────────────────────────────── */
   html, body {
     overflow-x: hidden;
@@ -6767,8 +6619,72 @@ html[data-theme="light"] .course-card:hover {
     max-width: 100% !important;
     padding-left: 16px !important;
     padding-right: 16px !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Main element - ensure proper width and centering */
+  main,
+  main.container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* ── Page Headers Centered ──────────────────────────────────────────────── */
+  .page-header {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+  
+  /* ── Cards and Sections Centered ────────────────────────────────────────── */
+  .card,
+  .panel,
+  section {
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* ── Form Elements Full Width ───────────────────────────────────────────── */
+  .field,
+  .form-group,
+  .filter-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* ── Layouts and Wrappers Centered ──────────────────────────────────────── */
+  .layout,
+  .layout-single,
+  .schedule-builder-layout {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* ── Auth/Login Wrapper Centered ────────────────────────────────────────── */
+  .auth-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  .auth-card {
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
   
   /* ── Improve touch targets (min 48x48px) ───────────────────────────────── */
@@ -7793,17 +7709,9 @@ html[data-theme="light"] .course-card:hover {
     scroll-snap-type: x proximity !important;
   }
   
-  /* Add scroll indicator gradient */
+  /* Hide the gradient scroll indicator on mobile - we use text instead */
   .schedule-wrap::after {
-    content: '' !important;
-    position: sticky !important;
-    right: 0 !important;
-    top: 0 !important;
-    bottom: 0 !important;
-    width: 40px !important;
-    background: linear-gradient(to left, var(--bg), transparent) !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
+    display: none !important;
   }
   
   /* ── Schedule Grid ──────────────────────────────────────────────────────────── */
@@ -8054,275 +7962,7 @@ html[data-theme="light"] .course-card:hover {
    ╚══════════════════════════════════════════════════════════════════════════╝ */
 
 
-/* ╔══════════════════════════════════════════════════════════════════════════╗
-   ║  HOURS REPORT PAGE - MOBILE FIX (Content Cut Off)                        ║
-   ╚══════════════════════════════════════════════════════════════════════════╝ */
 
-@media screen and (max-width: 768px) {
-  
-  /* ── Page Container ─────────────────────────────────────────────────────── */
-  body.hours-report-page .container,
-  .hours-report-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    overflow-x: hidden !important;
-  }
-  
-  /* ── Teacher Cards Grid ─────────────────────────────────────────────────── */
-  .teacher-cards,
-  .doctor-cards {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    padding: 16px !important;
-  }
-  
-  /* ── Individual Teacher Card ────────────────────────────────────────────── */
-  .teacher-card,
-  .doctor-card {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 20px !important;
-    border-radius: 16px !important;
-    background: var(--card) !important;
-    border: 1px solid var(--card-border) !important;
-    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
-    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
-    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
-    box-sizing: border-box !important;
-  }
-  
-  /* ── Teacher Header ─────────────────────────────────────────────────────── */
-  .teacher-header,
-  .doctor-header {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    margin-bottom: 16px !important;
-    padding-bottom: 16px !important;
-    border-bottom: 1px solid var(--card-border) !important;
-  }
-  
-  .teacher-name,
-  .doctor-name {
-    font-size: 1.25rem !important;
-    font-weight: 700 !important;
-    margin-bottom: 6px !important;
-    word-wrap: break-word !important;
-  }
-  
-  .teacher-meta,
-  .doctor-meta {
-    font-size: 0.875rem !important;
-    opacity: 0.75 !important;
-  }
-  
-  /* ── Stats Row ──────────────────────────────────────────────────────────── */
-  .teacher-stats,
-  .doctor-stats {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
-    margin-bottom: 16px !important;
-  }
-  
-  .stat-item {
-    background: var(--surface-2) !important;
-    padding: 12px !important;
-    border-radius: 12px !important;
-    text-align: center !important;
-  }
-  
-  .stat-label {
-    font-size: 0.75rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    opacity: 0.7 !important;
-    margin-bottom: 6px !important;
-  }
-  
-  .stat-value {
-    font-size: 1.125rem !important;
-    font-weight: 700 !important;
-  }
-  
-  /* ── Progress Bar ───────────────────────────────────────────────────────── */
-  .progress-bar {
-    width: 100% !important;
-    height: 8px !important;
-    background: var(--surface-1) !important;
-    border-radius: 4px !important;
-    overflow: hidden !important;
-    margin-bottom: 16px !important;
-  }
-  
-  .progress-fill {
-    height: 100% !important;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
-    border-radius: 4px !important;
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  }
-  
-  /* ── Course List ────────────────────────────────────────────────────────── */
-  .course-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-  }
-  
-  .course-item {
-    padding: 14px !important;
-    background: var(--surface-1) !important;
-    border-radius: 12px !important;
-    border-left: 4px solid var(--accent) !important;
-  }
-  
-  .course-title {
-    font-size: 0.9375rem !important;
-    font-weight: 600 !important;
-    margin-bottom: 8px !important;
-    line-height: 1.4 !important;
-    word-wrap: break-word !important;
-  }
-  
-  .course-meta {
-    font-size: 0.8125rem !important;
-    opacity: 0.7 !important;
-    margin-bottom: 8px !important;
-  }
-  
-  .course-hours {
-    display: flex !important;
-    justify-content: space-between !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-    font-size: 0.8125rem !important;
-  }
-  
-  .course-hours span {
-    white-space: nowrap !important;
-  }
-  
-  /* ── Expandable Sections ────────────────────────────────────────────────── */
-  .expand-toggle {
-    width: 100% !important;
-    padding: 14px !important;
-    margin-top: 12px !important;
-    background: var(--surface-2) !important;
-    border: 1px solid var(--card-border) !important;
-    border-radius: 12px !important;
-    font-size: 0.9375rem !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-  }
-  
-  .expand-toggle:hover {
-    background: var(--surface-1) !important;
-    border-color: var(--accent) !important;
-  }
-  
-  /* ── Build Schedule Section ─────────────────────────────────────────────── */
-  .schedule-builder-section {
-    padding: 20px 16px !important;
-    background: var(--card) !important;
-    border-top: 1px solid var(--card-border) !important;
-    margin-top: 20px !important;
-  }
-  
-  .schedule-builder-title {
-    font-size: 1.125rem !important;
-    font-weight: 700 !important;
-    margin-bottom: 16px !important;
-  }
-  
-  /* ── Schedule Builder Controls ──────────────────────────────────────────── */
-  .schedule-controls {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    margin-bottom: 20px !important;
-    padding: 16px !important;
-    background: var(--surface-1) !important;
-    border-radius: 16px !important;
-  }
-  
-  .schedule-controls .field {
-    width: 100% !important;
-    margin: 0 !important;
-  }
-  
-  .schedule-controls label {
-    display: block !important;
-    font-size: 0.875rem !important;
-    font-weight: 600 !important;
-    margin-bottom: 8px !important;
-  }
-  
-  .schedule-controls select {
-    width: 100% !important;
-    font-size: 16px !important;
-    padding: 14px 16px !important;
-    border-radius: 12px !important;
-  }
-  
-  .schedule-controls .btn {
-    width: 100% !important;
-    padding: 14px !important;
-    font-size: 1rem !important;
-    border-radius: 12px !important;
-    margin-top: 8px !important;
-  }
-  
-  /* ── Student Schedule Filter ────────────────────────────────────────────── */
-  .student-schedule-filter {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 12px !important;
-    padding: 16px !important;
-    background: var(--surface-1) !important;
-    border-radius: 16px !important;
-    margin-bottom: 16px !important;
-  }
-  
-  .student-schedule-filter .field {
-    width: 100% !important;
-  }
-  
-  .student-schedule-filter .btn {
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-  }
-  
-  /* ── Schedule Table Info ────────────────────────────────────────────────── */
-  .schedule-info {
-    font-size: 0.8125rem !important;
-    padding: 12px 16px !important;
-    background: var(--surface-2) !important;
-    border-radius: 12px !important;
-    margin-bottom: 16px !important;
-    text-align: center !important;
-  }
-  
-  /* Fix any remaining overflow issues */
-  .hours-report-page * {
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  
-  /* Ensure images don't overflow */
-  .teacher-photo,
-  .doctor-photo,
-  img {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-}
-
-/* ╔══════════════════════════════════════════════════════════════════════════╗
-   ║  END OF HOURS REPORT PAGE FIX                                            ║
-   ╚══════════════════════════════════════════════════════════════════════════╝ */
 
 
 /* ╔══════════════════════════════════════════════════════════════════════════╗
@@ -8654,21 +8294,6 @@ html[data-theme="light"] .course-card:hover {
     width: 100% !important;
   }
   
-  /* Student schedule filters - keep 2-column for space */
-  body.dashboard .page-actions > .field {
-    width: 100% !important;
-  }
-  
-  /* Buttons in page-actions */
-  body.dashboard .page-actions .btn {
-    width: 100% !important;
-  }
-  
-  body.dashboard .page-actions .status {
-    text-align: center !important;
-    font-size: 0.875rem !important;
-  }
-  
   /* ── Panel (Schedule Container) ────────────────────────────────────────── */
   body.dashboard .panel {
     padding: 16px !important;
@@ -8720,8 +8345,6 @@ html[data-theme="light"] .course-card:hover {
   }
   
   /* ── Time Column (Sticky Left) ──────────────────────────────────────────── */
-  body.dashboard .schedule-grid .corner,
-  body.dashboard .schedule-grid th.corner,
   body.dashboard .schedule-grid td:first-child {
     position: sticky !important;
     left: 0 !important;
@@ -8730,10 +8353,6 @@ html[data-theme="light"] .course-card:hover {
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  body.dashboard .schedule-grid thead th.corner {
-    z-index: 12 !important; /* Above both sticky column and header */
   }
   
   /* ── Slot Header (Time) ────────────────────────────────────────────────── */
@@ -8813,69 +8432,7 @@ html[data-theme="light"] .course-card:hover {
     opacity: 0.7 !important;
   }
   
-  /* ── Floating Student Schedule ──────────────────────────────────────────── */
-  body.dashboard .floating-schedule {
-    position: fixed !important;
-    left: 50% !important;
-    bottom: 16px !important;
-    right: auto !important;
-    transform: translateX(-50%) translateY(10px) scale(0.98) !important;
-    width: calc(100vw - 32px) !important;
-    max-width: 600px !important;
-    border-radius: 20px !important;
-    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
-    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-  }
-  
-  body.dashboard .floating-schedule.open {
-    transform: translateX(-50%) translateY(0) scale(1) !important;
-  }
-  
-  body.dashboard .floating-schedule-header {
-    padding: 16px !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-  }
-  
-  body.dashboard .floating-schedule-header > div:first-child {
-    width: 100% !important;
-  }
-  
-  body.dashboard .floating-schedule-header > div:last-child {
-    width: 100% !important;
-    flex-direction: row !important;
-    gap: 8px !important;
-  }
-  
-  body.dashboard .floating-schedule-header .btn {
-    flex: 1 !important;
-    min-height: 44px !important;
-  }
-  
-  body.dashboard .floating-schedule-body {
-    max-height: 50vh !important;
-    padding: 0 16px 16px !important;
-  }
-  
-  body.dashboard .schedule-grid.mini {
-    min-width: 700px !important;
-  }
-  
-  body.dashboard .schedule-grid.mini .slot {
-    min-height: 70px !important;
-    padding: 10px !important;
-  }
-  
-  body.dashboard .schedule-grid.mini .slot-title {
-    font-size: 0.8125rem !important;
-  }
-  
-  body.dashboard .schedule-grid.mini .slot-sub {
-    font-size: 0.6875rem !important;
-  }
-  
-  /* ── Modal Overrides (Slot Assignment) ──────────────────────────────────── */
+  /* ══ Section 12: Small Phones (≤ 375px) ═════════════════════════════════ */
   body.dashboard #slotModal .modal-card {
     width: 100% !important;
     max-width: 100% !important;
@@ -9008,3 +8565,1476 @@ html[data-theme="light"] .course-card:hover {
   background-color: rgba(var(--success-rgb), 0.15) !important;
   color: var(--success) !important;
 }
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  STUDENTS PAGE (MY SCHEDULE) - MODERN MOBILE UI                          ║
+   ║  Student schedule view with horizontal scroll and sticky time column     ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Students View Container ────────────────────────────────────────────── */
+  body.students-view .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  body.students-view .page-header {
+    margin-bottom: 20px !important;
+  }
+  
+  body.students-view .page-header h1 {
+    font-size: 1.75rem !important;
+    margin-bottom: 8px !important;
+  }
+  
+  body.students-view .page-header .subtitle {
+    font-size: 0.9375rem !important;
+    opacity: 0.75 !important;
+  }
+  
+  /* ── Card Container ─────────────────────────────────────────────────────── */
+  body.students-view .card {
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 20px !important;
+    padding: 20px 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  /* ── Schedule Header (Filters) ──────────────────────────────────────────── */
+  body.students-view .schedule-header {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  /* ── Filter Bar ─────────────────────────────────────────────────────────── */
+  body.students-view .filter-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  body.students-view .filter-bar .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  body.students-view .filter-bar label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+    color: var(--text) !important;
+  }
+  
+  body.students-view .filter-bar select {
+    width: 100% !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text) !important;
+    transition: all 0.3s !important;
+  }
+  
+  body.students-view .filter-bar select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
+    outline: none !important;
+  }
+  
+  /* ── Page Actions (Buttons & Status) ────────────────────────────────────── */
+  body.students-view .page-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+  }
+  
+  body.students-view .page-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    transition: all 0.3s !important;
+  }
+  
+  body.students-view .page-actions .icon-btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+  
+  body.students-view .page-actions .status {
+    padding: 12px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    text-align: center !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Hide status when empty */
+  body.students-view .page-actions .status:empty {
+    display: none !important;
+  }
+  
+  /* ── Year Tabs (Hide on Mobile for Student Schedule Page Only) ────────────── */
+  body.students-view:not(.eval-page) .tabs {
+    display: none !important; /* Hidden on mobile only for student schedule, not evaluation */
+  }
+  
+  /* ── Schedule Wrapper (Horizontal Scroll) ───────────────────────────────── */
+  body.students-view .schedule-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    margin-top: 16px !important;
+    /* Scroll shadows */
+    background:
+      linear-gradient(90deg, var(--card) 30%, transparent),
+      linear-gradient(90deg, transparent, var(--card) 70%) 100% 0,
+      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.15), transparent),
+      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.15), transparent) 100% 0;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+  
+  /* ── Schedule Grid (Table) ──────────────────────────────────────────────── */
+  body.students-view .schedule-grid {
+    min-width: 750px !important; /* Wide enough for 5 days + time */
+    width: max(750px, 100%) !important;
+    border-spacing: 8px !important;
+    table-layout: auto !important;
+  }
+  
+  /* ── Table Headers ──────────────────────────────────────────────────────── */
+  body.students-view .schedule-grid thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background: var(--surface-2) !important;
+    padding: 12px 10px !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 8px !important;
+  }
+  
+  /* ── Time Column (Sticky Left) ──────────────────────────────────────────── */
+  body.students-view .schedule-grid td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 11 !important;
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  /* ── Slot Header (Time) ────────────────────────────────────────────────── */
+  body.students-view .slot-hdr {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 10px !important;
+    min-width: 75px !important;
+  }
+  
+  body.students-view .slot-hdr-num {
+    font-size: 0.9375rem !important;
+    font-weight: 800 !important;
+  }
+  
+  body.students-view .slot-hdr-time {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    opacity: 0.8 !important;
+  }
+  
+  /* ── Slot Cells ─────────────────────────────────────────────────────────── */
+  body.students-view .slot {
+    min-height: 100px !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--card-border); /* Removed !important so JS can override */
+    background: var(--surface-3); /* Removed !important so JS can set doctor colors */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    backdrop-filter: blur(24px) saturate(160%) brightness(1.03) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) brightness(1.03) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  body.students-view .slot.filled {
+    backdrop-filter: blur(32px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  /* ── Slot Content ───────────────────────────────────────────────────────── */
+  body.students-view .slot-title {
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    margin-bottom: 4px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.students-view .slot-sub {
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+    opacity: 0.8 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  body.students-view .slot-sub + .slot-sub {
+    margin-top: 2px !important;
+  }
+  
+  /* ── Scroll Hint ────────────────────────────────────────────────────────── */
+  body.students-view .schedule-wrap::after {
+    content: "← Swipe to scroll →" !important;
+    position: absolute !important;
+    bottom: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    font-size: 0.75rem !important;
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    background: var(--surface-2) !important;
+    padding: 6px 14px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  
+  /* Hide scroll hint after user scrolls */
+  body.students-view .schedule-wrap.scrolled::after {
+    display: none !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  PROFILE PAGE - MODERN MOBILE UI                                         ║
+   ║  User profile with photo, info cards, and form fields                    ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Profile Card Layout ────────────────────────────────────────────────── */
+  .profile-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 16px !important;
+    padding: 24px 20px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .profile-photo {
+    width: 120px !important;
+    height: 120px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    border: 3px solid var(--accent) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .profile-name {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin: 8px 0 4px !important;
+  }
+  
+  .profile-role {
+    font-size: 0.9375rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 12px !important;
+  }
+  
+  /* ── Profile Info Grid ──────────────────────────────────────────────────── */
+  .profile-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  .profile-info-item {
+    padding: 14px 16px !important;
+    background: var(--surface-2) !important;
+    border-radius: 12px !important;
+    text-align: left !important;
+  }
+  
+  .profile-info-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.7 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .profile-info-value {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    word-wrap: break-word !important;
+  }
+  
+  /* ── Profile Form Fields ────────────────────────────────────────────────── */
+  .profile-form .field {
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .profile-form label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .profile-form input,
+  .profile-form select,
+  .profile-form textarea {
+    width: 100% !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text) !important;
+  }
+  
+  .profile-form input:focus,
+  .profile-form select:focus,
+  .profile-form textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
+    outline: none !important;
+  }
+  
+  .profile-form textarea {
+    min-height: 120px !important;
+    resize: vertical !important;
+  }
+  
+  .profile-form .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  EVALUATION PAGE - MODERN MOBILE UI                                      ║
+   ║  Student evaluation forms with rating inputs and category cards          ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Evaluation Page Container ──────────────────────────────────────────── */
+  .eval-page .container,
+  body.evaluation-page .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  /* ── Evaluation Grid (Categories) ───────────────────────────────────────── */
+  .eval-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  /* ── Evaluation Category Card ───────────────────────────────────────────── */
+  .eval-category-card {
+    padding: 20px 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .eval-category-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* ── Evaluation Questions ───────────────────────────────────────────────── */
+  .eval-question {
+    margin-bottom: 20px !important;
+    padding-bottom: 20px !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  .eval-question:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .eval-question-text {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 12px !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* ── Rating Input (Stars/Numbers) ───────────────────────────────────────── */
+  .eval-rating {
+    display: flex !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .eval-rating input[type="radio"] {
+    display: none !important;
+  }
+  
+  .eval-rating label {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    padding: 12px !important;
+    background: var(--surface-2) !important;
+    border: 2px solid var(--input-border) !important;
+    border-radius: 12px !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+  }
+  
+  .eval-rating input[type="radio"]:checked + label {
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.4) !important;
+  }
+  
+  .eval-rating label:active {
+    transform: scale(0.95) !important;
+  }
+  
+  /* ── Text Area for Comments ─────────────────────────────────────────────── */
+  .eval-textarea {
+    width: 100% !important;
+    min-height: 120px !important;
+    padding: 14px 16px !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text) !important;
+    font-family: inherit !important;
+    resize: vertical !important;
+  }
+  
+  .eval-textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
+    outline: none !important;
+  }
+  
+  /* ── Evaluation Form Actions ────────────────────────────────────────────── */
+  .eval-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 24px !important;
+  }
+  
+  .eval-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+  }
+  
+  /* ── Evaluation Tables (Reports) ────────────────────────────────────────── */
+  .eval-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+  }
+  
+  .eval-table {
+    min-width: 600px !important;
+    border-spacing: 0 !important;
+  }
+  
+  .eval-table th,
+  .eval-table td {
+    padding: 12px 10px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .eval-table th {
+    background: var(--surface-2) !important;
+    font-weight: 700 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+  }
+  
+  /* ── Evaluation Page Tabs (Configuration/Grading) ───────────────────────── */
+  .eval-page .tabs {
+    display: flex !important; /* Ensure tabs are visible on eval page */
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 4px !important; /* Space for scrollbar */
+  }
+  
+  .eval-page .tab {
+    flex: 0 0 auto !important;
+    min-width: 140px !important;
+    padding: 12px 20px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+  }
+  
+  /* ── Evaluation Config Table ────────────────────────────────────────────── */
+  .eval-page .schedule-grid {
+    min-width: 700px !important;
+  }
+  
+  .eval-page .schedule-grid th,
+  .eval-page .schedule-grid td {
+    padding: 12px 10px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* ── Evaluation Tab Panels ──────────────────────────────────────────────── */
+  .eval-page .tab-panels {
+    width: 100% !important;
+  }
+  
+  .eval-page .tab-panel {
+    width: 100% !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  AVAILABILITY PAGE - MODERN MOBILE UI                                    ║
+   ║  Teacher availability management with time slot selection                ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Availability Page Container ────────────────────────────────────────── */
+  body.availability-page .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  /* ── Availability Controls Section ──────────────────────────────────────── */
+  .availability-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+  }
+  
+  .availability-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  
+  .availability-filters .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  /* ── Availability Action Buttons ────────────────────────────────────────── */
+  .availability-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .availability-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .availability-actions .btn .btn-label {
+    display: inline !important;
+  }
+  
+  /* ── Availability Calendar/Grid ─────────────────────────────────────────── */
+  .availability-grid-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    margin-top: 16px !important;
+  }
+  
+  .availability-grid {
+    min-width: 700px !important;
+    border-spacing: 6px !important;
+  }
+  
+  .availability-grid th,
+  .availability-grid td {
+    padding: 10px 8px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .availability-grid th {
+    background: var(--surface-2) !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+  }
+  
+  /* ── Availability Slot Buttons ──────────────────────────────────────────── */
+  .availability-slot {
+    min-width: 60px !important;
+    min-height: 48px !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+    background: var(--surface-3) !important;
+    border: 2px solid var(--card-border) !important;
+    font-size: 0.8125rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .availability-slot.available {
+    background: rgba(var(--success-rgb), 0.15) !important;
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+  }
+  
+  .availability-slot.unavailable {
+    background: rgba(var(--danger-rgb), 0.15) !important;
+    border-color: var(--danger) !important;
+    color: var(--danger) !important;
+    opacity: 0.6 !important;
+  }
+  
+  .availability-slot:active {
+    transform: scale(0.95) !important;
+  }
+  
+  /* ── Availability Popup (Details) ───────────────────────────────────────── */
+  .availability-popup {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 400px !important;
+    padding: 20px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    z-index: 1000 !important;
+  }
+  
+  .availability-popup-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .availability-popup-body {
+    font-size: 0.9375rem !important;
+    margin-bottom: 16px !important;
+    line-height: 1.5 !important;
+  }
+  
+  .availability-popup-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .availability-popup-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 12px 20px !important;
+    font-size: 0.9375rem !important;
+    border-radius: 12px !important;
+  }
+  
+  /* ── Availability Form Controls ─────────────────────────────────────────── */
+  .availability-controls {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+    padding: 16px !important;
+    background: var(--surface-1) !important;
+    border-radius: 16px !important;
+  }
+  
+  .availability-controls .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .availability-controls label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .availability-controls select,
+  .availability-controls input {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+  }
+  
+  .availability-controls .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    margin-top: 8px !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  REPORTS PAGES - MODERN MOBILE UI                                        ║
+   ║  Hours report, attendance report, evaluation reports                     ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Reports Page Container ─────────────────────────────────────────────── */
+  body.hours-report-page .container,
+  body.attendance-report-page .container,
+  body.evaluation-reports-page .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  /* ── Report Filter Controls ─────────────────────────────────────────────── */
+  .report-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+    padding: 16px !important;
+    background: var(--surface-1) !important;
+    border-radius: 16px !important;
+  }
+  
+  .report-filters .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .report-filters label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .report-filters select,
+  .report-filters input {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+  }
+  
+  .report-filters .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+  }
+  
+  /* ── Report Stats Summary ───────────────────────────────────────────────── */
+  .report-stats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .report-stat-card {
+    padding: 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 14px !important;
+    text-align: center !important;
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.05) !important;
+  }
+  
+  .report-stat-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.7 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .report-stat-value {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+  }
+  
+  /* ── Report Table Wrapper ───────────────────────────────────────────────── */
+  .report-table-wrap,
+  .hours-detail-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    margin-top: 16px !important;
+  }
+  
+  .report-table {
+    min-width: 700px !important;
+    border-spacing: 0 !important;
+  }
+  
+  .report-table th,
+  .report-table td {
+    padding: 12px 10px !important;
+    font-size: 0.875rem !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  .report-table th {
+    background: var(--surface-2) !important;
+    font-weight: 700 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    text-align: left !important;
+  }
+  
+  .report-table tbody tr:hover {
+    background: var(--surface-1) !important;
+  }
+  
+  /* ── Teacher/Doctor Cards (Hours Report) ────────────────────────────────── */
+  .teacher-cards,
+  .doctor-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  .teacher-card,
+  .doctor-card {
+    padding: 20px 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .teacher-header,
+  .doctor-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px solid var(--card-border) !important;
+  }
+  
+  .teacher-photo,
+  .doctor-photo {
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .teacher-name,
+  .doctor-name {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .teacher-meta,
+  .doctor-meta {
+    font-size: 0.875rem !important;
+    opacity: 0.75 !important;
+  }
+  
+  /* ── Progress Bars ──────────────────────────────────────────────────────── */
+  .progress-bar {
+    width: 100% !important;
+    height: 8px !important;
+    background: var(--surface-1) !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    margin: 12px 0 !important;
+  }
+  
+  .progress-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+    border-radius: 4px !important;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  /* ── Course List ────────────────────────────────────────────────────────── */
+  .course-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .course-item {
+    padding: 12px !important;
+    background: var(--surface-1) !important;
+    border-radius: 10px !important;
+    border-left: 3px solid var(--accent) !important;
+  }
+  
+  .course-title {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    line-height: 1.3 !important;
+  }
+  
+  .course-meta {
+    font-size: 0.8125rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .course-hours {
+    display: flex !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  ADMIN PAGES - MODERN MOBILE UI                                          ║
+   ║  Admin panel, courses, doctors, students, users management               ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Admin Page Container ───────────────────────────────────────────────── */
+  body.admin-page .container,
+  body.admin-panel .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  /* ── Admin Tools Grid ───────────────────────────────────────────────────── */
+  .admin-tools-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  .admin-tool-card {
+    padding: 20px 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .admin-tool-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .admin-tool-description {
+    font-size: 0.875rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 16px !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* ── Admin Actions ──────────────────────────────────────────────────────── */
+  .admin-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .admin-actions .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 12px 20px !important;
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+  }
+  
+  /* ── Admin Data Tables ──────────────────────────────────────────────────── */
+  .admin-table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+    margin-top: 16px !important;
+  }
+  
+  .admin-table {
+    min-width: 700px !important;
+    border-spacing: 0 !important;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 10px !important;
+    font-size: 0.875rem !important;
+  }
+  
+  .admin-table th {
+    background: var(--surface-2) !important;
+    font-weight: 700 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+  }
+  
+  /* ── Admin Forms ────────────────────────────────────────────────────────── */
+  .admin-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  .admin-form .field {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .admin-form label {
+    display: block !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .admin-form input,
+  .admin-form select,
+  .admin-form textarea {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+  }
+  
+  .admin-form input:focus,
+  .admin-form select:focus,
+  .admin-form textarea:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1) !important;
+    outline: none !important;
+  }
+  
+  .admin-form .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 14px 20px !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    margin-top: 8px !important;
+  }
+  
+  /* ── Admin Search Bar ───────────────────────────────────────────────────── */
+  .admin-search {
+    width: 100% !important;
+    padding: 14px 16px 14px 44px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--input-border) !important;
+    margin-bottom: 16px !important;
+  }
+  
+  /* ── Bulk Actions ───────────────────────────────────────────────────────── */
+  .bulk-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+    padding: 14px !important;
+    background: var(--surface-1) !important;
+    border-radius: 12px !important;
+  }
+  
+  .bulk-actions select {
+    width: 100% !important;
+    font-size: 16px !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+  }
+  
+  .bulk-actions .btn {
+    width: 100% !important;
+    min-height: 44px !important;
+  }
+  
+  /* ── File Upload Area ───────────────────────────────────────────────────── */
+  .file-upload-area {
+    padding: 40px 20px !important;
+    border: 2px dashed var(--input-border) !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    background: var(--surface-1) !important;
+  }
+  
+  .file-upload-area input[type="file"] {
+    width: 100% !important;
+    font-size: 16px !important;
+  }
+  
+  .file-upload-icon {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 12px !important;
+    opacity: 0.5 !important;
+  }
+}
+
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  ARCHITECTURE MAP & REMAINING PAGES - MODERN MOBILE UI                   ║
+   ║  Architecture visualization, doctor view, and other specialty pages      ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+@media screen and (max-width: 768px) {
+  
+  /* ── Architecture Map Page ──────────────────────────────────────────────── */
+  body.architecture-map .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  .architecture-diagram {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 16px 0 !important;
+  }
+  
+  .architecture-node {
+    min-width: 280px !important;
+    padding: 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 14px !important;
+    margin-bottom: 16px !important;
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.05) !important;
+  }
+  
+  .architecture-node-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .architecture-node-desc {
+    font-size: 0.875rem !important;
+    line-height: 1.4 !important;
+    opacity: 0.8 !important;
+  }
+  
+  .architecture-connections {
+    display: none !important; /* Hide complex connections on mobile */
+  }
+  
+  /* ── Doctor View Page ───────────────────────────────────────────────────── */
+  body.doctor-view .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  .doctor-profile-card {
+    padding: 24px 20px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 20px !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  .doctor-profile-photo {
+    width: 100px !important;
+    height: 100px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    margin: 0 auto 16px !important;
+    border: 3px solid var(--accent) !important;
+  }
+  
+  .doctor-profile-name {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .doctor-profile-title {
+    font-size: 0.9375rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .doctor-stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    margin-top: 16px !important;
+  }
+  
+  .doctor-stat-item {
+    padding: 14px !important;
+    background: var(--surface-2) !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+  }
+  
+  .doctor-stat-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.7 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .doctor-stat-value {
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+  }
+  
+  /* ── Hours Report Detail Page ───────────────────────────────────────────── */
+  body.hours-detail-page .container {
+    width: 100% !important;
+    padding: 16px !important;
+  }
+  
+  .hours-detail-summary {
+    padding: 20px 16px !important;
+    background: var(--card) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 16px !important;
+    margin-bottom: 20px !important;
+    backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+    -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05) !important;
+  }
+  
+  .hours-detail-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .hours-detail-meta {
+    font-size: 0.875rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .hours-detail-stats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .hours-detail-stat {
+    padding: 12px 8px !important;
+    background: var(--surface-2) !important;
+    border-radius: 10px !important;
+    text-align: center !important;
+  }
+  
+  .hours-detail-stat-value {
+    font-size: 1.125rem !important;
+    font-weight: 800 !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .hours-detail-stat-label {
+    font-size: 0.6875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    opacity: 0.7 !important;
+  }
+  
+  /* ── General Mobile Improvements ────────────────────────────────────────── */
+  
+  /* All data tables - horizontal scroll */
+  .data-table-wrap,
+  .table-wrap,
+  .table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+  }
+  
+  .data-table,
+  table {
+    min-width: 600px !important;
+  }
+  
+  /* Status badges */
+  .badge,
+  .status-badge {
+    padding: 6px 12px !important;
+    font-size: 0.8125rem !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Icon buttons - better touch targets */
+  .icon-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Empty states */
+  .empty-state {
+    padding: 40px 20px !important;
+    text-align: center !important;
+  }
+  
+  .empty-state-icon {
+    width: 64px !important;
+    height: 64px !important;
+    margin: 0 auto 16px !important;
+    opacity: 0.3 !important;
+  }
+  
+  .empty-state-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .empty-state-text {
+    font-size: 0.9375rem !important;
+    opacity: 0.75 !important;
+    margin-bottom: 20px !important;
+  }
+}
+
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  END OF MOBILE UI REBUILD                                                ║
+   ║  All pages now have modern mobile UI with:                               ║
+   ║  - 48px touch targets (WCAG AAA)                                         ║
+   ║  - Horizontal scroll for tables                                          ║
+   ║  - Vertical stacking for forms/filters                                   ║
+   ║  - Full-width buttons and inputs                                         ║
+   ║  - 16px font size on inputs (prevent iOS zoom)                           ║
+   ║  - Liquid glass styling (backdrop blur)                                  ║
+   ║  - Smooth animations and transitions                                     ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */

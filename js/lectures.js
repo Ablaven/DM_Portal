@@ -1069,14 +1069,27 @@
       // Map of doctor names to their actual image filenames
       const imageMap = {
         'sherif rostom': 'sherif_rostom.jpg',
-        'prof. asmaa el sherif': 'Prof. Asmaa El Sherif.png',
+        'prof. asmaa el sherif': 'Prof. Asmaa El Sherif.jpg',
         'dr. farid': 'Dr._Farid.jpg',
+        'dr. hanan ghaly': 'Dr.Hanan.png',
+        'dr. hanan': 'Dr.Hanan.png',
+        'dr. norhan el gebaly': 'Dr.norhane.png',
+        'dr. norhane': 'Dr.norhane.png',
+        'dr. asmaa abd el magid': 'Dr. Asmaa Abd El Magid.jpg',
+        'dr.manal el shafii': 'Dr.Manal-1.jpg',
+        'dr. manal': 'Dr.Manal-1.jpg',
         'dr. chrsitophe lohou': 'chrsitophe lohou.jpg',
         'dr. franck': 'Dr. Franck.jpg',
-        'dr. anne-céline cardot': 'Dr. Anne-Céline Cardot.jpg',
-        'dr. asmaa abd el magid': 'Dr. Asmaa Abd El Magid.jpg',
+        'dr. hossam eldin fawzan': 'Dr. Hossam Eldin Fawzan.jpeg',
+        'dr. rania mohsen': 'Rania Mohsen.jpeg',
+        'rania mohsen': 'Rania Mohsen.jpeg',
+        'dr. samuel': 'Dr.Samuel.png',
+        'dr. cédric fournerie': 'Cédric Fournerie.jpg',
+        'cédric fournerie': 'Cédric Fournerie.jpg',
         'dr. pascal ricaud att emmanuelle': 'Dr. Pascal Ricaud ATT Emmanuelle.jpg',
-        'cédric fournerie': 'Cédric Fournerie.jpg'
+        'dr. anne-céline cardot': 'Dr. Anne-Céline Cardot.jpg',
+        'dr. sherif': 'Dr.sherif.jpg',
+        'dr. maan': 'Dr.Maan.png'
       };
       
       // Get the actual filename from the map
