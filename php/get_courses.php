@@ -137,6 +137,43 @@ try {
         $rows = $stmt->fetchAll();
     }
 
+    // Enrich courses with per-doctor hours breakdown if course_doctor_hours table exists
+    if ($hasCdh) {
+        $courseIds = array_column($rows, 'course_id');
+        if (!empty($courseIds)) {
+            $placeholders = implode(',', array_fill(0, count($courseIds), '?'));
+            $allocStmt = $pdo->prepare(
+                "SELECT cdh.course_id, cdh.doctor_id, cdh.allocated_hours, d.full_name
+                 FROM course_doctor_hours cdh
+                 LEFT JOIN doctors d ON d.doctor_id = cdh.doctor_id
+                 WHERE cdh.course_id IN ($placeholders)
+                 ORDER BY cdh.course_id, d.full_name"
+            );
+            $allocStmt->execute($courseIds);
+            $allocations = $allocStmt->fetchAll();
+            
+            // Group by course_id
+            $allocationsByCourse = [];
+            foreach ($allocations as $alloc) {
+                $cid = $alloc['course_id'];
+                if (!isset($allocationsByCourse[$cid])) {
+                    $allocationsByCourse[$cid] = [];
+                }
+                $allocationsByCourse[$cid][] = [
+                    'doctor_id' => $alloc['doctor_id'],
+                    'doctor_name' => $alloc['full_name'],
+                    'allocated_hours' => $alloc['allocated_hours']
+                ];
+            }
+            
+            // Add to rows
+            foreach ($rows as &$row) {
+                $row['doctor_hours_split'] = $allocationsByCourse[$row['course_id']] ?? [];
+            }
+            unset($row);
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'data' => $rows,

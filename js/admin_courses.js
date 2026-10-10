@@ -693,6 +693,39 @@ function renderAdminCoursesList(filter = "") {
   const list = document.getElementById("adminCoursesList");
   if (!list) return;
 
+  // Helper function to format hours with split breakdown
+  function formatCourseSplitHours(course) {
+    const remaining = formatHours(course.remaining_hours);
+    const total = formatHours(course.total_hours);
+    
+    // Check if course has split hours
+    const split = course.doctor_hours_split || [];
+    if (split.length === 0) {
+      // No split - show regular format
+      return `${remaining}h / ${total}h`;
+    }
+    
+    // Build split breakdown with styled badges
+    const splitHTML = split.map(s => {
+      // Get first name or use the whole name if it's short
+      let displayName = s.doctor_name || 'Unknown';
+      const nameParts = displayName.trim().split(/\s+/);
+      
+      // Logic: if name starts with "Dr." or "Prof.", skip title and use first name
+      if (nameParts.length > 1 && (nameParts[0] === 'Dr.' || nameParts[0] === 'Prof.')) {
+        displayName = nameParts[1]; // Use name after title
+      } else if (nameParts.length > 1) {
+        displayName = nameParts[0]; // Use first word
+      }
+      // If single word, keep it as is
+      
+      const hours = formatHours(s.allocated_hours);
+      return `<span style="display: inline-block; padding: 2px 8px; margin: 0 4px; background: var(--accent-bg, rgba(59, 130, 246, 0.1)); color: var(--accent, #3b82f6); border-radius: 4px; font-size: 0.85rem; font-weight: 500;">${escapeHtml(displayName)}: ${hours}h</span>`;
+    }).join('');
+    
+    return `<span style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px;">${splitHTML}<span style="margin: 0 4px; color: var(--muted);">→</span><span style="font-weight: 600;">${remaining}h / ${total}h</span></span>`;
+  }
+
   const q = filter.trim().toLowerCase();
 
   // Respect global Year/Sem filter on Course Management page as well.
@@ -762,7 +795,7 @@ function renderAdminCoursesList(filter = "") {
           <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.9rem; color: var(--muted);">
             <span>ID: <strong style="color: var(--text);">${escapeHtml(c.course_id)}</strong></span>
             <span>Professor: <strong style="color: var(--text);">${escapeHtml(doctorNames)}</strong></span>
-            <span>Hours: <strong style="color: var(--accent);">${formatHours(c.remaining_hours)}h / ${formatHours(c.total_hours)}h</strong></span>
+            <span style="display: flex; align-items: center;">Hours: ${formatCourseSplitHours(c)}</span>
           </div>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
