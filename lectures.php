@@ -22,7 +22,7 @@ $role = (string)($u['role'] ?? '');
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Lecture Materials</title>
   <link rel="stylesheet" href="css/style.css?v=20260222d" />
-  <link rel="stylesheet" href="css/lectures.css?v=20260512b" />
+  <link rel="stylesheet" href="css/lectures.css?v=20261010a" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('lectures.php'); ?>

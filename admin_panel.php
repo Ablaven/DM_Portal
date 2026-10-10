@@ -352,6 +352,51 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
     </section>
 
+    <!-- ── Teacher Schedule Export ─────────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;">
+      <div style="margin-bottom:20px;">
+        <h2 style="margin:0 0 6px;">Teacher Schedule Export</h2>
+        <p class="muted" style="margin:0; font-size:0.9rem;">Export teacher schedules for a range of weeks by nationality.</p>
+      </div>
+
+      <!-- Nationality Filter -->
+      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+        <div class="field" style="margin:0;">
+          <label for="teacherNationalityFilter" style="font-size:0.85rem; margin-bottom:4px;">Nationality Filter</label>
+          <select id="teacherNationalityFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="All">All Teachers</option>
+            <option value="French">French Teachers Only</option>
+            <option value="Egyptian">Egyptian Teachers Only</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="teacherScheduleTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
+          <select id="teacherScheduleTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">All Terms</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="teacherScheduleFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
+          <select id="teacherScheduleFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin:0;">
+          <label for="teacherScheduleToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
+          <select id="teacherScheduleToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+            <option value="">Select week…</option>
+          </select>
+        </div>
+
+        <button id="exportTeacherSchedule" class="btn" type="button">Export Excel</button>
+      </div>
+
+      <div id="teacherScheduleStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+    </section>
+
     <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
     <details id="manualOptionsPanel" style="margin-top:14px;">
       <summary style="cursor:pointer; font-weight:600; padding:10px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
@@ -547,6 +592,7 @@ $importStatus = $_GET['import_status'] ?? '';
   <script src="js/admin_advance.js?v=20260912a"></script>
   <script src="js/admin_attendance_tracking.js?v=20260922e"></script>
   <script src="js/admin_professor_tracking.js?v=20261006a"></script>
+  <script src="js/admin_teacher_schedule_export.js?v=20261010a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     
@@ -554,9 +600,11 @@ $importStatus = $_GET['import_status'] ?? '';
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', function() {
         window.dmportal?.initProfessorTracking?.();
+        window.dmportal?.initTeacherScheduleExport?.();
       });
     } else {
       window.dmportal?.initProfessorTracking?.();
+      window.dmportal?.initTeacherScheduleExport?.();
     }
   </script>
 </body>

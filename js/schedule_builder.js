@@ -2135,26 +2135,3 @@
     });
   }
 
-
-
-  // Mobile: Hide scroll hint after user scrolls the schedule table
-  function initMobileScrollHint() {
-    if (window.innerWidth > 768) return;
-    
-    const scheduleWrap = document.querySelector('.schedule-wrap');
-    if (!scheduleWrap) return;
-    
-    let hasScrolled = false;
-    scheduleWrap.addEventListener('scroll', function() {
-      if (!hasScrolled && this.scrollLeft > 10) {
-        hasScrolled = true;
-        this.classList.add('scrolled');
-      }
-    }, { passive: true });
-  }
-  
-  // Initialize on load and resize
-  if (typeof window !== 'undefined') {
-    window.addEventListener('DOMContentLoaded', initMobileScrollHint);
-    window.addEventListener('resize', initMobileScrollHint);
-  }

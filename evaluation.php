@@ -40,7 +40,7 @@ $canConfigure = in_array($role, ['admin', 'management', 'teacher'], true);
     <div id="evaluationAlert" class="alert" role="alert" hidden></div>
 
     <!-- Summary Stats -->
-    <section class="card" id="evaluationSummaryStats" style="margin-bottom:20px; display:none;">
+    <section class="card" id="evaluationSummaryStats" style="margin-bottom:20px;   display:none;">
       <div style="display:flex; gap:20px; flex-wrap:wrap; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
         <div style="flex:1; min-width:150px;">
           <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Total Students</div>

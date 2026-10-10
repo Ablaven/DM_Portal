@@ -1089,7 +1089,9 @@
         'dr. pascal ricaud att emmanuelle': 'Dr. Pascal Ricaud ATT Emmanuelle.jpg',
         'dr. anne-céline cardot': 'Dr. Anne-Céline Cardot.jpg',
         'dr. sherif': 'Dr.sherif.jpg',
-        'dr. maan': 'Dr.Maan.png'
+        'dr. maan': 'Dr.Maan.png',
+        'dr.reem': 'Dr Reem.jpeg',
+        'dr. rasha el setohy': 'Dr. Rasha El Setohy.jpg'
       };
       
       // Get the actual filename from the map

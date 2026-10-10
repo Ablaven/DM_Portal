@@ -117,8 +117,13 @@ function render_portal_navbar(string $activePage): void
             $ddItem('lectures.php', '🗂️', 'Lectures', 'Upload & manage lecture materials', $activePage === 'lectures.php');
         }
 
-        // ─ Section: Tools (admin + management) ───────────────────────────────
-        if ($role === 'admin' || $role === 'management') {
+        // ─ Section: Tools (admin only) ───────────────────────────────────────
+        // DEBUG: Check role
+        if ($role !== 'admin') {
+            echo '<div class="dropdown-section-label">DEBUG: Role is "' . htmlspecialchars($role) . '" (not admin)</div>';
+        }
+        
+        if ($role === 'admin') {
             $hasToolsSection = false;
             
             if (auth_can_access_page('admin_panel.php')) {
@@ -129,13 +134,12 @@ function render_portal_navbar(string $activePage): void
                 $ddItem('admin_panel.php', '⚙️', 'Admin Panel', 'Semesters, terms & settings', $activePage === 'admin_panel.php');
             }
             
-            if (auth_can_access_page('architecture_map.php')) {
-                if (!$hasToolsSection) {
-                    echo '<div class="dropdown-section-label">Tools</div>';
-                    $hasToolsSection = true;
-                }
-                $ddItem('architecture_map.php', "\xF0\x9F\x97\xBA\xEF\xB8\x8F", 'Architecture Map', 'Interactive portal schema explorer', $activePage === 'architecture_map.php');
+            // Debug: always show Architecture Map for admin
+            if (!$hasToolsSection) {
+                echo '<div class="dropdown-section-label">Tools</div>';
+                $hasToolsSection = true;
             }
+            $ddItem('architecture_map.php', "\xF0\x9F\x97\xBA\xEF\xB8\x8F", 'Architecture Map', 'Interactive portal schema explorer', $activePage === 'architecture_map.php');
             
             if ($hasToolsSection) {
                 echo '<a href="#" class="dropdown-item dropdown-item-rich" data-admin-email-trigger="1">';

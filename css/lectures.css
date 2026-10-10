@@ -215,6 +215,9 @@
 
 .data-table thead {
   background: var(--surface-2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .data-table th {
@@ -225,27 +228,92 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted);
-  border-bottom: 1px solid var(--input-border);
+  border-bottom: 2px solid var(--accent);
+  background: var(--surface-2);
 }
 
 .data-table td {
   padding: 0.875rem 1rem;
   color: var(--text);
   border-bottom: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: all 0.2s ease;
 }
 
 .data-table tbody tr:hover {
   background: var(--surface-2);
+  transform: scale(1.002);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
+/* Modern column styling for admin lecture table */
+.lm-col-filename {
+  font-weight: 600;
+  color: var(--accent);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lm-col-type {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem !important;
+}
+
+.lm-col-type::before {
+  content: '📄';
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+.lm-col-size {
+  font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.lm-col-course {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.lm-col-year, .lm-col-sem {
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.lm-col-uploader {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.lm-col-date {
+  color: var(--muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.lm-col-actions {
+  padding: 0.875rem 1rem !important;
+}
+
 .actions-cell {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 /* ── Empty States ─────────────────────────────────────────────── */
@@ -390,6 +458,23 @@
     flex-direction: column;
     align-items: flex-start;
   }
+  
+  /* Hide less important columns on mobile for admin table */
+  .lm-col-size,
+  .lm-col-year,
+  .lm-col-sem,
+  .lm-col-uploader,
+  .lm-col-date {
+    display: none;
+  }
+  
+  .data-table thead th:nth-child(3),
+  .data-table thead th:nth-child(5),
+  .data-table thead th:nth-child(6),
+  .data-table thead th:nth-child(7),
+  .data-table thead th:nth-child(8) {
+    display: none;
+  }
 }
 
 
@@ -500,4 +585,203 @@
 .file-input-label,
 .file-size-note {
   display: none;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN VIEW ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Modern Admin Header */
+.main-header {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1) 0%, rgba(var(--accent-rgb), 0.05) 100%);
+  border-radius: var(--radius);
+  padding: 2rem;
+  border: 1px solid var(--card-border);
+  margin-bottom: 2rem !important;
+}
+
+.main-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.main-header .muted {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Filter Bar Enhancements */
+.filter-bar {
+  background: var(--surface-2);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  margin-bottom: 1rem;
+}
+
+.filter-bar .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-bar .navlink {
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+.filter-bar .navlink:hover {
+  border-color: var(--accent);
+}
+
+.filter-bar .navlink:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
+}
+
+/* File Type Icons */
+.lm-col-type[data-type="PDF"]::before,
+.lm-col-type:contains("PDF")::before {
+  content: '📕';
+}
+
+.lm-col-type[data-type="PPTX"]::before,
+.lm-col-type:contains("PPTX")::before {
+  content: '📊';
+}
+
+.lm-col-type[data-type="ZIP"]::before,
+.lm-col-type:contains("ZIP")::before {
+  content: '📦';
+}
+
+.lm-col-type[data-type="RAR"]::before,
+.lm-col-type:contains("RAR")::before {
+  content: '🗜️';
+}
+
+/* Enhanced Action Buttons */
+.lm-btn-preview,
+.lm-btn-download,
+.lm-btn-delete,
+.lm-btn-move {
+  font-size: 0.8125rem !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  cursor: pointer !important;
+  white-space: nowrap;
+}
+
+.lm-btn-preview {
+  background: rgba(var(--accent-rgb), 0.1) !important;
+  color: var(--accent) !important;
+}
+
+.lm-btn-preview:hover {
+  background: rgba(var(--accent-rgb), 0.2) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.2);
+}
+
+.lm-btn-download {
+  background: rgba(52, 211, 153, 0.1) !important;
+  color: rgb(52, 211, 153) !important;
+}
+
+.lm-btn-download:hover {
+  background: rgba(52, 211, 153, 0.2) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.2);
+}
+
+.lm-btn-delete {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: rgb(239, 68, 68) !important;
+}
+
+.lm-btn-delete:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.lm-btn-move {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: rgb(59, 130, 246) !important;
+}
+
+.lm-btn-move:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* Panel Enhancements */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Schedule Wrap (table container) */
+.schedule-wrap {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--surface-1);
+}
+
+/* Add hover effect to filename for better UX */
+.lm-col-filename:hover {
+  text-decoration: underline;
+  cursor: default;
+}
+
+/* Year/Semester badges */
+.lm-col-year::before {
+  content: 'Y';
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-right: 0.125rem;
+}
+
+.lm-col-sem::before {
+  content: 'S';
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-right: 0.125rem;
+}
+
+/* Empty state for no materials */
+.data-table tbody tr td[colspan] {
+  text-align: center;
+  padding: 3rem 2rem !important;
+  font-size: 1.125rem;
+  color: var(--muted);
+  background: var(--surface-2);
+}
+
+.data-table tbody tr td[colspan]::before {
+  content: '📭';
+  display: block;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }

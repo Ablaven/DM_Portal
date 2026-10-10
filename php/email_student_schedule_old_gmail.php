@@ -7,7 +7,7 @@ require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_term_helpers.php';
 require_once __DIR__ . '/_xlsx_writer.php';
 require_once __DIR__ . '/_doctor_year_colors_helpers.php';
-require_once __DIR__ . '/_smtp_mailer.php';
+require_once __DIR__ . '/_brevo_mailer.php';
 
 header('Content-Type: application/json');
 
@@ -41,17 +41,11 @@ if ($semester < 1 || $semester > 2) {
 try {
     $pdo = get_pdo();
 
-    error_log("=== EMAIL STUDENT SCHEDULE DEBUG START ===");
-    error_log("Program: $program, Year: $yearLevel, Semester: $semester, Week: $weekId");
-
     $emailStmt = $pdo->prepare(
         'SELECT DISTINCT email FROM students WHERE program = :program AND year_level = :year_level AND email IS NOT NULL AND TRIM(email) <> "" ORDER BY full_name ASC'
     );
     $emailStmt->execute([':program' => $program, ':year_level' => $yearLevel]);
     $emails = array_values(array_filter(array_map('trim', array_column($emailStmt->fetchAll(), 'email'))));
-
-    error_log("Found " . count($emails) . " student emails");
-    error_log("Emails: " . json_encode($emails));
 
     if (empty($emails)) {
         http_response_code(400);
@@ -59,18 +53,15 @@ try {
         exit;
     }
 
-    // Add admin/management as BCC to improve deliverability
-    $adminBcc = ['asmaa.sharif@ufe.edu.eg', 'Sherrost@yahoo.com'];
+    // Add default CCs
+    $defaultCc = ['asmaa.sharif@ufe.edu.eg', 'Sherrost@yahoo.com'];
+    $allEmails = array_values(array_unique(array_filter(array_merge($emails, $defaultCc), function ($email) {
+        return trim((string)$email) !== '';
+    })));
     
-    // Use the same approach as email_custom_message.php (which works!)
     // First email as TO, rest as CC
-    $recipient = array_shift($emails);
-    $cc = !empty($emails) ? array_values(array_unique($emails)) : [];
-    
-    error_log("Recipient (TO): $recipient");
-    error_log("CC count: " . count($cc));
-    error_log("CC list: " . json_encode($cc));
-    error_log("Admin BCC: " . json_encode($adminBcc));
+    $recipient = array_shift($allEmails);
+    $cc = $allEmails;
 
     dmportal_ensure_doctor_year_colors_table($pdo);
 
@@ -107,41 +98,55 @@ try {
          FROM doctor_schedules s
          JOIN courses c ON c.course_id = s.course_id
          JOIN doctors d ON d.doctor_id = s.doctor_id
-         LEFT JOIN doctor_year_colors dyc
-           ON dyc.doctor_id = s.doctor_id AND dyc.year_level = c.year_level
-         LEFT JOIN doctor_week_cancellations x
-           ON x.week_id = s.week_id AND x.doctor_id = s.doctor_id AND x.day_of_week = s.day_of_week
-         LEFT JOIN doctor_slot_cancellations xs
-           ON xs.week_id = s.week_id AND xs.doctor_id = s.doctor_id AND xs.day_of_week = s.day_of_week AND xs.slot_number = s.slot_number
+         LEFT JOIN doctor_year_colors dyc ON dyc.doctor_id = d.doctor_id AND dyc.year_level = c.year_level
          WHERE s.week_id = :week_id
-           AND x.cancellation_id IS NULL
-           AND xs.slot_cancellation_id IS NULL
-           AND s.counts_towards_hours = 1
            AND c.program = :program
            AND c.year_level = :year_level
-           AND c.semester = :semester"
+           AND c.semester = :semester
+         ORDER BY s.day_of_week, s.slot_number"
     );
-    $stmt->execute([':week_id' => $weekId, ':program' => $program, ':year_level' => $yearLevel, ':semester' => $semester]);
-    $rows = $stmt->fetchAll();
+    $stmt->execute([
+        ':week_id' => $weekId,
+        ':program' => $program,
+        ':year_level' => $yearLevel,
+        ':semester' => $semester,
+    ]);
 
     $grid = [];
-    foreach ($rows as $r) {
-        $day = (string)$r['day_of_week'];
-        $slot = (int)$r['slot_number'];
-        if (!isset($grid[$day])) $grid[$day] = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $day = $row['day_of_week'];
+        $slot = (int)$row['slot_number'];
+        if (!isset($grid[$day])) {
+            $grid[$day] = [];
+        }
         if (!isset($grid[$day][$slot])) {
-            $grid[$day][$slot] = $r;
-        } else {
-            $grid[$day][$slot] = [
-                'course_name' => 'Multiple',
-                'course_type' => 'R',
-                'subject_code' => '',
-                'doctor_name' => '',
-                'color_code' => '#999999',
-                'year_level' => $yearLevel,
-                'room_code' => null,
-                'extra_minutes' => 0,
-            ];
+            $grid[$day][$slot] = [];
+        }
+        $grid[$day][$slot][] = $row;
+    }
+
+    foreach ($days as $day) {
+        if (!isset($grid[$day])) {
+            $grid[$day] = [];
+        }
+        foreach ($slots as $slot) {
+            if (!isset($grid[$day][$slot])) {
+                $grid[$day][$slot] = [];
+            }
+            if (count($grid[$day][$slot]) > 1) {
+                $grid[$day][$slot] = [
+                    'course_name' => 'Multiple',
+                    'course_type' => 'R',
+                    'subject_code' => '',
+                    'doctor_name' => '',
+                    'color_code' => '#999999',
+                    'year_level' => $yearLevel,
+                    'room_code' => null,
+                    'extra_minutes' => 0,
+                ];
+            } elseif (count($grid[$day][$slot]) === 1) {
+                $grid[$day][$slot] = $grid[$day][$slot][0];
+            }
         }
     }
 
@@ -182,34 +187,25 @@ try {
 
         foreach ($days as $d) {
             $isStripeRow = ($slot % 2 === 0);
-            $text = '';
-            $style = $isStripeRow ? $xlsx->styleStripe() : $xlsx->styleCell();
+            $assigned = $grid[$d][$slot] ?? null;
 
-            if (isset($grid[$d][$slot])) {
-                $r = $grid[$d][$slot];
-                $text = (string)$r['course_name'];
+            if (!$assigned || empty($assigned)) {
+                $row[] = '';
+                $rowStyles[] = $xlsx->styleEmptyCell($isStripeRow);
+            } else {
+                $courseName = $assigned['course_name'] ?? '';
+                $doctorName = $assigned['doctor_name'] ?? '';
+                $roomCode = $assigned['room_code'] ?? '';
+                $extraMinutes = (int)($assigned['extra_minutes'] ?? 0);
 
-                $courseType = (string)($r['course_type'] ?? '');
-                $subjectCode = (string)($r['subject_code'] ?? '');
-                $label = trim($courseType . ($subjectCode !== '' ? (' ' . $subjectCode) : ''));
-                if ($label !== '') $text .= "\n" . $label;
+                $extraText = $extraMinutes > 0 ? " (+{$extraMinutes}m)" : '';
+                $roomText = $roomCode ? "Room {$roomCode}" : '';
+                $cellText = trim("{$courseName}\n{$doctorName}" . ($roomText ? "\n{$roomText}" : '') . $extraText);
 
-                $extra = (int)($r['extra_minutes'] ?? 0);
-                if ($extra > 0) $text .= "\n+" . $extra . "m";
-
-                $room = (string)($r['room_code'] ?? '');
-                if ($room !== '') $text .= "\nRoom: " . $room;
-
-                if (!empty($r['doctor_name'])) {
-                    $text .= "\n" . (string)$r['doctor_name'];
-                }
-
-                $hex = strtoupper(ltrim((string)($r['color_code'] ?? '#999999'), '#'));
-                $style = $xlsx->styleLectureFill(XlsxColor::pastelize($hex, 0.85));
+                $row[] = $cellText;
+                $colorCode = $assigned['color_code'] ?? '#ffffff';
+                $rowStyles[] = $xlsx->styleFilledCell($colorCode, $isStripeRow);
             }
-
-            $row[] = $text;
-            $rowStyles[] = $style;
         }
 
         $dataRows[] = $row;
@@ -236,37 +232,21 @@ try {
         "\n\nIf you have any questions or require clarification, please contact the Academic Office." .
         "\n\nKind regards,\nDigital Marketing Portal";
 
-    error_log("Subject: $subject");
-    error_log("Attempting to send email via SMTP...");
-
-    $mailer = new DmportalSmtpMailer();
-    
-    try {
-        $mailer->send(
-            $recipient,
-            $subject,
-            $body,
-            [[
+    // Use Brevo mailer instead of SMTP
+    $mailer = new BrevoMailer();
+    $mailer->send(
+        $recipient,
+        $subject,
+        $body,
+        [[
             'name' => $fileName,
-            'mime' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'data' => $xlsxBytes,
         ]],
-        $cc, // Use CC like the working email_custom_message.php does
-        $adminBcc // Add admins as BCC
+        $cc // CC works perfectly with Brevo!
     );
-    
-        error_log("Email sent successfully via SMTP");
-        error_log("=== EMAIL STUDENT SCHEDULE DEBUG END (SUCCESS) ===");
-    } catch (Throwable $emailError) {
-        error_log("SMTP send failed: " . $emailError->getMessage());
-        error_log("=== EMAIL STUDENT SCHEDULE DEBUG END (SMTP ERROR) ===");
-        throw $emailError;
-    }
 
     echo json_encode(['success' => true]);
 } catch (Throwable $e) {
-    error_log("Overall error: " . $e->getMessage());
-    error_log("=== EMAIL STUDENT SCHEDULE DEBUG END (GENERAL ERROR) ===");
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
