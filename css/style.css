@@ -10052,3 +10052,80 @@ html[data-theme="light"] .course-card:hover {
    ║  - Liquid glass styling (backdrop blur)                                  ║
    ║  - Smooth animations and transitions                                     ║
    ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+/* ── Toggle Switch ───────────────────────────────────────────────────────── */
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 54px;
+  height: 28px;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 28px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.9), rgba(var(--accent-rgb), 0.7));
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+  background: linear-gradient(135deg, rgba(var(--success-rgb), 0.25), rgba(var(--success-rgb), 0.15));
+  border-color: rgba(var(--success-rgb), 0.5);
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
+  left: calc(100% - 24px);
+  background: linear-gradient(135deg, rgba(var(--success-rgb), 0.9), rgba(var(--success-rgb), 0.7));
+}
+
+.toggle-switch:hover .toggle-slider {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
+}
+
+.toggle-switch input[type="checkbox"]:checked:hover + .toggle-slider {
+  border-color: var(--success);
+  box-shadow: 0 0 12px rgba(var(--success-rgb), 0.25);
+}
+
+.toggle-switch input[type="checkbox"]:focus + .toggle-slider {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: var(--text);
+  transition: color 0.2s;
+}
+
+.toggle-switch input[type="checkbox"]:checked ~ .toggle-label {
+  color: var(--success);
+}

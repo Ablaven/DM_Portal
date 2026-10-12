@@ -6,9 +6,15 @@ header('Content-Type: text/html; charset=utf-8');
 
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
+require_once __DIR__ . '/php/_system_settings_helpers.php';
+require_once __DIR__ . '/php/db_connect.php';
 
 auth_require_page_access('admin_panel.php');
 auth_require_roles(['admin']);
+
+// Get current attendance timeout status
+$pdo = get_pdo();
+$timeoutStatus = dmportal_get_attendance_timeout_status($pdo);
 
 $importStatus = $_GET['import_status'] ?? '';
 
@@ -55,6 +61,41 @@ $importStatus = $_GET['import_status'] ?? '';
         <?php if ($importStatus === 'success') : ?>
           <div class="status success" role="status">Import completed successfully.</div>
         <?php endif; ?>
+      </div>
+    </section>
+
+    <!-- ── System Settings ─────────────────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;">
+      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+        <div>
+          <h2 style="margin:0;">System Settings</h2>
+          <div class="muted" style="margin-top:4px;">Configure global system behaviors.</div>
+        </div>
+      </div>
+
+      <div style="padding:12px 0;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:250px;">
+            <div style="font-weight:600; font-size:0.95rem; margin-bottom:4px;">Attendance Timeout Enforcement</div>
+            <div class="muted" style="font-size:0.85rem;">
+              When disabled, teachers can take attendance at any time without the 30-minute grace period restriction.
+            </div>
+          </div>
+          
+          <label class="toggle-switch" style="flex-shrink:0;">
+            <input 
+              type="checkbox" 
+              id="attendanceTimeoutToggle"
+              <?php echo $timeoutStatus['disabled'] ? 'checked' : ''; ?>
+            />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label" style="margin-left:10px; font-size:0.9rem;">
+              <?php echo $timeoutStatus['disabled'] ? 'Disabled' : 'Enabled'; ?>
+            </span>
+          </label>
+        </div>
+        
+        <div id="attendanceTimeoutStatus" class="status" role="status" style="margin-top:12px;"></div>
       </div>
     </section>
 
@@ -469,6 +510,67 @@ $importStatus = $_GET['import_status'] ?? '';
 
   <script src="js/core.js?v=20260912a"></script>
   <script>
+    // ── Attendance Timeout Toggle ──────────────────────────────────────────
+    (function () {
+      "use strict";
+
+      const toggle = document.getElementById("attendanceTimeoutToggle");
+      const statusDiv = document.getElementById("attendanceTimeoutStatus");
+      const labelSpan = toggle?.closest(".toggle-switch")?.querySelector(".toggle-label");
+
+      if (!toggle) return;
+
+      toggle.addEventListener("change", async function () {
+        const isChecked = this.checked;
+        
+        // Disable toggle during request
+        toggle.disabled = true;
+        statusDiv.className = "status info";
+        statusDiv.textContent = "Updating...";
+        statusDiv.style.display = "block";
+
+        try {
+          const response = await fetch("php/toggle_attendance_timeout.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            statusDiv.className = "status success";
+            statusDiv.textContent = data.message || "Setting updated successfully.";
+            
+            // Update label text
+            if (labelSpan) {
+              labelSpan.textContent = data.disabled ? "Disabled" : "Enabled";
+            }
+            
+            // Hide status after 5 seconds
+            setTimeout(() => {
+              statusDiv.style.display = "none";
+            }, 5000);
+          } else {
+            // Revert toggle on error
+            toggle.checked = !isChecked;
+            statusDiv.className = "status error";
+            statusDiv.textContent = data.error || "Failed to update setting.";
+          }
+        } catch (error) {
+          // Revert toggle on error
+          toggle.checked = !isChecked;
+          statusDiv.className = "status error";
+          statusDiv.textContent = "Network error. Please try again.";
+          console.error("Toggle error:", error);
+        } finally {
+          toggle.disabled = false;
+        }
+      });
+    })();
+
+    // ── Upload Confirmation Modal ──────────────────────────────────────────
     (function () {
       "use strict";
 

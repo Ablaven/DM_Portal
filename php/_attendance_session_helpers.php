@@ -215,7 +215,7 @@ function dmportal_attendance_meta_for_schedule(PDO $pdo, int $scheduleId, string
     $nowCairo = dmportal_cairo_now();
     $windowState = 'ended';
     if ($range) {
-        $windowState = dmportal_lecture_window_state($nowCairo, $range['start'], $range['end']);
+        $windowState = dmportal_lecture_window_state($nowCairo, $range['start'], $range['end'], $pdo);
     }
 
     $termId = 0;

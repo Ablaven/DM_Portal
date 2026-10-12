@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/_system_settings_helpers.php';
+
 function dmportal_cairo_timezone(): DateTimeZone
 {
     return new DateTimeZone('Africa/Cairo');
@@ -113,12 +115,21 @@ function dmportal_schedule_lecture_range(PDO $pdo, int $scheduleId): ?array
 function dmportal_lecture_window_state(
     DateTimeImmutable $nowCairo,
     DateTimeImmutable $start,
-    DateTimeImmutable $end
+    DateTimeImmutable $end,
+    ?PDO $pdo = null
 ): string {
+    // If timeout is disabled, always return 'active' (attendance can be taken anytime)
+    if ($pdo !== null && dmportal_is_attendance_timeout_disabled($pdo)) {
+        return 'active';
+    }
+    
+    // Apply 30-minute grace period after lecture ends
+    $graceEnd = $end->modify('+30 minutes');
+    
     if ($nowCairo < $start) {
         return 'upcoming';
     }
-    if ($nowCairo >= $end) {
+    if ($nowCairo >= $graceEnd) {
         return 'ended';
     }
 
@@ -138,7 +149,8 @@ function dmportal_schedule_window_state_from_meta(
     bool $isRamadan,
     string $dayOfWeek,
     int $slotNumber,
-    ?DateTimeImmutable $nowCairo = null
+    ?DateTimeImmutable $nowCairo = null,
+    ?PDO $pdo = null
 ): string {
     $range = dmportal_schedule_lecture_range_from_parts($weekStartDate, $isRamadan, $dayOfWeek, $slotNumber);
     if (!$range) {
@@ -147,5 +159,5 @@ function dmportal_schedule_window_state_from_meta(
 
     $now = $nowCairo ?? dmportal_cairo_now();
 
-    return dmportal_lecture_window_state($now, $range['start'], $range['end']);
+    return dmportal_lecture_window_state($now, $range['start'], $range['end'], $pdo);
 }

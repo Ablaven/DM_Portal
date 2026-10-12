@@ -70,7 +70,8 @@ try {
         $windowState = dmportal_lecture_window_state(
             dmportal_cairo_now(),
             $lectureRange['start'],
-            $lectureRange['end']
+            $lectureRange['end'],
+            $pdo  // Pass PDO so it can check if timeout is disabled
         );
     }
 
