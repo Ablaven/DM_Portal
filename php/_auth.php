@@ -261,6 +261,21 @@ function auth_can_access_page(string $pageBasename): bool
         return false;
     }
 
+    // Check if page is disabled for this role (admin always has access)
+    $role = (string)($u['role'] ?? '');
+    if ($role !== 'admin') {
+        require_once __DIR__ . '/_system_settings_helpers.php';
+        try {
+            $pdo = get_pdo();
+            if (dmportal_is_page_disabled($pdo, $pageBasename, $role)) {
+                return false;
+            }
+        } catch (Exception $e) {
+            // If there's an error checking disabled status, log it and allow access (fail open)
+            error_log("Error checking page disabled status in auth_can_access_page: " . $e->getMessage());
+        }
+    }
+
     if ($pageBasename === 'profile.php') {
         return true;
     }
@@ -336,6 +351,52 @@ function auth_require_page_access(string $pageBasename, bool $json = false): voi
     $u = auth_current_user();
     if (!$u) {
         return;
+    }
+
+    // Check if page is disabled for this role (admin always has access)
+    $role = (string)($u['role'] ?? '');
+    if ($role !== 'admin') {
+        require_once __DIR__ . '/_system_settings_helpers.php';
+        try {
+            $pdo = get_pdo();
+            if (dmportal_is_page_disabled($pdo, $pageBasename, $role)) {
+                if ($json) {
+                    http_response_code(403);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'error' => 'This page has been temporarily disabled.']);
+                    exit;
+                }
+
+                // Show disabled page message
+                http_response_code(403);
+                header('Content-Type: text/html; charset=utf-8');
+                
+                echo "<!doctype html>\n";
+                echo "<html lang=\"en\"><head>\n";
+                echo "<meta charset=\"utf-8\" />\n";
+                echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n";
+                echo "<title>Page Disabled</title>\n";
+                echo "<link rel=\"stylesheet\" href=\"css/style.css?v=20260222d\" />\n";
+                echo "</head><body style=\"display:flex; align-items:center; justify-content:center; min-height:100vh;\">\n";
+                echo "<main style=\"max-width:600px; padding:32px;\">\n";
+                echo "<div class=\"card\" style=\"text-align:center; padding:48px 32px;\">\n";
+                echo "<div style=\"font-size:4rem; margin-bottom:20px; opacity:0.5;\">🔒</div>\n";
+                echo "<h1 style=\"margin:0 0 12px; font-size:1.8rem;\">Page Temporarily Disabled</h1>\n";
+                echo "<p class=\"muted\" style=\"margin:0 0 24px; font-size:1rem; line-height:1.6;\">This page has been temporarily disabled by an administrator. Please contact your administrator if you need access to this page.</p>\n";
+                
+                $home = auth_nav_home_href();
+                $homeEsc = htmlspecialchars($home, ENT_QUOTES);
+                echo "<a href=\"{$homeEsc}\" class=\"btn\">Go to Home</a>\n";
+                
+                echo "</div>\n";
+                echo "</main>\n";
+                echo "</body></html>";
+                exit;
+            }
+        } catch (Exception $e) {
+            // If there's an error checking disabled status, log it and allow access (fail open)
+            error_log("Error checking page disabled status: " . $e->getMessage());
+        }
     }
 
     $allowed = auth_allowed_pages_for_user($u);

@@ -99,6 +99,60 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
     </section>
 
+    <!-- ── Page Access Control ─────────────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;">
+      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+        <div>
+          <h2 style="margin:0;">Page Access Control</h2>
+          <div class="muted" style="margin-top:4px;">Enable or disable specific pages for different user roles. Admin always has full access.</div>
+        </div>
+      </div>
+
+      <!-- Control Panel -->
+      <div style="padding:12px 0; border-bottom:1px solid var(--card-border); margin-bottom:20px;">
+        <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
+          <div class="field" style="margin:0; flex:1; min-width:200px;">
+            <label for="pageAccessRole" style="font-size:0.85rem; margin-bottom:4px;">User Role</label>
+            <select id="pageAccessRole" class="navlink" style="padding:9px 11px; width:100%;">
+              <option value="">Select role...</option>
+              <option value="teacher">Teacher</option>
+              <option value="management">Management</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0; flex:2; min-width:250px;">
+            <label for="pageAccessPage" style="font-size:0.85rem; margin-bottom:4px;">Page</label>
+            <select id="pageAccessPage" class="navlink" style="padding:9px 11px; width:100%;" disabled>
+              <option value="">Select a role first...</option>
+            </select>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
+            <label class="toggle-switch" id="pageAccessToggleContainer" style="opacity:0.5; pointer-events:none;">
+              <input type="checkbox" id="pageAccessToggle" disabled />
+              <span class="toggle-slider"></span>
+              <span class="toggle-label" style="margin-left:10px; font-size:0.9rem;" id="pageAccessToggleLabel">
+                Enabled
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div id="pageAccessStatus" class="status" role="status" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- Currently Disabled Pages -->
+      <div>
+        <h3 style="margin:0 0 14px; font-size:0.95rem; font-weight:600;">Currently Disabled Pages</h3>
+        <div id="disabledPagesList" style="display:grid; gap:10px;">
+          <div class="muted" style="font-size:0.9rem; padding:12px; text-align:center;">
+            Loading...
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Semester Wizard ─────────────────────────────────────────────────── -->
     <section class="card" id="semesterWizard" style="margin-top:20px;">
 
@@ -568,6 +622,191 @@ $importStatus = $_GET['import_status'] ?? '';
           toggle.disabled = false;
         }
       });
+    })();
+
+    // ── Page Access Control ────────────────────────────────────────────────
+    (function () {
+      "use strict";
+
+      const roleSelect = document.getElementById("pageAccessRole");
+      const pageSelect = document.getElementById("pageAccessPage");
+      const toggle = document.getElementById("pageAccessToggle");
+      const toggleContainer = document.getElementById("pageAccessToggleContainer");
+      const toggleLabel = document.getElementById("pageAccessToggleLabel");
+      const statusDiv = document.getElementById("pageAccessStatus");
+      const disabledList = document.getElementById("disabledPagesList");
+
+      let availablePages = {};
+      let disabledPages = {};
+      let currentRole = "";
+      let currentPage = "";
+
+      // Load initial data
+      async function loadDisabledPages() {
+        try {
+          const response = await fetch("php/get_disabled_pages.php");
+          const data = await response.json();
+
+          if (data.success) {
+            availablePages = data.data.available_pages;
+            disabledPages = data.data.disabled_pages;
+            renderDisabledList();
+          }
+        } catch (error) {
+          console.error("Failed to load disabled pages:", error);
+        }
+      }
+
+      // Render disabled pages list
+      function renderDisabledList() {
+        if (!disabledList) return;
+
+        let html = "";
+        let hasDisabled = false;
+
+        for (const role in disabledPages) {
+          if (Object.keys(disabledPages[role]).length > 0) {
+            hasDisabled = true;
+            const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+            html += `<div style="padding:12px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px;">`;
+            html += `<div style="font-weight:600; font-size:0.9rem; margin-bottom:8px; color:var(--danger);">🔒 ${roleLabel}</div>`;
+            html += `<div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+            
+            for (const page in disabledPages[role]) {
+              const pageName = disabledPages[role][page];
+              html += `<span style="padding:6px 12px; background:rgba(var(--danger-rgb),0.15); color:var(--danger); border:1px solid rgba(var(--danger-rgb),0.3); border-radius:999px; font-size:0.85rem; font-weight:600;">${pageName}</span>`;
+            }
+            
+            html += `</div></div>`;
+          }
+        }
+
+        if (!hasDisabled) {
+          html = `<div class="muted" style="font-size:0.9rem; padding:12px; text-align:center; background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px;">
+            ✓ All pages are currently enabled for all roles.
+          </div>`;
+        }
+
+        disabledList.innerHTML = html;
+      }
+
+      // Update page dropdown when role changes
+      roleSelect?.addEventListener("change", function () {
+        currentRole = this.value;
+        currentPage = "";
+        
+        if (!currentRole) {
+          pageSelect.innerHTML = '<option value="">Select a role first...</option>';
+          pageSelect.disabled = true;
+          toggleContainer.style.opacity = "0.5";
+          toggleContainer.style.pointerEvents = "none";
+          toggle.disabled = true;
+          return;
+        }
+
+        const pages = availablePages[currentRole] || {};
+        let options = '<option value="">Select a page...</option>';
+        
+        for (const page in pages) {
+          options += `<option value="${page}">${pages[page]}</option>`;
+        }
+        
+        pageSelect.innerHTML = options;
+        pageSelect.disabled = false;
+        toggleContainer.style.opacity = "0.5";
+        toggleContainer.style.pointerEvents = "none";
+        toggle.disabled = true;
+        toggleLabel.textContent = "Enabled";
+        toggle.checked = false;
+        statusDiv.style.display = "none";
+      });
+
+      // Update toggle when page changes
+      pageSelect?.addEventListener("change", function () {
+        currentPage = this.value;
+        
+        if (!currentPage || !currentRole) {
+          toggleContainer.style.opacity = "0.5";
+          toggleContainer.style.pointerEvents = "none";
+          toggle.disabled = true;
+          return;
+        }
+
+        // Check if this page is currently disabled
+        const isDisabled = disabledPages[currentRole] && disabledPages[currentRole][currentPage];
+        
+        toggle.checked = isDisabled;
+        toggleLabel.textContent = isDisabled ? "Disabled" : "Enabled";
+        toggleContainer.style.opacity = "1";
+        toggleContainer.style.pointerEvents = "auto";
+        toggle.disabled = false;
+        statusDiv.style.display = "none";
+      });
+
+      // Handle toggle change
+      toggle?.addEventListener("change", async function () {
+        if (!currentPage || !currentRole) return;
+
+        const isChecked = this.checked;
+        
+        toggle.disabled = true;
+        toggleContainer.style.opacity = "0.7";
+        statusDiv.className = "status info";
+        statusDiv.textContent = "Updating...";
+        statusDiv.style.display = "block";
+
+        try {
+          const formData = new URLSearchParams();
+          formData.append("page", currentPage);
+          formData.append("role", currentRole);
+
+          const response = await fetch("php/toggle_page_access.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            statusDiv.className = "status success";
+            statusDiv.textContent = data.message || "Setting updated successfully.";
+            
+            toggleLabel.textContent = data.disabled ? "Disabled" : "Enabled";
+            
+            // Update local disabled pages cache
+            if (data.disabled) {
+              if (!disabledPages[currentRole]) disabledPages[currentRole] = {};
+              disabledPages[currentRole][currentPage] = data.page_name;
+            } else {
+              if (disabledPages[currentRole]) {
+                delete disabledPages[currentRole][currentPage];
+              }
+            }
+            
+            renderDisabledList();
+            
+            setTimeout(() => {
+              statusDiv.style.display = "none";
+            }, 5000);
+          } else {
+            toggle.checked = !isChecked;
+            statusDiv.className = "status error";
+            statusDiv.textContent = data.error || "Failed to update page access.";
+          }
+        } catch (error) {
+          toggle.checked = !isChecked;
+          statusDiv.className = "status error";
+          statusDiv.textContent = "Network error. Please try again.";
+          console.error("Toggle error:", error);
+        } finally {
+          toggle.disabled = false;
+          toggleContainer.style.opacity = "1";
+        }
+      });
+
+      // Initialize
+      loadDisabledPages();
     })();
 
     // ── Upload Confirmation Modal ──────────────────────────────────────────
