@@ -35,117 +35,192 @@ $importStatus = $_GET['import_status'] ?? '';
       <p class="subtitle">Central place for admin-only tools and utilities.</p>
     </header>
 
-    <section class="card">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
-        <div>
-          <h2 style="margin:0;">Database Tools</h2>
-          <div class="muted" style="margin-top:4px;">Export or import a full SQL dump (admin only).</div>
-        </div>
+    <!-- ── Tab Navigation ──────────────────────────────────────────────────── -->
+    <div class="tabs" style="margin-bottom:24px;">
+      <button class="tab active" data-tab="database" type="button">💾 Database</button>
+      <button class="tab" data-tab="settings" type="button">⚙️ System Settings</button>
+      <button class="tab" data-tab="academic" type="button">🗓️ Academic Year</button>
+      <button class="tab" data-tab="reports" type="button">📊 Reports & Tracking</button>
+    </div>
+
+    <!-- Sections will be shown/hidden based on tab selection via JS -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         DATABASE TOOLS
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="card" data-section="database">
+      <div style="margin-bottom:32px;">
+        <h2 style="margin:0 0 8px; font-size:1.4rem;">💾 Database Management</h2>
+        <p class="muted" style="margin:0; font-size:0.95rem;">Backup and restore your entire database with SQL dumps.</p>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-        <a class="btn btn-secondary" href="php/export_database_sql.php">Export Database SQL</a>
-        <form class="field" action="php/import_database_sql.php" method="post" enctype="multipart/form-data" style="margin:0;">
-          <label class="muted" style="font-size:0.85rem;" for="importSqlFile">Import SQL</label>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <input id="importSqlFile" name="sql_file" type="file" accept=".sql" required />
-            <button class="btn btn-secondary" type="submit">Upload</button>
+      <!-- Export Card -->
+      <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+        <div style="padding:24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1)); border-radius:12px; font-size:1.5rem;">
+              📥
+            </div>
+            <div style="flex:1;">
+              <h3 style="margin:0 0 4px; font-size:1.1rem;">Export Database</h3>
+              <p class="muted" style="margin:0; font-size:0.85rem;">Download complete SQL backup</p>
+            </div>
           </div>
-          <label class="chk" style="display:block; margin-top:8px;"
-            title="Leave unchecked for normal imports. The importer drops all tables and views in the database from .env, then runs your file. Avoids foreign-key errors when old tables referenced recreated ones. Check only if the database is empty or your dump already includes DROP statements.">
-            <?php /* Opt-out: default = wipe DB + import (see import_database_sql.php). */ ?>
-            <input type="checkbox" name="skip_drop_before_create" value="1" />
-            Skip full database wipe
-          </label>
-        </form>
-        <?php if ($importStatus === 'success') : ?>
-          <div class="status success" role="status">Import completed successfully.</div>
-        <?php endif; ?>
-      </div>
-    </section>
-
-    <!-- ── System Settings ─────────────────────────────────────────────────── -->
-    <section class="card" style="margin-top:20px;">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
-        <div>
-          <h2 style="margin:0;">System Settings</h2>
-          <div class="muted" style="margin-top:4px;">Configure global system behaviors.</div>
+          <a class="btn btn-secondary" href="php/export_database_sql.php" style="width:100%; justify-content:center; display:flex; align-items:center; gap:8px;">
+            <span>📥</span> Export SQL
+          </a>
         </div>
-      </div>
 
-      <div style="padding:12px 0;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
-          <div style="flex:1; min-width:250px;">
-            <div style="font-weight:600; font-size:0.95rem; margin-bottom:4px;">Attendance Timeout Enforcement</div>
-            <div class="muted" style="font-size:0.85rem;">
-              When disabled, teachers can take attendance at any time without the 30-minute grace period restriction.
+        <!-- Import Card -->
+        <div style="padding:24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--success-rgb),0.2), rgba(var(--success-rgb),0.1)); border-radius:12px; font-size:1.5rem;">
+              📤
+            </div>
+            <div style="flex:1;">
+              <h3 style="margin:0 0 4px; font-size:1.1rem;">Import Database</h3>
+              <p class="muted" style="margin:0; font-size:0.85rem;">Restore from SQL backup file</p>
             </div>
           </div>
           
-          <label class="toggle-switch" style="flex-shrink:0;">
-            <input 
-              type="checkbox" 
-              id="attendanceTimeoutToggle"
-              <?php echo $timeoutStatus['disabled'] ? 'checked' : ''; ?>
-            />
-            <span class="toggle-slider"></span>
-            <span class="toggle-label" style="margin-left:10px; font-size:0.9rem;">
-              <?php echo $timeoutStatus['disabled'] ? 'Disabled' : 'Enabled'; ?>
-            </span>
-          </label>
+          <form action="php/import_database_sql.php" method="post" enctype="multipart/form-data" style="margin:0;">
+            <div class="field" style="margin:0 0 12px;">
+              <input id="importSqlFile" name="sql_file" type="file" accept=".sql" required style="width:100%;" />
+            </div>
+            
+            <label class="chk" style="display:flex; align-items:flex-start; gap:8px; margin-bottom:16px; padding:12px; background:rgba(var(--danger-rgb),0.08); border:1px solid rgba(var(--danger-rgb),0.2); border-radius:10px; cursor:pointer;"
+              title="Leave unchecked for normal imports. The importer drops all tables and views in the database from .env, then runs your file. Avoids foreign-key errors when old tables referenced recreated ones. Check only if the database is empty or your dump already includes DROP statements.">
+              <input type="checkbox" name="skip_drop_before_create" value="1" style="margin-top:2px;" />
+              <span style="font-size:0.85rem; line-height:1.5;">
+                <strong>Skip full database wipe</strong><br/>
+                <span class="muted">Only check if your dump includes DROP statements or database is empty</span>
+              </span>
+            </label>
+            
+            <button class="btn" type="submit" style="width:100%; justify-content:center; display:flex; align-items:center; gap:8px; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">
+              <span>📤</span> Upload & Import
+            </button>
+          </form>
+          
+          <?php if ($importStatus === 'success') : ?>
+            <div class="status success" role="status" style="margin-top:16px;">✓ Import completed successfully!</div>
+          <?php endif; ?>
         </div>
-        
-        <div id="attendanceTimeoutStatus" class="status" role="status" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- Warning Notice -->
+      <div style="margin-top:24px; padding:16px 20px; background:rgba(var(--danger-rgb),0.08); border:1px solid rgba(var(--danger-rgb),0.2); border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
+        <span style="font-size:1.5rem; flex-shrink:0;">⚠️</span>
+        <div>
+          <strong style="display:block; margin-bottom:4px; color:var(--danger);">Important</strong>
+          <p class="muted" style="margin:0; font-size:0.88rem; line-height:1.6;">
+            Importing will <strong>replace all data</strong> in the database. Make sure to export a backup first. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SYSTEM SETTINGS
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="card" style="margin-top:20px;" data-section="settings">
+      <div style="margin-bottom:32px;">
+        <h2 style="margin:0 0 8px; font-size:1.4rem;">⚙️ System Settings</h2>
+        <p class="muted" style="margin:0; font-size:0.95rem;">Configure global system behaviors and access controls.</p>
+      </div>
+
+      <!-- Attendance Timeout Setting -->
+      <div style="padding:24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px; margin-bottom:20px;">
+        <div style="display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+          <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+            ⏱️
+          </div>
+          
+          <div style="flex:1; min-width:250px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:12px;">
+              <div style="flex:1;">
+                <h3 style="margin:0 0 8px; font-size:1.15rem;">Attendance Timeout Enforcement</h3>
+                <p class="muted" style="margin:0; font-size:0.9rem; line-height:1.6;">
+                  When <strong>disabled</strong>, teachers can take attendance at any time without the 30-minute grace period restriction.
+                  When <strong>enabled</strong>, attendance must be taken within 30 minutes after each lecture ends.
+                </p>
+              </div>
+              
+              <label class="toggle-switch" style="flex-shrink:0;">
+                <input 
+                  type="checkbox" 
+                  id="attendanceTimeoutToggle"
+                  <?php echo $timeoutStatus['disabled'] ? 'checked' : ''; ?>
+                />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label" style="margin-left:10px; font-size:0.95rem; font-weight:600;">
+                  <?php echo $timeoutStatus['disabled'] ? 'Disabled' : 'Enabled'; ?>
+                </span>
+              </label>
+            </div>
+            
+            <div id="attendanceTimeoutStatus" class="status" role="status" style="margin-top:12px;"></div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- ── Page Access Control ─────────────────────────────────────────────── -->
-    <section class="card" style="margin-top:20px;">
-      <div class="panel-title-row" style="margin-bottom:10px; align-items:flex-end;">
+    <section class="card" style="margin-top:20px;" data-section="settings">
+      <div style="padding:24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px;">
+        <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+          <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--danger-rgb),0.2), rgba(var(--danger-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+            🔒
+          </div>
+          
+          <div style="flex:1;">
+            <h3 style="margin:0 0 8px; font-size:1.15rem;">Page Access Control</h3>
+            <p class="muted" style="margin:0; font-size:0.9rem; line-height:1.6;">
+              Enable or disable specific pages for different user roles. <strong>Admin always has full access.</strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div style="padding:20px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:12px; margin-bottom:24px;">
+          <div style="display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom:16px;">
+            <div class="field" style="margin:0;">
+              <label for="pageAccessRole" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">👤 User Role</label>
+              <select id="pageAccessRole" class="navlink" style="padding:10px 14px; width:100%;">
+                <option value="">Select role...</option>
+                <option value="teacher">Teacher</option>
+                <option value="management">Management</option>
+                <option value="student">Student</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin:0;">
+              <label for="pageAccessPage" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📄 Page</label>
+              <select id="pageAccessPage" class="navlink" style="padding:10px 14px; width:100%;" disabled>
+                <option value="">Select a role first...</option>
+              </select>
+            </div>
+
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <label class="toggle-switch" id="pageAccessToggleContainer" style="opacity:0.5; pointer-events:none; padding:10px 0;">
+                <input type="checkbox" id="pageAccessToggle" disabled />
+                <span class="toggle-slider"></span>
+                <span class="toggle-label" style="margin-left:10px; font-size:0.95rem; font-weight:600;" id="pageAccessToggleLabel">
+                  Enabled
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <div id="pageAccessStatus" class="status" role="status"></div>
+        </div>
+
+        <!-- Currently Disabled Pages -->
         <div>
-          <h2 style="margin:0;">Page Access Control</h2>
-          <div class="muted" style="margin-top:4px;">Enable or disable specific pages for different user roles. Admin always has full access.</div>
-        </div>
-      </div>
-
-      <!-- Control Panel -->
-      <div style="padding:12px 0; border-bottom:1px solid var(--card-border); margin-bottom:20px;">
-        <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
-          <div class="field" style="margin:0; flex:1; min-width:200px;">
-            <label for="pageAccessRole" style="font-size:0.85rem; margin-bottom:4px;">User Role</label>
-            <select id="pageAccessRole" class="navlink" style="padding:9px 11px; width:100%;">
-              <option value="">Select role...</option>
-              <option value="teacher">Teacher</option>
-              <option value="management">Management</option>
-              <option value="student">Student</option>
-            </select>
-          </div>
-
-          <div class="field" style="margin:0; flex:2; min-width:250px;">
-            <label for="pageAccessPage" style="font-size:0.85rem; margin-bottom:4px;">Page</label>
-            <select id="pageAccessPage" class="navlink" style="padding:9px 11px; width:100%;" disabled>
-              <option value="">Select a role first...</option>
-            </select>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
-            <label class="toggle-switch" id="pageAccessToggleContainer" style="opacity:0.5; pointer-events:none;">
-              <input type="checkbox" id="pageAccessToggle" disabled />
-              <span class="toggle-slider"></span>
-              <span class="toggle-label" style="margin-left:10px; font-size:0.9rem;" id="pageAccessToggleLabel">
-                Enabled
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <div id="pageAccessStatus" class="status" role="status" style="margin-top:12px;"></div>
-      </div>
-
-      <!-- Currently Disabled Pages -->
-      <div>
-        <h3 style="margin:0 0 14px; font-size:0.95rem; font-weight:600;">Currently Disabled Pages</h3>
-        <div id="disabledPagesList" style="display:grid; gap:10px;">
+          <h4 style="margin:0 0 16px; font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+            <span>🚫</span> Currently Disabled Pages
+          </h4>
+          <div id="disabledPagesList" style="display:grid; gap:12px;">
           <div class="muted" style="font-size:0.9rem; padding:12px; text-align:center;">
             Loading...
           </div>
@@ -153,20 +228,33 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ACADEMIC YEAR MANAGEMENT
+         ═══════════════════════════════════════════════════════════════════════ -->
     <!-- ── Semester Wizard ─────────────────────────────────────────────────── -->
-    <section class="card" id="semesterWizard" style="margin-top:20px;">
+    <section class="card" id="semesterWizard" style="margin-top:20px;" data-section="academic">
 
       <!-- Header: always visible, shows where you are -->
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:22px;">
-        <div>
-          <div class="muted" style="font-size:0.78rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:3px;">Semester Management</div>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <strong id="wizardCurrentLabel" style="font-size:1.1rem;">Loading…</strong>
-            <span id="wizardNextHint" class="muted" style="font-size:0.88rem;"></span>
+      <div style="padding:24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px; margin-bottom:24px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+          <div style="display:flex; align-items:center; gap:16px; flex:1;">
+            <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+              🗓️
+            </div>
+            <div>
+              <div class="muted" style="font-size:0.8rem; letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; font-weight:600;">Semester Management</div>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <strong id="wizardCurrentLabel" style="font-size:1.2rem;">Loading…</strong>
+                <span id="wizardNextHint" class="muted" style="font-size:0.9rem;"></span>
+              </div>
+            </div>
           </div>
+          <button id="wizManualBtn" class="btn btn-small btn-secondary" type="button" style="white-space:nowrap; padding:10px 18px;">⚙ Manual Options</button>
         </div>
-        <button id="wizManualBtn" class="btn btn-small btn-secondary" type="button" style="white-space:nowrap;">⚙ Manual</button>
       </div>
+
+      <!-- Wizard Content Area -->
+      <div style="padding:24px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:16px;">
 
       <!-- Step panels -->
 
@@ -255,78 +343,93 @@ $importStatus = $_GET['import_status'] ?? '';
 
     </section>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         REPORTS & TRACKING
+         ═══════════════════════════════════════════════════════════════════════ -->
     <!-- ── Attendance Tracking Report ─────────────────────────────────────── -->
-    <section class="card" style="margin-top:20px;">
-      <div style="margin-bottom:20px;">
-        <h2 style="margin:0 0 6px;">Attendance Tracking Report</h2>
-        <p class="muted" style="margin:0; font-size:0.9rem;">View and export attendance status for a range of weeks.</p>
+    <section class="card" style="margin-top:20px;" data-section="reports">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--success-rgb),0.2), rgba(var(--success-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+          ✅
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Attendance Tracking Report</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">View and export attendance status for a range of weeks.</p>
+        </div>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
-        <div class="field" style="margin:0;">
-          <label for="attendanceTrackingTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
-          <select id="attendanceTrackingTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">All Terms</option>
-          </select>
+      <!-- Filters -->
+      <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          <div class="field" style="margin:0;">
+            <label for="attendanceTrackingTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Term/Semester</label>
+            <select id="attendanceTrackingTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Terms</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="attendanceTrackingFromWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 From Week</label>
+            <select id="attendanceTrackingFromWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="attendanceTrackingToWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 To Week</label>
+            <select id="attendanceTrackingToWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field" style="margin:0;">
-          <label for="attendanceTrackingFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
-          <select id="attendanceTrackingFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">Select week…</option>
-          </select>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="loadAttendanceTrackingReport" class="btn btn-secondary" type="button" style="flex:1; min-width:140px;">📊 Load Report</button>
+          <button id="exportAttendanceTrackingReport" class="btn" type="button" disabled style="flex:1; min-width:140px; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
         </div>
-
-        <div class="field" style="margin:0;">
-          <label for="attendanceTrackingToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
-          <select id="attendanceTrackingToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">Select week…</option>
-          </select>
-        </div>
-
-        <button id="loadAttendanceTrackingReport" class="btn btn-secondary" type="button">Load Report</button>
-        <button id="exportAttendanceTrackingReport" class="btn" type="button" disabled>Export Excel</button>
       </div>
 
       <div id="attendanceTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
 
       <!-- Summary stats -->
-      <div id="attendanceTrackingSummary" style="display:none; margin-bottom:20px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Lectures</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="attendanceTrackingTotal">0</div>
+      <div id="attendanceTrackingSummary" style="display:none; margin-bottom:20px; padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px;">
+        <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Total Lectures</div>
+            <div style="font-size:2rem; font-weight:700;" id="attendanceTrackingTotal">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Attendance Taken</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="attendanceTrackingTaken">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Attendance Taken</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--success);" id="attendanceTrackingTaken">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Missing</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--danger);" id="attendanceTrackingMissing">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Missing</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--danger);" id="attendanceTrackingMissing">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Canceled</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--muted);" id="attendanceTrackingCanceled">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Canceled</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--muted);" id="attendanceTrackingCanceled">0</div>
           </div>
         </div>
       </div>
 
       <!-- Data table -->
       <div id="attendanceTrackingTableWrap" style="display:none;">
-        <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <select id="attendanceTrackingFilterCourse" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
-            <option value="">All Courses</option>
-          </select>
-          <select id="attendanceTrackingFilterProfessor" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
-            <option value="">All Professors</option>
-          </select>
-          <select id="attendanceTrackingFilterStatus" class="navlink" style="padding:8px 11px;">
-            <option value="">All Status</option>
-            <option value="missing">Missing Only</option>
-            <option value="taken">Taken Only</option>
-            <option value="canceled">Canceled Only</option>
-          </select>
+        <div style="margin-bottom:16px; padding:16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px;">
+          <div style="display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <select id="attendanceTrackingFilterCourse" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Courses</option>
+            </select>
+            <select id="attendanceTrackingFilterProfessor" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Professors</option>
+            </select>
+            <select id="attendanceTrackingFilterStatus" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Status</option>
+              <option value="missing">Missing Only</option>
+              <option value="taken">Taken Only</option>
+              <option value="canceled">Canceled Only</option>
+            </select>
+          </div>
         </div>
 
         <div class="table-wrap" style="max-height:600px; overflow:auto;">
@@ -350,81 +453,92 @@ $importStatus = $_GET['import_status'] ?? '';
     </section>
 
     <!-- ── Professor Attendance Tracking ───────────────────────────────────── -->
-    <section class="card" style="margin-top:20px;">
-      <div style="margin-bottom:20px;">
-        <h2 style="margin:0 0 6px;">Professor Attendance Tracking</h2>
-        <p class="muted" style="margin:0; font-size:0.9rem;">Track professor attendance based on whether they took attendance for scheduled lectures.</p>
+    <section class="card" style="margin-top:20px;" data-section="reports">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+          🧑‍🏫
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Professor Attendance Tracking</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Track professor attendance based on whether they took attendance for scheduled lectures.</p>
+        </div>
       </div>
 
-      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
-        <div class="field" style="margin:0;">
-          <label for="professorTrackingTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
-          <select id="professorTrackingTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">All Terms</option>
-          </select>
-        </div>
+      <!-- Filters -->
+      <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          <div class="field" style="margin:0;">
+            <label for="professorTrackingTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Term/Semester</label>
+            <select id="professorTrackingTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Terms</option>
+            </select>
+          </div>
 
-        <div class="field" style="margin:0;">
-          <label for="professorTrackingFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
-          <select id="professorTrackingFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
+          <div class="field" style="margin:0;">
+            <label for="professorTrackingFromWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 From Week</label>
+            <select id="professorTrackingFromWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="professorTrackingToWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 To Week</label>
+            <select id="professorTrackingToWeek" class="navlink" style="padding:10px 12px; width:100%;">
             <option value="">Select week…</option>
           </select>
         </div>
 
-        <div class="field" style="margin:0;">
-          <label for="professorTrackingToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
-          <select id="professorTrackingToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">Select week…</option>
-          </select>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="loadProfessorTrackingReport" class="btn btn-secondary" type="button" style="flex:1; min-width:140px;">📊 Load Report</button>
+          <button id="exportProfessorTrackingReport" class="btn" type="button" disabled style="flex:1; min-width:140px; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
         </div>
-
-        <button id="loadProfessorTrackingReport" class="btn btn-secondary" type="button">Load Report</button>
-        <button id="exportProfessorTrackingReport" class="btn" type="button" disabled>Export Excel</button>
       </div>
 
       <div id="professorTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
 
       <!-- Summary stats -->
-      <div id="professorTrackingSummary" style="display:none; margin-bottom:20px; padding:14px 16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:8px;">
-        <div style="display:flex; gap:20px; flex-wrap:wrap;">
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Total Lectures</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingTotalLectures">0</div>
+      <div id="professorTrackingSummary" style="display:none; margin-bottom:20px; padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px;">
+        <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Total Lectures</div>
+            <div style="font-size:2rem; font-weight:700;" id="professorTrackingTotalLectures">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Professor Present</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--success);" id="professorTrackingPresent">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Professor Present</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--success);" id="professorTrackingPresent">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Professor Absent</div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--danger);" id="professorTrackingAbsent">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Professor Absent</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--danger);" id="professorTrackingAbsent">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Canceled</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingCanceled">0</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Canceled</div>
+            <div style="font-size:2rem; font-weight:700;" id="professorTrackingCanceled">0</div>
           </div>
-          <div>
-            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em;">Attendance Rate</div>
-            <div style="font-size:1.5rem; font-weight:700;" id="professorTrackingRate">0%</div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px; font-weight:600;">Attendance Rate</div>
+            <div style="font-size:2rem; font-weight:700;" id="professorTrackingRate">0%</div>
           </div>
         </div>
       </div>
 
       <!-- Data table -->
       <div id="professorTrackingTableWrap" style="display:none;">
-        <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <select id="professorTrackingFilterCourse" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
-            <option value="">All Courses</option>
-          </select>
-          <select id="professorTrackingFilterProfessor" class="navlink" style="padding:8px 11px; flex:1; min-width:200px;">
-            <option value="">All Professors</option>
-          </select>
-          <select id="professorTrackingFilterStatus" class="navlink" style="padding:8px 11px;">
-            <option value="">All Status</option>
-            <option value="present">Present Only</option>
-            <option value="absent">Absent Only</option>
-            <option value="canceled">Canceled Only</option>
-          </select>
+        <div style="margin-bottom:16px; padding:16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px;">
+          <div style="display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <select id="professorTrackingFilterCourse" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Courses</option>
+            </select>
+            <select id="professorTrackingFilterProfessor" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Professors</option>
+            </select>
+            <select id="professorTrackingFilterStatus" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Status</option>
+              <option value="present">Present Only</option>
+              <option value="absent">Absent Only</option>
+              <option value="canceled">Canceled Only</option>
+            </select>
+          </div>
         </div>
 
         <div class="table-wrap" style="max-height:600px; overflow:auto;">
@@ -448,104 +562,122 @@ $importStatus = $_GET['import_status'] ?? '';
     </section>
 
     <!-- ── Teacher Schedule Export ─────────────────────────────────────────── -->
-    <section class="card" style="margin-top:20px;">
-      <div style="margin-bottom:20px;">
-        <h2 style="margin:0 0 6px;">Teacher Schedule Export</h2>
-        <p class="muted" style="margin:0; font-size:0.9rem;">Export teacher schedules for a range of weeks by nationality.</p>
+    <section class="card" style="margin-top:20px;" data-section="reports">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--info-rgb),0.2), rgba(var(--info-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+          📊
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Teacher Schedule Export</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Export teacher schedules for a range of weeks by nationality.</p>
+        </div>
       </div>
 
-      <!-- Nationality Filter -->
-      <div style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; margin-bottom:16px;">
-        <div class="field" style="margin:0;">
-          <label for="teacherNationalityFilter" style="font-size:0.85rem; margin-bottom:4px;">Nationality Filter</label>
-          <select id="teacherNationalityFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="All">All Teachers</option>
-            <option value="French">French Teachers Only</option>
-            <option value="Egyptian">Egyptian Teachers Only</option>
-          </select>
+      <!-- Filters -->
+      <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          <div class="field" style="margin:0;">
+            <label for="teacherNationalityFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">🌍 Nationality Filter</label>
+            <select id="teacherNationalityFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="All">All Teachers</option>
+              <option value="French">French Teachers Only</option>
+              <option value="Egyptian">Egyptian Teachers Only</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="teacherScheduleTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Term/Semester</label>
+            <select id="teacherScheduleTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Terms</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="teacherScheduleFromWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 From Week</label>
+            <select id="teacherScheduleFromWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="teacherScheduleToWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 To Week</label>
+            <select id="teacherScheduleToWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
         </div>
 
-        <div class="field" style="margin:0;">
-          <label for="teacherScheduleTermFilter" style="font-size:0.85rem; margin-bottom:4px;">Term/Semester</label>
-          <select id="teacherScheduleTermFilter" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">All Terms</option>
-          </select>
-        </div>
-
-        <div class="field" style="margin:0;">
-          <label for="teacherScheduleFromWeek" style="font-size:0.85rem; margin-bottom:4px;">From Week</label>
-          <select id="teacherScheduleFromWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">Select week…</option>
-          </select>
-        </div>
-
-        <div class="field" style="margin:0;">
-          <label for="teacherScheduleToWeek" style="font-size:0.85rem; margin-bottom:4px;">To Week</label>
-          <select id="teacherScheduleToWeek" class="navlink" style="padding:9px 11px; min-width:160px;">
-            <option value="">Select week…</option>
-          </select>
-        </div>
-
-        <button id="exportTeacherSchedule" class="btn" type="button">Export Excel</button>
+        <button id="exportTeacherSchedule" class="btn" type="button" style="width:100%; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
       </div>
 
       <div id="teacherScheduleStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+      </div><!-- End wizard content area -->
     </section>
 
     <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
-    <details id="manualOptionsPanel" style="margin-top:14px;">
-      <summary style="cursor:pointer; font-weight:600; padding:10px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:8px; font-size:0.95rem;">
-        ⚙ Manual Options
-        <span class="muted" style="font-weight:400; font-size:0.83rem;">(activate, create, or reset semesters)</span>
+    <details id="manualOptionsPanel" style="margin-top:20px; padding:20px 24px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px;" data-section="academic">
+      <summary style="cursor:pointer; font-weight:600; padding:12px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:12px; font-size:1.05rem;">
+        <span style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-rgb),0.08)); border-radius:10px; font-size:1.3rem;">⚙️</span>
+        <span style="flex:1;">Manual Options</span>
+        <span class="muted" style="font-weight:400; font-size:0.88rem;">(activate, create, or reset semesters)</span>
       </summary>
 
-      <div class="card" style="margin-top:10px;">
+      <div style="margin-top:20px; padding:20px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:12px;">
 
         <!-- Activate -->
-        <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">Activate a Semester</h3>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:6px;">
-          <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-            Academic Year
-            <select id="academicYearSelect" class="navlink" style="padding:8px 10px; min-width:170px;"></select>
-          </label>
-          <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-            Semester
-            <select id="termSelect" class="navlink" style="padding:8px 10px; min-width:170px;"></select>
-          </label>
-          <button id="activateSelectedTerm" class="btn btn-secondary" type="button">Activate</button>
+        <div style="margin-bottom:28px;">
+          <h3 style="margin:0 0 8px; font-size:1.05rem; font-weight:600; display:flex; align-items:center; gap:8px;">
+            <span>✓</span> Activate a Semester
+          </h3>
+          <p class="muted" style="margin:0 0 16px; font-size:0.88rem;">Switch to a different academic term</p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:6px;">
+            <div class="field" style="margin:0; flex:1; min-width:160px;">
+              <label for="academicYearSelect" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">Academic Year</label>
+              <select id="academicYearSelect" class="navlink" style="padding:10px 12px; width:100%;"></select>
+            </div>
+            <div class="field" style="margin:0; flex:1; min-width:160px;">
+              <label for="termSelect" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">Semester</label>
+              <select id="termSelect" class="navlink" style="padding:10px 12px; width:100%;"></select>
+            </div>
+            <button id="activateSelectedTerm" class="btn btn-secondary" type="button" style="padding:10px 24px;">Activate</button>
+          </div>
+          <div id="termStatus" class="status" role="status"></div>
         </div>
-        <div id="termStatus" class="status" role="status" style="margin-bottom:18px;"></div>
 
         <!-- Create -->
-        <div style="border-top:1px solid var(--card-border); padding-top:16px; margin-bottom:6px;">
-          <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">Create a New Semester</h3>
-          <p class="muted" style="margin:0 0 12px; font-size:0.85rem;">The label is auto-generated from the semester number (e.g. "Semester 1" or "Semester 2").</p>
+        <div style="border-top:1px solid var(--card-border); padding-top:24px; margin-bottom:28px;">
+          <h3 style="margin:0 0 8px; font-size:1.05rem; font-weight:600; display:flex; align-items:center; gap:8px;">
+            <span>➕</span> Create a New Semester
+          </h3>
+          <p class="muted" style="margin:0 0 16px; font-size:0.88rem;">The label is auto-generated from the semester number (e.g. "Semester 1" or "Semester 2").</p>
           <form id="termCreateForm">
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-                Semester #
-                <select name="semester" style="padding:8px 10px;" required>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+              <div class="field" style="margin:0; min-width:140px;">
+                <label style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">Semester #</label>
+                <select name="semester" class="navlink" style="padding:10px 12px; width:100%;" required>
                   <option value="1">Semester 1</option>
                   <option value="2">Semester 2</option>
                 </select>
-              </label>
-              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-                Start Date <span class="muted">(optional)</span>
-                <input name="start_date" type="date" style="padding:8px 10px;" />
-              </label>
-              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.83rem;">
-                End Date <span class="muted">(optional)</span>
-                <input name="end_date" type="date" style="padding:8px 10px;" />
-              </label>
-              <button class="btn btn-secondary" type="submit">Create</button>
+              </div>
+              <div class="field" style="margin:0; flex:1; min-width:160px;">
+                <label style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">Start Date <span class="muted">(optional)</span></label>
+                <input name="start_date" type="date" style="padding:10px 12px; width:100%;" />
+              </div>
+              <div class="field" style="margin:0; flex:1; min-width:160px;">
+                <label style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">End Date <span class="muted">(optional)</span></label>
+                <input name="end_date" type="date" style="padding:10px 12px; width:100%;" />
+              </div>
+              <button class="btn btn-secondary" type="submit" style="padding:10px 24px;">Create</button>
             </div>
           </form>
-          <div id="createTermStatus" class="status" role="status" style="margin-top:8px; margin-bottom:18px;"></div>
+          <div id="createTermStatus" class="status" role="status" style="margin-top:12px;"></div>
         </div>
 
         <!-- All semesters -->
-        <div style="border-top:1px solid var(--card-border); padding-top:16px;">
-          <h3 style="margin:0 0 12px; font-size:0.95rem; font-weight:600;">All Semesters</h3>
+        <div style="border-top:1px solid var(--card-border); padding-top:24px;">
+          <h3 style="margin:0 0 16px; font-size:1.05rem; font-weight:600; display:flex; align-items:center; gap:8px;">
+            <span>📋</span> All Semesters
+          </h3>
           <div class="table-wrap">
             <table id="termsTable" class="data-table">
               <thead>
@@ -564,6 +696,52 @@ $importStatus = $_GET['import_status'] ?? '';
 
   <script src="js/core.js?v=20260912a"></script>
   <script>
+    // ── Admin Panel Tabs ────────────────────────────────────────────────────
+    (function () {
+      "use strict";
+
+      const tabs = document.querySelectorAll('.tabs .tab');
+      const sections = document.querySelectorAll('[data-section]');
+
+      // Get saved tab from localStorage or default to 'database'
+      let activeTab = localStorage.getItem('adminPanelActiveTab') || 'database';
+
+      // Function to show sections for a given tab
+      function showTab(tabName) {
+        // Update tab buttons
+        tabs.forEach(tab => {
+          if (tab.dataset.tab === tabName) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+
+        // Show/hide sections
+        sections.forEach(section => {
+          if (section.dataset.section === tabName) {
+            section.style.display = '';
+          } else {
+            section.style.display = 'none';
+          }
+        });
+
+        // Save to localStorage
+        localStorage.setItem('adminPanelActiveTab', tabName);
+        activeTab = tabName;
+      }
+
+      // Initialize - show the saved/default tab
+      showTab(activeTab);
+
+      // Tab click handlers
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          showTab(this.dataset.tab);
+        });
+      });
+    })();
+
     // ── Attendance Timeout Toggle ──────────────────────────────────────────
     (function () {
       "use strict";
