@@ -12,6 +12,7 @@ async function initAdminUsersPage() {
   const createStatus = document.getElementById("createUserStatus");
   const refreshBtn = document.getElementById("refreshUsers");
   const searchEl = document.getElementById("userSearch");
+  const roleFilterEl = document.getElementById("userRoleFilter");
 
   const modal = document.getElementById("userEditModal");
   const modalStatus = document.getElementById("userEditStatus");
@@ -147,9 +148,15 @@ async function initAdminUsersPage() {
     return fields.includes(needle);
   }
 
+  function matchesRoleFilter(u, roleFilter) {
+    if (!roleFilter) return true;
+    return String(u.role || "").toLowerCase() === String(roleFilter).toLowerCase();
+  }
+
   function renderUsers() {
     const q = searchEl ? String(searchEl.value || "") : "";
-    const items = usersCache.filter((u) => matchesUser(u, q));
+    const roleFilter = roleFilterEl ? String(roleFilterEl.value || "") : "";
+    const items = usersCache.filter((u) => matchesUser(u, q) && matchesRoleFilter(u, roleFilter));
 
     list.innerHTML = "";
     if (!items.length) {
@@ -356,6 +363,9 @@ async function initAdminUsersPage() {
 
   refreshBtn?.addEventListener("click", loadUsers);
   searchEl?.addEventListener("input", () => {
+    renderUsers();
+  });
+  roleFilterEl?.addEventListener("change", () => {
     renderUsers();
   });
 

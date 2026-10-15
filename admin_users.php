@@ -137,13 +137,23 @@ auth_require_roles(['admin']);
       <div class="card-header">
         <div>
           <h2>Existing Users</h2>
-          <p class="card-subtitle">Search by username, role, doctor_id, student_id.</p>
+          <p class="card-subtitle">Filter by role and search by username, ID, or status.</p>
         </div>
         <div class="page-actions">
-          <div class="filter-bar">
-            <div class="field">
-              <label for="userSearch">Search</label>
-              <input id="userSearch" type="text" placeholder="Search users…" />
+          <div class="filter-bar" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+            <div class="field" style="margin:0;">
+              <label for="userRoleFilter" style="font-size:0.85rem; margin-bottom:4px; font-weight:500;">Filter</label>
+              <select id="userRoleFilter" class="navlink" style="padding:9px 11px; min-width:150px;">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="management">Management</option>
+                <option value="teacher">Teacher</option>
+                <option value="student">Student</option>
+              </select>
+            </div>
+            <div class="field" style="margin:0;">
+              <label for="userSearch" style="font-size:0.85rem; margin-bottom:4px; font-weight:500;">Search</label>
+              <input id="userSearch" type="text" placeholder="Search users…" style="min-width:220px; padding:9px 11px;" />
             </div>
           </div>
         </div>
