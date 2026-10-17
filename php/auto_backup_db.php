@@ -30,9 +30,9 @@ if (!file_exists($mysqldumpPath)) {
     exit(1);
 }
 
-// Execute backup
+// Execute backup with full data export
 $command = sprintf(
-    '"%s" --user=%s --password=%s --host=%s %s > "%s"',
+    '"%s" --user=%s --password=%s --host=%s --complete-insert --extended-insert --add-drop-table --add-locks --quick --lock-tables --no-tablespaces %s > "%s"',
     $mysqldumpPath,
     $dbUser,
     $dbPass,

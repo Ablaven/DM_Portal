@@ -43,7 +43,7 @@ if ($isStudent) {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Schedule</title>
-  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/style.css?v=20260222f" />
 </head>
 <body class="students-view">
   <?php render_portal_navbar('students.php'); ?>

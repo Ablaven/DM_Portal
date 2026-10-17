@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   "use strict";
 
   async function fetchJson(url, options = {}) {
@@ -262,11 +262,11 @@
 
   initPageTransitions();
 
-  // ─────────────────────────────────────────────
+  // ---------------------------------------------
   // THEME GLITCH TRANSITION
   // Captures the page via a cloned frozen snapshot, then slices + displaces it
   // to create a real content-glitch effect as the theme switches underneath.
-  // ─────────────────────────────────────────────
+  // ---------------------------------------------
   function fireThemeGlitch() {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -275,7 +275,7 @@
     const DPR = Math.max(1, window.devicePixelRatio || 1);
     const scrollY = window.scrollY || 0;
 
-    // ── 1. Clone the entire page into a frozen screenshot div ──
+    // -- 1. Clone the entire page into a frozen screenshot div --
     const snapshot = document.createElement("div");
     snapshot.style.cssText =
       "position:fixed;inset:0;z-index:99998;pointer-events:none;overflow:hidden;" +
@@ -292,7 +292,7 @@
     snapshot.appendChild(clone);
     document.body.appendChild(snapshot);
 
-    // ── 2. Canvas on top for RGB echo layers ──
+    // -- 2. Canvas on top for RGB echo layers --
     const cv = document.createElement("canvas");
     cv.width  = Math.floor(W * DPR);
     cv.height = Math.floor(H * DPR);
@@ -303,7 +303,7 @@
     const ctx = cv.getContext("2d");
     ctx.scale(DPR, DPR);
 
-    // ── 3. Build glitch strip data ──
+    // -- 3. Build glitch strip data --
     // Big displaced slices (content displacement)
     const slices = Array.from({ length: 18 }, (_, i) => ({
       y:    Math.random() * H,
@@ -315,7 +315,7 @@
     const DURATION = 500;
     const start = performance.now();
 
-    // ── 4. Animation loop ──
+    // -- 4. Animation loop --
     function frame(now) {
       const t  = Math.min(1, (now - start) / DURATION);
 
@@ -333,7 +333,7 @@
         s.active = Math.random() > 0.25;
       }
 
-      // ── Apply slice displacement to the snapshot clone ──
+      // -- Apply slice displacement to the snapshot clone --
       // Reset all clip regions first
       clone.style.clip = "";
       clone.style.transform = "";
@@ -371,7 +371,7 @@
         snapshot.appendChild(strip);
       }
 
-      // ── Digital corruption overlay ──
+      // -- Digital corruption overlay --
 
       // 1. Macro codec blocks - large solid rectangles snapped to a 16px grid (broken codec look)
       const macroCount = Math.floor(intensity * 14) + 2;
@@ -417,7 +417,7 @@
         ctx.fillRect(sx, sy, sw, sh);
       }
 
-      // 3. Bit-flip noise - tiny 1–4px random pixels scattered everywhere
+      // 3. Bit-flip noise - tiny 1�4px random pixels scattered everywhere
       const noiseCount = Math.floor(intensity * 200);
       for (let i = 0; i < noiseCount; i++) {
         const nx = Math.random() * W;
@@ -438,7 +438,7 @@
         ctx.fillRect(0, by2, W, bh2);
       }
 
-      // ── Fade out the snapshot as intensity drops ──
+      // -- Fade out the snapshot as intensity drops --
       snapshot.style.opacity = intensity.toFixed(3);
 
       if (t < 1) {
@@ -750,6 +750,44 @@
     container.innerHTML = "";
   }
 
+  /**
+   * Create a professor/doctor image element with automatic fallback to Default.jpg
+   * @param {string} doctorName - The full name of the doctor/professor
+   * @param {string} imageFilename - Optional specific filename (if known)
+   * @param {string} className - Optional CSS class for the img element
+   * @returns {HTMLImageElement} Image element with onerror fallback configured
+   */
+  function createProfessorImage(doctorName, imageFilename = null, className = "teacher-avatar-img") {
+    const img = document.createElement("img");
+    img.className = className;
+    img.alt = doctorName || "Professor";
+    
+    const cacheBuster = Date.now();
+    
+    if (imageFilename) {
+      // Use provided filename
+      img.src = `images/professors/${encodeURIComponent(imageFilename)}?v=${cacheBuster}`;
+    } else {
+      // Generate filename from name (fallback behavior)
+      const imageName = String(doctorName || "")
+        .toLowerCase()
+        .trim()
+        .replace(/^(dr\.?|prof\.?)\s+/i, "")
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_]/g, "");
+      img.src = `images/professors/${imageName}.jpg?v=${cacheBuster}`;
+    }
+    
+    // Fallback to Default.jpg if image not found
+    img.onerror = function() {
+      this.onerror = null; // Prevent infinite loop
+      this.src = `images/professors/Default.jpg?v=${cacheBuster}`;
+    };
+    
+    return img;
+  }
+
   window.dmportal.renderEmptyState = renderEmptyState;
   window.dmportal.clearEmptyState = clearEmptyState;
+  window.dmportal.createProfessorImage = createProfessorImage;
 })();

@@ -2283,12 +2283,21 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   }
 
   .schedule-grid th.corner,
-  .schedule-grid td.corner {
+  .schedule-grid td.corner,
+  .schedule-grid tbody th {
     position: sticky;
     left: 0;
     z-index: 3;
     background: var(--surface-2);
   }
+  
+  /* Override corner width for tbody th */
+  .schedule-grid tbody th {
+    width: auto !important;
+  }
+
+  /* Fix: Prevent slot headers (Slot 1, 2, 3...) from scrolling horizontally on mobile */
+  /* Already covered above */
 
   .slot {
     min-height: 72px;
@@ -2315,6 +2324,12 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   }
 
   .schedule-grid .corner { width: 52px; }
+  
+  /* Override: tbody th should be auto-width */
+  .schedule-grid tbody th {
+    width: auto !important;
+    min-width: 90px !important;
+  }
 
   .schedule-grid th {
     font-size: 0.72rem;
@@ -2341,6 +2356,14 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
 
   .slot-hdr-num { font-size: 0.72rem; }
   .slot-hdr-time { font-size: 0.6rem; }
+
+  /* Fix: Sticky headers for extra-small screens too */
+  .schedule-grid tbody th {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 3 !important;
+    background: var(--surface-2) !important;
+  }
 
   /* Schedule builder controls: stack compactly */
   .schedule-header .controls {
@@ -6581,9 +6604,9 @@ html[data-theme="light"] .course-card:hover {
 
 @media screen and (max-width: 768px) {
   
-  /* ── GLOBAL: Fix corner cell on ALL schedule grids ──────────────────────── */
-  .schedule-grid .corner,
-  .schedule-grid th.corner {
+  /* ── GLOBAL: Fix corner cell on ALL schedule grids (EXCEPT students-view) ─ */
+  body:not(.students-view) .schedule-grid .corner,
+  body:not(.students-view) .schedule-grid th.corner {
     background: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -6992,7 +7015,7 @@ html[data-theme="light"] .course-card:hover {
     -webkit-overflow-scrolling: touch !important;
     margin: 0 -16px !important; /* Bleed to edges */
     padding: 0 16px !important;
-    scroll-snap-type: x proximity !important;
+    /* REMOVED: scroll-snap-type breaks position:sticky */
   }
   
   /* ── Schedule grid / tables ──────────────────────────────────────────────── */
@@ -7706,7 +7729,7 @@ html[data-theme="light"] .course-card:hover {
     -webkit-overflow-scrolling: touch !important;
     margin: 0 !important;
     padding: 0 16px 80px 16px !important;
-    scroll-snap-type: x proximity !important;
+    /* REMOVED: scroll-snap-type breaks position:sticky */
   }
   
   /* Hide the gradient scroll indicator on mobile - we use text instead */
@@ -8721,6 +8744,8 @@ html[data-theme="light"] .course-card:hover {
     border-radius: 12px !important;
     position: relative !important;
     margin-top: 16px !important;
+    /* Remove any transforms that break sticky */
+    transform: none !important;
     /* Scroll shadows */
     background:
       linear-gradient(90deg, var(--card) 30%, transparent),
@@ -8738,6 +8763,10 @@ html[data-theme="light"] .course-card:hover {
     width: max(750px, 100%) !important;
     border-spacing: 8px !important;
     table-layout: auto !important;
+    /* Critical: table must not have overflow or transform */
+    overflow: visible !important;
+    transform: none !important;
+    display: table !important;
   }
   
   /* ── Table Headers ──────────────────────────────────────────────────────── */
@@ -8757,6 +8786,18 @@ html[data-theme="light"] .course-card:hover {
     border-radius: 8px !important;
   }
   
+  /* ── Time Header (Top-Left Corner - Sticky Both Ways) ──────────────────── */
+  body.students-view .schedule-grid thead th.corner {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 12 !important; /* Higher than other headers */
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.08) !important;
+  }
+  
   /* ── Time Column (Sticky Left) ──────────────────────────────────────────── */
   body.students-view .schedule-grid td:first-child {
     position: sticky !important;
@@ -8766,6 +8807,21 @@ html[data-theme="light"] .course-card:hover {
     backdrop-filter: blur(24px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  /* Fix: Slot headers in tbody also need to be sticky */
+  body.students-view .schedule-grid tbody th,
+  body.students-view .schedule-grid tbody tr > :first-child {
+    position: sticky !important;
+    position: -webkit-sticky !important; /* Safari support */
+    left: 0 !important;
+    z-index: 11 !important;
+    background: var(--surface-2) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08) !important;
+    /* Ensure no transform/translate on parent breaks sticky */
+    isolation: isolate !important;
   }
   
   /* ── Slot Header (Time) ────────────────────────────────────────────────── */
