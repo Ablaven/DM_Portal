@@ -1,0 +1,665 @@
+/* ═══════════════════════════════════════════════════════════════
+   ASSIGNMENTS - UI STYLES
+   Teacher/Student/Admin views with glassmorphic styling
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Global Layout ────────────────────────────────────────────── */
+#assignmentsRoot {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+/* ── Enhanced Header ──────────────────────────────────────────── */
+.assignments-header {
+  padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 2rem;
+}
+
+.assignments-header-content {
+  max-width: 800px;
+}
+
+.assignments-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+
+.assignments-subtitle {
+  font-size: 1.125rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Section Headers ──────────────────────────────────────────── */
+.assignments-section {
+  margin: 2rem 0 1rem;
+}
+
+.assignments-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.assignments-section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.section-heading {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 2.5rem 0 1.5rem;
+  line-height: 1.2;
+}
+
+.subsection-heading {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 2rem 0 1rem;
+  line-height: 1.3;
+}
+
+/* ── Card Grids ───────────────────────────────────────────────── */
+.assignments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ── Year/Semester/Course Selector Cards ──────────────────────── */
+.year-selector-card {
+  padding: 3rem 2rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.year-selector-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent);
+}
+
+.selector-card-icon {
+  font-size: 3rem;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.selector-card-label {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.selector-card-sub {
+  font-size: 0.9375rem;
+  color: var(--muted);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* ── Assignment Cards ─────────────────────────────────────────── */
+.assignment-card {
+  padding: 1.75rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+}
+
+.assignment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent);
+}
+
+.assignment-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assignment-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.assignment-card-description {
+  font-size: 0.9375rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  word-break: break-word;
+}
+
+.assignment-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.assignment-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.assignment-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Deadline Badge ───────────────────────────────────────────── */
+.deadline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deadline-badge.active {
+  background: rgba(var(--success-rgb), 0.12);
+  color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.3);
+}
+
+.deadline-badge.warning {
+  background: rgba(255, 180, 0, 0.12);
+  color: rgb(255, 200, 50);
+  border: 1px solid rgba(255, 180, 0, 0.3);
+}
+
+.deadline-badge.expired {
+  background: rgba(var(--danger-rgb), 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
+}
+
+/* ── Submission Status Badge ──────────────────────────────────── */
+.submission-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.submission-status-badge.submitted {
+  background: rgba(var(--success-rgb), 0.12);
+  color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.3);
+}
+
+.submission-status-badge.pending {
+  background: rgba(255, 180, 0, 0.12);
+  color: rgb(255, 200, 50);
+  border: 1px solid rgba(255, 180, 0, 0.3);
+}
+
+.submission-status-badge.not-submitted {
+  background: rgba(var(--danger-rgb), 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
+}
+
+/* ── Create Assignment Section ────────────────────────────────── */
+.create-assignment-section {
+  padding: 2rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  margin: 2rem 0;
+}
+
+.create-assignment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 700px;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row > * {
+  flex: 1;
+}
+
+/* ── Upload Section (Student view) ────────────────────────────── */
+.assignment-upload-section {
+  padding: 2rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  margin: 2rem 0;
+}
+
+.assignment-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+}
+
+/* ── File Drop Zone ───────────────────────────────────────────── */
+.file-drop-zone {
+  position: relative;
+  border: 2px dashed var(--input-border);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: var(--input-bg);
+}
+
+.file-drop-zone:hover {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.file-drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.drop-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.drop-zone-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.drop-zone-or {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0.25rem 0;
+}
+
+.drop-zone-btn {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drop-zone-btn:hover {
+  background: rgba(var(--accent-rgb), 0.9);
+  transform: translateY(-1px);
+}
+
+.drop-zone-hint {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin: 0.25rem 0 0;
+}
+
+.drop-zone-hover-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--accent-rgb), 0.15);
+  border-radius: var(--radius);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.file-drop-zone.drag-over .drop-zone-hover-overlay {
+  display: flex;
+}
+
+/* ── Submissions List ─────────────────────────────────────────── */
+.submissions-section {
+  margin: 2rem 0;
+}
+
+.submissions-container {
+  margin-top: 1rem;
+}
+
+.submissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.submission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.submission-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+.submission-item-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.submission-item-icon {
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.submission-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.submission-item-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.25rem;
+  word-break: break-word;
+}
+
+.submission-item-meta {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.submission-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Admin Filter Bar ─────────────────────────────────────────── */
+.assignments-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  margin: 1.5rem 0;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+/* ── Modal Styles ─────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.modal-box {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  margin: auto;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 1.5rem;
+  word-break: break-word;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Back Button ──────────────────────────────────────────────── */
+.back-btn {
+  margin-bottom: 1.5rem;
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+.empty-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.5rem;
+}
+
+.empty-state-subtitle {
+  font-size: 0.9375rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .assignments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .assignments-filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-group {
+    min-width: 100%;
+  }
+
+  .assignment-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .assignment-card-actions {
+    width: 100%;
+  }
+
+  .assignment-card-actions .btn {
+    flex: 1;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .modal-box {
+    padding: 1.5rem;
+  }
+
+  .submission-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .submission-item-actions {
+    width: 100%;
+  }
+
+  .submission-item-actions .btn {
+    flex: 1;
+  }
+}
+
+/* ── Uploaded Files List (Student View) ───────────────────────── */
+.uploaded-files-list {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface-1);
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.uploaded-files-list > div:first-child {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* ── Stats Panel (Teacher View) ───────────────────────────────── */
+.stats-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--surface-1);
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .stats-panel {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Assignment Countdown ─────────────────────────────────────── */
+.assignment-countdown {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Button Icon Small ────────────────────────────────────────── */
+.btn-icon-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  border-radius: 4px;
+}
+
+.btn-icon-sm:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}

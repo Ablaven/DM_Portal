@@ -191,6 +191,19 @@
     });
 
     document.getElementById("refreshStudentsAdmin")?.addEventListener("click", loadStudents);
+    
+    // Export to Excel button
+    document.getElementById("exportStudentsBtn")?.addEventListener("click", function() {
+      const yearFilter = getYearFilter();
+      const searchQuery = String(document.getElementById("studentSearch")?.value || "").trim();
+      
+      const params = new URLSearchParams();
+      if (yearFilter) params.append("year", String(yearFilter));
+      if (searchQuery) params.append("search", searchQuery);
+      
+      window.location.href = "php/export_students_excel.php?" + params.toString();
+    });
+    
     document.getElementById("studentSearch")?.addEventListener("input", renderStudentsList);
     document.getElementById("studentsYearFilter")?.addEventListener("change", loadStudents);
 

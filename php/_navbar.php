@@ -31,6 +31,7 @@ function render_portal_navbar(string $activePage): void
         'evaluation_reports.php',
         'attendance_report.php',
         'lectures.php',
+        'assignments.php',
     ];
     $adminDropdownActive = in_array($activePage, $adminPages, true);
 
@@ -64,6 +65,12 @@ function render_portal_navbar(string $activePage): void
     // (admin/management see it in the Admin dropdown instead)
     if ($role === 'teacher' || $role === 'student') {
         auth_render_nav_link('lectures.php', 'Lectures', $activePage);
+    }
+
+    // Assignments - show in primary navbar for teachers and students
+    // (admin/management see it in the Admin dropdown instead)
+    if ($role === 'teacher' || $role === 'student') {
+        auth_render_nav_link('assignments.php', 'Assignments', $activePage);
     }
 
     // Student Dashboard - visible to students only
@@ -115,6 +122,9 @@ function render_portal_navbar(string $activePage): void
         }
         if (auth_can_access_page('lectures.php')) {
             $ddItem('lectures.php', '🗂️', 'Lectures', 'Upload & manage lecture materials', $activePage === 'lectures.php');
+        }
+        if (auth_can_access_page('assignments.php')) {
+            $ddItem('assignments.php', '📝', 'Assignments', 'View & manage assignments', $activePage === 'assignments.php');
         }
 
         // ─ Section: Tools (admin only) ───────────────────────────────────────

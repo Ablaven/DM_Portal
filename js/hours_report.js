@@ -359,8 +359,8 @@
     document.getElementById("exportHoursReportDetailXls")?.addEventListener("click", () => {
       const doctorId = isTeacher ? teacherDoctorId : Number(doctorSelect?.value || 0);
       if (!doctorId) {
-        setStatus("Select a professor first.", "error");
-        if (exportMenu) exportMenu.style.display = "none";
+        setStatus("⚠️ Please select a professor from the dropdown filter above to export their detailed report.", "error");
+        // Keep dropdown open so user can see the error and go select a professor
         return;
       }
       if (exportMenu) exportMenu.style.display = "none";

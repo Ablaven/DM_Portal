@@ -25,7 +25,7 @@ $isTeacher = $role === 'teacher';
 <body>
   <?php render_portal_navbar('hours_report_detail.php'); ?>
 
-  <main class="container container-top">
+  <main class="container container-top" style="overflow:visible;">
     <header class="page-header">
       <div>
         <h1>Hours Report</h1>
@@ -66,7 +66,7 @@ $isTeacher = $role === 'teacher';
     </section>
 
     <!-- Filters & Export -->
-    <section class="card" style="margin-bottom:20px;">
+    <section class="card" style="margin-bottom:20px; overflow:visible; position:relative; z-index:100;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
         <div class="report-filters-grid" style="flex:1; min-width:280px;">
           <div class="field">
@@ -97,14 +97,12 @@ $isTeacher = $role === 'teacher';
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
           <button id="hoursReportRefresh" class="btn btn-secondary" type="button">Refresh</button>
-          <div style="position:relative;">
+          <div style="position:relative; z-index:9999;">
             <button id="hoursReportExportBtn" class="btn btn-secondary" type="button">Export ▼</button>
-            <div id="hoursReportExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:220px; background:rgba(255,255,255,0.08); backdrop-filter:blur(48px); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:6px; z-index:100; box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-              <?php if (!$isTeacher) : ?>
-              <button id="exportHoursReportSummaryXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📊 Professors Totals</button>
-              <?php endif; ?>
-              <button id="exportHoursReportDetailXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📋 Professor Detail</button>
-              <button id="exportHoursReportCustomXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease;">📈 Custom Export</button>
+            <div id="hoursReportExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:220px; max-height:none; background:rgba(255,255,255,0.08); backdrop-filter:blur(48px); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:8px; z-index:99999; box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+              <button id="exportHoursReportSummaryXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease; white-space:nowrap;">📊 Professors Totals</button>
+              <button id="exportHoursReportDetailXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease; white-space:nowrap;">📋 Professor Detail</button>
+              <button id="exportHoursReportCustomXls" style="display:block; width:100%; text-align:left; padding:10px 12px; background:transparent; color:inherit; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; transition:background 0.15s ease; white-space:nowrap;">📈 Custom Export</button>
             </div>
           </div>
         </div>
@@ -112,7 +110,7 @@ $isTeacher = $role === 'teacher';
     </section>
 
     <!-- Details -->
-    <section class="card">
+    <section class="card" style="overflow:visible; position:relative; z-index:10;">
       <div style="margin-bottom:16px;">
         <h2 style="margin:0 0 6px;">Professor Hours Breakdown</h2>
         <p class="muted" style="margin:0; font-size:0.9rem;">Hours per professor per subject: allocated vs assigned vs done vs remaining.</p>

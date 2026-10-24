@@ -123,6 +123,7 @@ auth_require_roles(['admin','management']);
         </div>
 
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button id="exportStudentsBtn" class="btn btn-secondary btn-small" type="button" style="white-space:nowrap;">📥 Export Excel</button>
           <div class="field" style="margin:0; min-width:140px;">
             <label for="studentsYearFilter" style="font-size:0.85rem; margin-bottom:4px;">Year</label>
             <select id="studentsYearFilter" class="navlink" style="padding:9px 11px;">

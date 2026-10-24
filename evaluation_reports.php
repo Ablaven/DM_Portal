@@ -87,7 +87,7 @@ $isTeacher = $role === 'teacher';
           <button id="evaluationReportsExportBtn" class="btn" type="button" style="display:flex; align-items:center; gap:6px;">
             Export <span style="font-size:0.7rem;">▼</span>
           </button>
-          <div id="evaluationReportsExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:260px; background:var(--dropdown-bg); border:1px solid var(--card-border); border-radius:12px; padding:8px; box-shadow:var(--shadow); z-index:1000; backdrop-filter:blur(48px);">
+          <div id="evaluationReportsExportMenu" style="display:none; position:absolute; top:calc(100% + 4px); right:0; min-width:260px; background:rgba(255,255,255,0.08); backdrop-filter:blur(48px); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:8px; z-index:99999; box-shadow:0 8px 32px rgba(0,0,0,0.4);">
             <button id="exportEvaluationReportSummary" type="button" style="width:100%; text-align:left; padding:10px 12px; border:none; background:transparent; color:var(--text); cursor:pointer; border-radius:8px; font-size:0.9rem; font-weight:600; transition: background 150ms;">
               📊 Final Grades (Filtered)
             </button>

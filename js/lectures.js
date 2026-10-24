@@ -1118,7 +1118,7 @@
       // Fallback to default image if professor image not found
       avatarImg.onerror = function() {
         this.onerror = null;
-        this.src = `images/professors/default.jpg?v=${cacheBuster}`;
+        this.src = `images/professors/Default.jpg?v=${cacheBuster}`;
       };
       
       avatarContainer.appendChild(avatarImg);

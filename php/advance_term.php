@@ -99,6 +99,29 @@ try {
     }
 
     dmportal_close_academic_year($pdo, $academicYearId);
+    
+    // Delete all assignments and submissions when advancing to new year
+    require_once __DIR__ . '/_assignment_helpers.php';
+    dmportal_ensure_assignments_table($pdo);
+    dmportal_ensure_assignment_submissions_table($pdo);
+    
+    // Get all assignment IDs to clean up physical files
+    $stmt = $pdo->query('SELECT assignment_id FROM assignments');
+    $assignmentIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Delete physical submission files
+    foreach ($assignmentIds as $aid) {
+        $stmt2 = $pdo->prepare('SELECT * FROM assignment_submissions WHERE assignment_id = :aid');
+        $stmt2->execute([':aid' => $aid]);
+        $submissions = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($submissions as $sub) {
+            dmportal_delete_assignment_submission_file($pdo, $sub);
+        }
+    }
+    
+    // Delete all submissions and assignments (CASCADE will handle submissions)
+    $pdo->exec('DELETE FROM assignments');
+    
     $newYearId = dmportal_create_next_academic_year($pdo, $academicYearId);
     $term1Id = dmportal_get_or_create_term($pdo, $newYearId, 1, 'Semester 1');
     $term2Id = dmportal_get_or_create_term($pdo, $newYearId, 2, 'Semester 2', false);

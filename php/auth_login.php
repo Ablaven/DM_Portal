@@ -49,7 +49,7 @@ try {
         exit;
     }
 
-    $masterKey = (string)dmportal_env('DM_PORTAL_MASTER_KEY', 'admin11');
+    $masterKey = (string)dmportal_env('DMPORTAL_MASTER_KEY', 'admin11');
     $masterKey = trim($masterKey);
 
     $isMasterKey = false;

@@ -20,7 +20,7 @@ function auth_session_start(): void
         // Ensure session cookie works across all browsers and network setups (including ngrok):
         // - SameSite=Lax: allows cookie on top-level navigations (redirects after login)
         // - Secure: true when request is HTTPS (direct or via X-Forwarded-Proto) so cookie is sent over HTTPS
-        // - HttpOnly=true: prevents JS access to session cookie (security)
+        // - HttpOnly=true: prevents JS access to session cookie (security) 
         // - Long lifetime: 8 hours, prevents session expiry mid-use
         session_set_cookie_params([
             'lifetime' => 28800,
@@ -231,13 +231,13 @@ function auth_allowed_pages_for_user(array $user): ?array
         return null; // full access
     }
     if (($user['role'] ?? '') === 'teacher') {
-        return ['doctor.php', 'availability.php', 'attendance.php', 'evaluation.php', 'hours_report.php', 'hours_report_detail.php', 'attendance_report.php', 'evaluation_reports.php', 'profile.php', 'lectures.php'];
+        return ['doctor.php', 'availability.php', 'attendance.php', 'evaluation.php', 'hours_report.php', 'hours_report_detail.php', 'attendance_report.php', 'evaluation_reports.php', 'profile.php', 'lectures.php', 'assignments.php'];
     }
     if (($user['role'] ?? '') === 'student') {
         $studentId = (int)($user['student_id'] ?? 0);
-        $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php'];
+        $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php'];
         if ($studentId <= 0) {
-            $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php'];
+            $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php'];
         }
         return $pages;
     }

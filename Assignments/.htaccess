@@ -1,6 +1,5 @@
 # Deny direct HTTP access to all files in this directory.
-# Files are served exclusively through php/download_lecture_material.php
-# and php/preview_lecture_material.php.
+# Files are served exclusively through php/download_assignment_submission.php.
 
 <IfModule mod_authz_core.c>
     Require all denied

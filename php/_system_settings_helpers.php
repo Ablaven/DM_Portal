@@ -88,6 +88,7 @@ function dmportal_get_available_pages_by_role(): array
             'schedule_builder.php' => 'Schedule Builder',
             'evaluation.php' => 'Evaluation/Grading',
             'lectures.php' => 'Lecture Materials',
+            'assignments.php' => 'Assignments',
             'doctor.php' => 'Doctor Profile',
             'availability.php' => 'Availability Management',
             'hours_report.php' => 'Hours Reports',
@@ -99,6 +100,7 @@ function dmportal_get_available_pages_by_role(): array
             'evaluation.php' => 'Evaluation/Grading',
             'evaluation_reports.php' => 'Evaluation Reports',
             'lectures.php' => 'Lecture Materials',
+            'assignments.php' => 'Assignments',
             'doctor.php' => 'Doctor Profile',
             'availability.php' => 'Availability Management',
             'hours_report.php' => 'Hours Reports',
@@ -112,6 +114,7 @@ function dmportal_get_available_pages_by_role(): array
         'student' => [
             'student_dashboard.php' => 'Student Dashboard',
             'lectures.php' => 'Lecture Materials',
+            'assignments.php' => 'Assignments',
         ],
     ];
 }
