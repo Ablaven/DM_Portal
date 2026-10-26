@@ -26,7 +26,8 @@ $email = trim((string)($_POST['email'] ?? ''));
 $studentCode = trim((string)($_POST['student_code'] ?? ''));
 
 $program = normalize_program((string)($_POST['program'] ?? ''));
-$yearLevel = normalize_year_level((int)($_POST['year_level'] ?? 0));
+$yearLevel = (int)($_POST['year_level'] ?? 0);
+$yearLevel = normalize_year_level($yearLevel);
 // Default to semester 1 for new students
 $semester = 1;
 
@@ -34,11 +35,10 @@ if ($fullName === '') bad_request('full_name is required.');
 if ($email === '') bad_request('email is required.');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) bad_request('email is invalid.');
 if ($studentCode === '') bad_request('student_code is required.');
+if ($yearLevel <= 0) bad_request('year_level must be 1, 2, or 3. Received: ' . ($_POST['year_level'] ?? 'none'));
 
 try {
     $pdo = get_pdo();
-
-    if ($yearLevel <= 0) bad_request('year_level must be 1-3.');
 
     $fields = ['full_name', 'email', 'student_code', 'program', 'year_level', 'semester'];
     $params = [
