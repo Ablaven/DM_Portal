@@ -17,7 +17,7 @@ try {
     $searchFilter = isset($_GET['search']) ? trim((string)$_GET['search']) : '';
     
     // Build query
-    $sql = 'SELECT full_name, student_code, year_level FROM students WHERE 1=1';
+    $sql = 'SELECT full_name, email, student_code, year_level FROM students WHERE 1=1';
     $params = [];
     
     if ($yearFilter !== null) {
@@ -40,12 +40,13 @@ try {
     $exportRows = [];
     
     // Header row
-    $exportRows[] = ['Full Name', 'Student Code', 'Year'];
+    $exportRows[] = ['Full Name', 'Email', 'Student Code', 'Year'];
     
     // Data rows
     foreach ($students as $student) {
         $exportRows[] = [
             $student['full_name'] ?? '',
+            $student['email'] ?? '',
             $student['student_code'] ?? '',
             'Year ' . ($student['year_level'] ?? ''),
         ];
@@ -54,7 +55,7 @@ try {
     // Style map: row 0 (header) gets header style
     $styleMap = [];
     $styleMap[0] = []; // header row
-    for ($col = 0; $col < 3; $col++) {
+    for ($col = 0; $col < 4; $col++) {
         $styleMap[0][$col] = 1; // header style
     }
     
@@ -66,8 +67,9 @@ try {
         'styleMap' => $styleMap,
         'colWidths' => [
             0 => 30,  // Full Name
-            1 => 20,  // Student Code
-            2 => 15,  // Year
+            1 => 35,  // Email
+            2 => 20,  // Student Code
+            3 => 15,  // Year
         ],
         'rowHeights' => [
             0 => 25, // header row height

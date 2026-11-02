@@ -117,24 +117,25 @@ auth_require_roles(['admin','management']);
 
     <section class="card" style="margin-top:20px;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:16px; flex-wrap:wrap;">
         <div>
           <h2 style="margin:0 0 6px;">All Students</h2>
           <p class="muted" style="margin:0; font-size:0.9rem;">Filter by year or search by name, email, or ID.</p>
         </div>
 
-        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
           <button id="exportStudentsBtn" class="btn btn-secondary btn-small" type="button" style="white-space:nowrap;">📥 Export Excel</button>
           <div class="field" style="margin:0; min-width:140px;">
-            <label for="studentsYearFilter" style="font-size:0.85rem; margin-bottom:4px;">Year</label>
+            <label for="studentsYearFilter" style="font-size:0.85rem; margin-bottom:4px; font-weight:500;">Year</label>
             <select id="studentsYearFilter" class="navlink" style="padding:9px 11px;">
-              <option value="">All</option>
+              <option value="">All Years</option>
               <option value="1">Year 1</option>
               <option value="2">Year 2</option>
               <option value="3">Year 3</option>
             </select>
           </div>
           <div class="field" style="margin:0; min-width:220px;">
-            <label for="studentSearch" style="font-size:0.85rem; margin-bottom:4px;">Search</label>
+            <label for="studentSearch" style="font-size:0.85rem; margin-bottom:4px; font-weight:500;">Search</label>
             <input id="studentSearch" type="text" placeholder="Search students…" />
           </div>
         </div>
