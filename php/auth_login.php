@@ -9,6 +9,7 @@ require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_auth_schema.php';
 require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/rate_limiter.php';
+require_once __DIR__ . '/_activity_log_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -44,6 +45,19 @@ try {
 
     if (!$row || (int)($row['is_active'] ?? 0) !== 1) {
         rl_record_failure();
+        
+        // Log failed login attempt
+        // If user exists but is inactive, log their role. If user doesn't exist, role is null.
+        dmportal_log_activity($pdo, 'login_failed', 'auth', [
+            'targetType' => 'user',
+            'targetName' => $username,
+            'details' => ['reason' => 'Invalid credentials or inactive account'],
+            'result' => 'failure',
+            'username' => $username,
+            'role' => $row ? (string)$row['role'] : null,
+            'userId' => $row ? (int)$row['user_id'] : null,
+        ]);
+        
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid credentials.']);
         exit;
@@ -59,6 +73,21 @@ try {
 
     if (!$isMasterKey && !password_verify($password, (string)$row['password_hash'])) {
         rl_record_failure();
+        
+        // Log failed login attempt (wrong password) - user exists, so we know their role
+        dmportal_log_activity($pdo, 'login_failed', 'auth', [
+            'targetType' => 'user',
+            'targetName' => $username,
+            'details' => [
+                'reason' => 'Incorrect password',
+                'user_role' => (string)$row['role'],  // Also store in details for reference
+            ],
+            'result' => 'failure',
+            'username' => $username,
+            'role' => (string)$row['role'],  // User exists, log their actual role
+            'userId' => (int)$row['user_id'],
+        ]);
+        
         http_response_code(401);
         echo json_encode(['success' => false, 'error' => 'Invalid credentials.']);
         exit;
@@ -88,6 +117,22 @@ try {
         'student_id' => $row['student_id'] === null ? null : (int)$row['student_id'],
         'allowed_pages' => $allowed,
     ];
+    
+    // Log successful login
+    dmportal_log_activity($pdo, 'login_success', 'auth', [
+        'targetType' => 'user',
+        'targetName' => (string)$row['username'],
+        'targetId' => (string)$row['user_id'],
+        'details' => [
+            'role' => (string)$row['role'],
+            'master_key_used' => $isMasterKey,
+        ],
+        'result' => 'success',
+        // IMPORTANT: Pass these explicitly since session is just being created
+        'userId' => (int)$row['user_id'],
+        'username' => (string)$row['username'],
+        'role' => (string)$row['role'],
+    ]);
 
     // Determine best landing page:
     // - If the user has explicit allowed_pages, send them to the first allowed page.

@@ -1,0 +1,513 @@
+/* ============================================================================
+   MOBILE OPTIMIZATIONS - COMPREHENSIVE UX IMPROVEMENTS
+   Hides unnecessary columns and elements on mobile for better readability
+   ============================================================================ */
+
+/* Mobile breakpoint */
+@media screen and (max-width: 768px) {
+
+  /* ══════════════════════════════════════════════════════════════════════
+     UTILITY CLASSES
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide element completely on mobile */
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  /* Show only icon, hide text on mobile */
+  .mobile-icon-only span:not(.icon) {
+    display: none !important;
+  }
+  
+  /* Reduce padding on mobile */
+  .mobile-compress {
+    padding: 8px 12px !important;
+  }
+  
+  /* Stack elements vertically on mobile */
+  .mobile-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     1. ADMIN USERS PAGE - Hide User ID, dates
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide User ID column */
+  body.admin-users-view table thead th:nth-child(1),
+  body.admin-users-view table tbody td:nth-child(1) {
+    display: none;
+  }
+  
+  /* Hide Created/Updated date columns */
+  body.admin-users-view table thead th:nth-last-child(2),
+  body.admin-users-view table tbody td:nth-last-child(2),
+  body.admin-users-view table thead th:nth-last-child(3),
+  body.admin-users-view table tbody td:nth-last-child(3) {
+    display: none;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     2. ADMIN STUDENTS PAGE - Hide Student Code, Email, Program
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Assuming table structure: ID, Name, Code, Email, Program, Year, Semester, Actions */
+  /* Hide Student Code column (usually 3rd column) */
+  body.admin-students-view .student-code-column,
+  body.admin-students-view table thead th:nth-child(3),
+  body.admin-students-view table tbody td:nth-child(3) {
+    display: none;
+  }
+  
+  /* Hide Email column (usually 4th column) */
+  body.admin-students-view .student-email-column,
+  body.admin-students-view table thead th:nth-child(4),
+  body.admin-students-view table tbody td:nth-child(4) {
+    display: none;
+  }
+  
+  /* Hide Program column (usually 5th column) - shown in global filter */
+  body.admin-students-view .student-program-column,
+  body.admin-students-view table thead th:nth-child(5),
+  body.admin-students-view table tbody td:nth-child(5) {
+    display: none;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     3. ADMIN DOCTORS PAGE - Hide phone, email text, show icons only
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide phone column text (keep icon) */
+  body.admin-doctors-view .doctor-phone-column,
+  body.admin-doctors-view table thead th:nth-child(4),
+  body.admin-doctors-view table tbody td:nth-child(4) {
+    display: none;
+  }
+  
+  /* Hide email column text (keep icon) */
+  body.admin-doctors-view .doctor-email-column,
+  body.admin-doctors-view table thead th:nth-child(3),
+  body.admin-doctors-view table tbody td:nth-child(3) {
+    display: none;
+  }
+  
+  /* Hide color code column */
+  body.admin-doctors-view .doctor-color-column {
+    display: none;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     4. ADMIN COURSES PAGE - Hide subject code, semester in list
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* In course cards, hide subject code badge on mobile */
+  body.admin-courses-view .course-subject-code {
+    display: none;
+  }
+  
+  /* Hide semester info in course list (keep year) */
+  body.admin-courses-view .course-semester-badge {
+    display: none;
+  }
+  
+  /* Compress course cards on mobile */
+  body.admin-courses-view .course-card {
+    padding: 12px !important;
+  }
+  
+  /* Stack course card content */
+  body.admin-courses-view .course-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     5. LECTURES PAGE - Hide upload date, file size, uploader
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide upload date column */
+  .lecture-materials-view .lm-col-date,
+  .lecture-materials-view table thead th:nth-child(4),
+  .lecture-materials-view table tbody td:nth-child(4) {
+    display: none;
+  }
+  
+  /* Hide uploader column (except for admin) */
+  body:not(.role-admin) .lecture-materials-view .lm-col-uploader,
+  body:not(.role-admin) .lecture-materials-view table thead th:nth-child(5),
+  body:not(.role-admin) .lecture-materials-view table tbody td:nth-child(5) {
+    display: none;
+  }
+  
+  /* Hide file size info */
+  .lecture-materials-view .file-size-badge {
+    display: none;
+  }
+  
+  /* Compress lecture table cells */
+  .lecture-materials-view table td {
+    padding: 10px 8px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     6. ASSIGNMENTS PAGE (ADMIN VIEW) - Hide Year, Semester, Doctor, File Type
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Assuming columns: Title, Course, Teacher, Year, Sem, Deadline, Files, Submissions, Actions */
+  
+  /* Hide Year column (4th column) */
+  .assignments-view table thead th:nth-child(4),
+  .assignments-view table tbody td:nth-child(4) {
+    display: none;
+  }
+  
+  /* Hide Semester column (5th column) */
+  .assignments-view table thead th:nth-child(5),
+  .assignments-view table tbody td:nth-child(5) {
+    display: none;
+  }
+  
+  /* Hide File Type column (7th column) */
+  .assignments-view table thead th:nth-child(7),
+  .assignments-view table tbody td:nth-child(7) {
+    display: none;
+  }
+  
+  /* On student assignment cards, hide course code */
+  .assignment-card .course-code-badge {
+    display: none;
+  }
+  
+  /* Compress assignment card metadata */
+  .assignment-card-meta {
+    font-size: 0.8rem !important;
+  }
+  
+  .assignment-card-meta > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     7. SCHEDULE GRIDS - Hide subject codes in cells
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide subject code in schedule slots */
+  .schedule-grid .slot-sub-code,
+  .schedule-grid .subject-code-badge {
+    display: none;
+  }
+  
+  /* Compress slot content */
+  .schedule-grid .slot-title {
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .schedule-grid .slot-sub {
+    font-size: 0.75rem !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     8. DOCTOR SCHEDULE PAGE - Hide subject codes in course list
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  .doctor-view .course-subject-code,
+  .doctor-view .subject-code-badge {
+    display: none;
+  }
+  
+  /* Compress doctor courses list */
+  .doctor-view .courses-list .course-item {
+    padding: 10px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     9. STUDENT SCHEDULE - Hide professor names in cells, show on tap
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hide professor name in schedule cells (keep room) */
+  .students-view .schedule-grid .slot-professor-name,
+  .students-view .schedule-grid .doctor-name {
+    display: none;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     10. REPORTS - Simplified views
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Hours Report - Hide detailed breakdowns */
+  .hours-report-view .course-breakdown-columns {
+    display: none;
+  }
+  
+  /* Evaluation Report - Hide individual assignment scores */
+  .evaluation-report-view .assignment-score-columns {
+    display: none;
+  }
+  
+  /* Attendance Report - Hide per-lecture columns */
+  .attendance-report-view .lecture-attendance-columns {
+    display: none;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     11. SUMMARY STATS - Stack vertically on mobile
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Summary stat grids - max 2 columns on mobile */
+  .stats-grid,
+  .summary-stats,
+  [style*="display:flex"][style*="gap:20px"] > div[style*="font-size:1.5rem"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     12. FILTER BARS - Compress and stack
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Filter bar elements stack vertically */
+  .filter-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .filter-bar .field {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+  
+  /* Search input full width */
+  .filter-bar input[type="text"],
+  .filter-bar input[type="search"] {
+    width: 100% !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     13. ACTION BUTTONS - Compress or icon-only
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Make action buttons smaller on mobile */
+  .btn-small {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  /* Table action buttons - show as icon buttons */
+  table .btn-small {
+    min-width: unset !important;
+    padding: 6px 8px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     14. MODALS - Ensure full screen
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* All modals full screen on mobile */
+  .modal {
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+  
+  .modal-card,
+  .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     15. CARDS - Compress padding
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  .card,
+  .panel {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  
+  .card-header {
+    margin-bottom: 12px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     16. ATTENDANCE MODAL - Student ID hidden (ALREADY DONE)
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* This is already implemented in style.css - keeping for reference */
+  #attendanceModal table.schedule-grid th:first-child,
+  #attendanceModal table.schedule-grid td:first-child {
+    display: none !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     17. TABLES - General mobile improvements
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Compress table cells */
+  table td,
+  table th {
+    padding: 8px 6px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  /* Hide less important table columns - use data attributes */
+  table th[data-mobile="hide"],
+  table td[data-mobile="hide"] {
+    display: none !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     18. PAGE HEADERS - Compress on mobile
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  .page-header {
+    margin-bottom: 16px !important;
+  }
+  
+  .page-header h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .page-header .subtitle {
+    font-size: 0.85rem !important;
+    margin-top: 4px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     19. DROPDOWNS - Better mobile UX
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  .dropdown {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+  }
+  
+  .dropdown-item {
+    padding: 12px 16px !important;
+    min-height: 48px !important;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════════
+     20. FORM GRIDS - Single column on mobile
+     ══════════════════════════════════════════════════════════════════════ */
+  
+  .grid-2,
+  .grid-3,
+  .grid-4,
+  .form-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+} /* End @media screen and (max-width: 768px) */
+
+
+/* ============================================================================
+   TABLET OPTIMIZATIONS (768px - 1024px)
+   ============================================================================ */
+
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  
+  /* 2-column grids on tablet */
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Compress padding slightly */
+  .card,
+  .panel {
+    padding: 20px !important;
+  }
+  
+}
+
+
+/* ============================================================================
+   LANDSCAPE MOBILE (max-height: 500px)
+   ============================================================================ */
+
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  
+  /* Reduce vertical spacing in landscape */
+  .page-header {
+    margin-bottom: 12px !important;
+  }
+  
+  .card,
+  .panel {
+    padding: 12px !important;
+  }
+  
+  /* Make modals scrollable */
+  .modal-card,
+  .modal-box {
+    overflow-y: auto !important;
+  }
+  
+}
+
+
+/* ============================================================================
+   EXTRA SMALL MOBILE (320px - 480px)
+   ============================================================================ */
+
+@media screen and (max-width: 480px) {
+  
+  /* Even more compressed */
+  .card,
+  .panel {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  
+  table td,
+  table th {
+    padding: 6px 4px !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .btn {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  /* Summary stats - single column on very small screens */
+  .stats-grid,
+  .summary-stats {
+    grid-template-columns: 1fr !important;
+  }
+  
+}

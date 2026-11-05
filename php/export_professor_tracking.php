@@ -32,6 +32,7 @@ try {
 
     $weekIdFrom = isset($_GET['week_id_from']) ? (int)$_GET['week_id_from'] : 0;
     $weekIdTo   = isset($_GET['week_id_to'])   ? (int)$_GET['week_id_to']   : 0;
+    $yearLevel  = isset($_GET['year_level']) && $_GET['year_level'] !== '' ? (int)$_GET['year_level'] : null;
 
     if ($weekIdFrom <= 0 || $weekIdTo <= 0) {
         bad_request('week_id_from and week_id_to are required.');
@@ -39,6 +40,18 @@ try {
 
     if ($weekIdFrom > $weekIdTo) {
         bad_request('week_id_from must be less than or equal to week_id_to.');
+    }
+
+    // Build year level filter
+    $yearLevelFilter = '';
+    $params = [
+        ':week_id_from' => $weekIdFrom,
+        ':week_id_to'   => $weekIdTo,
+    ];
+    
+    if ($yearLevel !== null) {
+        $yearLevelFilter = ' AND c.year_level = :year_level';
+        $params[':year_level'] = $yearLevel;
     }
 
     // Get all scheduled slots in this week range with their attendance status
@@ -78,15 +91,13 @@ try {
                 AND cs.day_of_week = s.day_of_week AND cs.slot_number = s.slot_number
         WHERE s.week_id >= :week_id_from
           AND s.week_id <= :week_id_to
+          {$yearLevelFilter}
           AND s.counts_towards_hours = 1
         ORDER BY s.week_id ASC, c.year_level ASC, s.day_of_week ASC, s.slot_number ASC
     ";
 
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        ':week_id_from' => $weekIdFrom,
-        ':week_id_to'   => $weekIdTo,
-    ]);
+    $stmt->execute($params);
 
     $rows = $stmt->fetchAll();
 

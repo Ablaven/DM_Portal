@@ -8,9 +8,13 @@ require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 require_once __DIR__ . '/php/_system_settings_helpers.php';
 require_once __DIR__ . '/php/db_connect.php';
+require_once __DIR__ . '/php/_activity_middleware.php';
 
 auth_require_page_access('admin_panel.php');
 auth_require_roles(['admin']);
+
+// Log page view
+dmportal_log_page_view('admin_panel.php');
 
 // Get current attendance timeout status
 $pdo = get_pdo();
@@ -24,7 +28,7 @@ $importStatus = $_GET['import_status'] ?? '';
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/style.css?v=20261105a" />
 </head>
 <body>
   <?php render_portal_navbar('admin_panel.php'); ?>
@@ -41,6 +45,7 @@ $importStatus = $_GET['import_status'] ?? '';
       <button class="tab" data-tab="settings" type="button">⚙️ System Settings</button>
       <button class="tab" data-tab="academic" type="button">🗓️ Academic Year</button>
       <button class="tab" data-tab="reports" type="button">📊 Reports & Tracking</button>
+      <button class="tab" data-tab="monitoring" type="button">🔍 Activity Monitoring</button>
     </div>
 
     <!-- Sections will be shown/hidden based on tab selection via JS -->
@@ -468,6 +473,16 @@ $importStatus = $_GET['import_status'] ?? '';
       <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
         <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
           <div class="field" style="margin:0;">
+            <label for="professorTrackingYearFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">🎓 Year</label>
+            <select id="professorTrackingYearFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
+          </div>
+          
+          <div class="field" style="margin:0;">
             <label for="professorTrackingTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Term/Semester</label>
             <select id="professorTrackingTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
               <option value="">All Terms</option>
@@ -526,6 +541,9 @@ $importStatus = $_GET['import_status'] ?? '';
       <div id="professorTrackingTableWrap" style="display:none;">
         <div style="margin-bottom:16px; padding:16px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:10px;">
           <div style="display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+            <select id="professorTrackingFilterYear" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Years</option>
+            </select>
             <select id="professorTrackingFilterCourse" class="navlink" style="padding:10px 12px; width:100%;">
               <option value="">All Courses</option>
             </select>
@@ -549,6 +567,7 @@ $importStatus = $_GET['import_status'] ?? '';
                 <th>Date</th>
                 <th>Day</th>
                 <th>Time</th>
+                <th>Year</th>
                 <th>Course</th>
                 <th>Professor</th>
                 <th>Status</th>
@@ -611,7 +630,220 @@ $importStatus = $_GET['import_status'] ?? '';
       </div>
 
       <div id="teacherScheduleStatus" class="status" role="status" style="margin-bottom:12px;"></div>
-      </div><!-- End wizard content area -->
+    </section>
+
+    <!-- ── Student Attendance Tracking ──────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;" data-section="reports">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--success-rgb),0.2), rgba(var(--success-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+          🎓
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Student Attendance Tracking</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Export individual student attendance records organized by subject and week.</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingYearFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">🎓 Year Level</label>
+            <select id="studentTrackingYearFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select Year...</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingStudentFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">👤 Student</label>
+            <select id="studentTrackingStudentFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="all">All Students in Year</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingSubjectFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Subject</label>
+            <select id="studentTrackingSubjectFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="all">All Subjects</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 Term/Semester</label>
+            <select id="studentTrackingTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Terms</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingFromWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 From Week</label>
+            <select id="studentTrackingFromWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="studentTrackingToWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 To Week</label>
+            <select id="studentTrackingToWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="exportStudentTrackingReport" class="btn" type="button" style="flex:1; min-width:140px; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
+        </div>
+      </div>
+
+      <div id="studentTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         ACTIVITY MONITORING
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <section class="card monitoring-section-wide" style="margin-top:20px;" data-section="monitoring">
+      <div style="margin-bottom:40px;">
+        <h2 style="margin:0 0 12px; font-size:1.8rem;">🔍 Activity Monitoring</h2>
+        <p class="muted" style="margin:0; font-size:1.05rem; line-height:1.6;">Track all user actions: logins, page views, CRUD operations, file uploads, and more. Logs are auto-archived and deleted after 3 days.</p>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:28px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px; margin-bottom:28px;">
+        <div style="display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom:20px;">
+          <div class="field" style="margin:0;">
+            <label for="activityDateFrom" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">📅 From Date</label>
+            <input id="activityDateFrom" type="date" style="padding:12px 14px; width:100%; font-size:0.95rem;" />
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityDateTo" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">📅 To Date</label>
+            <input id="activityDateTo" type="date" style="padding:12px 14px; width:100%; font-size:0.95rem;" />
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityUsername" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">👤 Username</label>
+            <input id="activityUsername" type="text" placeholder="Search username..." style="padding:12px 14px; width:100%; font-size:0.95rem;" />
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityRole" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">🎭 Role</label>
+            <select id="activityRole" class="navlink" style="padding:12px 14px; width:100%; font-size:0.95rem;">
+              <option value="all">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="management">Management</option>
+              <option value="teacher">Teacher</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityCategory" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">📂 Category</label>
+            <select id="activityCategory" class="navlink" style="padding:12px 14px; width:100%; font-size:0.95rem;">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityActionType" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">⚡ Action Type</label>
+            <select id="activityActionType" class="navlink" style="padding:12px 14px; width:100%; font-size:0.95rem;">
+              <option value="all">All Actions</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activityResult" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">✅ Result</label>
+            <select id="activityResult" class="navlink" style="padding:12px 14px; width:100%; font-size:0.95rem;">
+              <option value="all">All Results</option>
+              <option value="success">Success</option>
+              <option value="failure">Failure</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="activitySearch" style="font-size:0.92rem; margin-bottom:8px; font-weight:600;">🔍 Search</label>
+            <input id="activitySearch" type="text" placeholder="Search details..." style="padding:12px 14px; width:100%; font-size:0.95rem;" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button id="loadActivityLogs" class="btn btn-secondary" type="button" style="flex:1; min-width:160px; padding:12px 24px; font-size:1rem;">🔍 Load Logs</button>
+          <button id="exportActivityLogs" class="btn" type="button" disabled style="flex:1; min-width:160px; padding:12px 24px; font-size:1rem; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
+          <button id="clearActivityFilters" class="btn btn-secondary" type="button" style="padding:12px 24px; font-size:1rem;">🔄 Clear Filters</button>
+        </div>
+      </div>
+
+      <div id="activityLogsStatus" class="status" role="status" style="margin-bottom:16px; font-size:1rem;"></div>
+
+      <!-- Summary stats -->
+      <div id="activityLogsSummary" style="display:none; margin-bottom:28px; padding:28px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:16px;">
+        <div style="display:grid; gap:24px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; font-weight:600;">Total Logs</div>
+            <div style="font-size:2.4rem; font-weight:700;" id="activityLogsTotal">0</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; font-weight:600;">Success</div>
+            <div style="font-size:2.4rem; font-weight:700; color:var(--success);" id="activityLogsSuccess">0</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; font-weight:600;">Failures</div>
+            <div style="font-size:2.4rem; font-weight:700; color:var(--danger);" id="activityLogsFailures">0</div>
+          </div>
+          <div style="text-align:center;">
+            <div class="muted" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; font-weight:600;">Unique Users</div>
+            <div style="font-size:2.4rem; font-weight:700;" id="activityLogsUsers">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data table -->
+      <div id="activityLogsTableWrap" style="display:none;">
+        <div class="table-wrap" style="max-height:800px; overflow:auto;">
+          <table class="data-table" id="activityLogsTable" style="font-size:0.95rem; width:100%;">
+            <thead>
+              <tr>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Date/Time</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Username</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Role</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Category</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Action</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Target</th>
+                <th style="font-size:0.95rem; padding:14px 16px; min-width:300px;">Details</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">IP</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Result</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div id="activityLogsPagination" style="margin-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px;">
+          <div class="muted" style="font-size:1rem;" id="activityLogsPageInfo">Showing 0 of 0</div>
+          <div style="display:flex; gap:10px;">
+            <button id="activityLogsPrevPage" class="btn btn-secondary btn-small" type="button" disabled style="padding:10px 20px; font-size:0.95rem;">← Previous</button>
+            <button id="activityLogsNextPage" class="btn btn-secondary btn-small" type="button" disabled style="padding:10px 20px; font-size:0.95rem;">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auto-Archive Info -->
+      <div style="margin-top:32px; padding:20px 24px; background:rgba(var(--info-rgb),0.08); border:1px solid rgba(var(--info-rgb),0.2); border-radius:14px; display:flex; gap:16px; align-items:flex-start;">
+        <span style="font-size:1.8rem; flex-shrink:0;">ℹ️</span>
+        <div>
+          <strong style="display:block; margin-bottom:6px; color:var(--accent); font-size:1.05rem;">Automatic Archive & Cleanup</strong>
+          <p class="muted" style="margin:0; font-size:0.95rem; line-height:1.7;">
+            Activity logs are automatically archived to Excel and deleted every 3 days at 10:00 PM. Archives are saved to your <strong>Desktop</strong> (same as SQL backups). This keeps the database clean while maintaining historical records.
+          </p>
+        </div>
+      </div>
     </section>
 
     <!-- ── Manual Options (collapsed) ──────────────────────────────────────── -->
@@ -695,6 +927,7 @@ $importStatus = $_GET['import_status'] ?? '';
   </main>
 
   <script src="js/core.js?v=20260912a"></script>
+  <script src="js/admin_activity_monitoring.js?v=20261201a"></script>
   <script>
     // ── Admin Panel Tabs ────────────────────────────────────────────────────
     (function () {
@@ -1111,9 +1344,11 @@ $importStatus = $_GET['import_status'] ?? '';
   <script src="js/admin_advance.js?v=20260912a"></script>
   <script src="js/admin_attendance_tracking.js?v=20260922e"></script>
   <script src="js/admin_professor_tracking.js?v=20261006a"></script>
+  <script src="js/admin_student_tracking.js?v=20261105c"></script>
   <script src="js/admin_teacher_schedule_export.js?v=20261010a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
+    window.dmportal?.initActivityMonitoring?.();
     
     // Initialize professor tracking when DOM is ready
     if (document.readyState === 'loading') {

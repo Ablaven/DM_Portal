@@ -117,6 +117,7 @@
   }
 
   async function loadReport() {
+    const yearLevel = document.getElementById("professorTrackingYearFilter")?.value || "";
     const fromWeekId = parseInt(document.getElementById("professorTrackingFromWeek")?.value || "0", 10);
     const toWeekId = parseInt(document.getElementById("professorTrackingToWeek")?.value || "0", 10);
 
@@ -133,9 +134,12 @@
     setStatusById("professorTrackingStatus", "Loading professor attendance report…", "");
 
     try {
-      const payload = await fetchJson(
-        `php/get_professor_tracking_report.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}`
-      );
+      let url = `php/get_professor_tracking_report.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}`;
+      if (yearLevel) {
+        url += `&year_level=${yearLevel}`;
+      }
+      
+      const payload = await fetchJson(url);
 
       if (!payload?.success) {
         throw new Error(payload?.error || "Failed to load report.");
@@ -182,11 +186,23 @@
   }
 
   function populateFilterDropdowns() {
+    const years = [...new Set(allLectures.map((l) => l.year_level))].sort((a, b) => a - b);
     const courses = [...new Set(allLectures.map((l) => l.course_name))].sort();
     const professors = [...new Set(allLectures.map((l) => l.doctor_name))].sort();
 
+    const yearSelect = document.getElementById("professorTrackingFilterYear");
     const courseSelect = document.getElementById("professorTrackingFilterCourse");
     const profSelect = document.getElementById("professorTrackingFilterProfessor");
+
+    if (yearSelect) {
+      yearSelect.innerHTML = '<option value="">All Years</option>';
+      years.forEach((y) => {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = `Year ${y}`;
+        yearSelect.appendChild(opt);
+      });
+    }
 
     if (courseSelect) {
       courseSelect.innerHTML = '<option value="">All Courses</option>';
@@ -210,11 +226,13 @@
   }
 
   function applyFilters() {
+    const selectedYear = document.getElementById("professorTrackingFilterYear")?.value || "";
     const selectedCourse = document.getElementById("professorTrackingFilterCourse")?.value || "";
     const selectedProfessor = document.getElementById("professorTrackingFilterProfessor")?.value || "";
     const selectedStatus = document.getElementById("professorTrackingFilterStatus")?.value || "";
 
     filteredLectures = allLectures.filter((lec) => {
+      if (selectedYear && String(lec.year_level) !== String(selectedYear)) return false;
       if (selectedCourse && lec.course_name !== selectedCourse) return false;
       if (selectedProfessor && lec.doctor_name !== selectedProfessor) return false;
 
@@ -237,7 +255,7 @@
     if (filteredLectures.length === 0) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 8;
+      td.colSpan = 9;
       td.textContent = "No lectures found matching the selected filters.";
       td.style.textAlign = "center";
       td.style.padding = "20px";
@@ -263,6 +281,7 @@
         <td>${escapeHtml(lec.date)}</td>
         <td>${escapeHtml(lec.day)}</td>
         <td style="white-space:nowrap;">${escapeHtml(lec.time)}</td>
+        <td style="text-align:center;"><span style="display:inline-block; padding:4px 10px; background:var(--accent-fade); color:var(--accent); border-radius:12px; font-weight:600; font-size:0.85rem;">Year ${escapeHtml(lec.year_level || '-')}</span></td>
         <td>${escapeHtml(lec.course_name)}</td>
         <td>${escapeHtml(lec.doctor_name)}</td>
         <td>${escapeHtml(lec.status)}</td>
@@ -274,6 +293,7 @@
   }
 
   function exportReport() {
+    const yearLevel = document.getElementById("professorTrackingYearFilter")?.value || "";
     const fromWeekId = parseInt(document.getElementById("professorTrackingFromWeek")?.value || "0", 10);
     const toWeekId = parseInt(document.getElementById("professorTrackingToWeek")?.value || "0", 10);
 
@@ -282,7 +302,12 @@
       return;
     }
 
-    window.location.href = `php/export_professor_tracking.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}`;
+    let url = `php/export_professor_tracking.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}`;
+    if (yearLevel) {
+      url += `&year_level=${yearLevel}`;
+    }
+    
+    window.location.href = url;
   }
 
   function init() {
@@ -306,6 +331,7 @@
     }
 
     // Filter change listeners
+    document.getElementById("professorTrackingFilterYear")?.addEventListener("change", applyFilters);
     document.getElementById("professorTrackingFilterCourse")?.addEventListener("change", applyFilters);
     document.getElementById("professorTrackingFilterProfessor")?.addEventListener("change", applyFilters);
     document.getElementById("professorTrackingFilterStatus")?.addEventListener("change", applyFilters);

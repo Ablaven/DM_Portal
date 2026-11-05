@@ -9,6 +9,7 @@ require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_attendance_schema_helpers.php';
 require_once __DIR__ . '/_attendance_session_helpers.php';
 require_once __DIR__ . '/_term_helpers.php';
+require_once __DIR__ . '/_activity_log_helpers.php';
 
 auth_require_login(true);
 
@@ -111,6 +112,54 @@ try {
             (int)$sched['doctor_id'],
             (int)($u['user_id'] ?? 0)
         );
+    }
+    
+    // Log attendance action - BUT ONLY ONCE per session (check if this is the first student being marked)
+    // This prevents 20+ logs for the same attendance session
+    $logCheck = $pdo->prepare('SELECT COUNT(*) FROM activity_logs WHERE action_type = :action AND details LIKE :schedule_search AND created_at > DATE_SUB(NOW(), INTERVAL 5 MINUTE)');
+    $logCheck->execute([
+        ':action' => 'mark_attendance_session',
+        ':schedule_search' => '%"schedule_id":' . $scheduleId . '%',
+    ]);
+    $alreadyLogged = (int)$logCheck->fetchColumn() > 0;
+    
+    if (!$alreadyLogged) {
+        // Get course and week info for better logging
+        $info = $pdo->prepare('
+            SELECT c.course_name, c.subject_code, c.year_level, c.semester, c.program,
+                   w.label as week_label, s.day_of_week, s.slot_number
+            FROM doctor_schedules s
+            JOIN courses c ON c.course_id = s.course_id
+            JOIN weeks w ON w.week_id = s.week_id
+            WHERE s.schedule_id = :sid
+        ');
+        $info->execute([':sid' => $scheduleId]);
+        $courseInfo = $info->fetch();
+        
+        if ($courseInfo) {
+            $dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'][(int)$courseInfo['day_of_week']] ?? 'Day ' . $courseInfo['day_of_week'];
+            $slotLabel = 'Lecture ' . $courseInfo['slot_number'];
+            
+            dmportal_log_activity($pdo, 'mark_attendance_session', 'crud', [
+                'targetType' => 'attendance_session',
+                'targetId' => (string)$scheduleId,
+                'targetName' => $courseInfo['course_name'] . ' - ' . $dayName . ' ' . $slotLabel,
+                'details' => [
+                    'schedule_id' => $scheduleId,
+                    'course_name' => $courseInfo['course_name'],
+                    'subject_code' => $courseInfo['subject_code'],
+                    'year_level' => (int)$courseInfo['year_level'],
+                    'semester' => (int)$courseInfo['semester'],
+                    'program' => $courseInfo['program'],
+                    'week' => $courseInfo['week_label'],
+                    'day' => $dayName,
+                    'slot' => (int)$courseInfo['slot_number'],
+                    'term_id' => $termId,
+                    'marked_by_role' => $role,
+                ],
+                'result' => 'success',
+            ]);
+        }
     }
 
     echo json_encode(['success' => true, 'data' => ['saved' => true, 'term_id' => $termId]]);

@@ -1019,10 +1019,57 @@ select.navlink:focus {
   color: var(--text);
 }
 
+/* Style the dropdown list container itself */
+select {
+  /* Existing select styles remain... */
+}
+
+/* Make the dropdown panel (when opened) look like a glass card */
+select:focus,
+select[size],
+select[multiple] {
+  background: var(--dropdown-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 26px 70px rgba(0,0,0,.45),
+              inset 0 1px 0 rgba(255,255,255,0.12),
+              inset 1px 0 0 rgba(255,255,255,0.08);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  padding: 6px;
+}
+
 select option {
-  background: var(--input-bg);
+  background: rgba(10, 14, 26, 0.4);
   color: var(--text);
-  padding: 10px;
+  padding: 12px 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  margin: 3px 0;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+select option:hover {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(112, 80, 255, 0.12));
+  color: var(--accent-2);
+  border-color: rgba(var(--accent-rgb), 0.3);
+  transform: translateX(2px);
+}
+
+select option:checked {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(112, 80, 255, 0.20));
+  color: var(--accent-2);
+  font-weight: 700;
+  border-color: rgba(var(--accent-rgb), 0.5);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+select option:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: rgba(10, 14, 26, 0.2);
 }
 
 select:disabled { 
@@ -10184,4 +10231,20 @@ html[data-theme="light"] .course-card:hover {
 
 .toggle-switch input[type="checkbox"]:checked ~ .toggle-label {
   color: var(--success);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ACTIVITY MONITORING - WIDE SECTION
+   ═══════════════════════════════════════════════════════════════════════ */
+.monitoring-section-wide {
+  max-width: 95vw !important;
+  width: 95vw !important;
+  margin-left: calc(-47.5vw + 50%) !important;
+  margin-right: calc(-47.5vw + 50%) !important;
+}
+
+/* Ensure the table container inside doesn't constrain */
+.monitoring-section-wide .table-container {
+  max-width: 100% !important;
+  overflow-x: auto;
 }

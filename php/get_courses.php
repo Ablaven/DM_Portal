@@ -20,6 +20,7 @@ try {
     $activeTermId = dmportal_get_active_term_id($pdo);
 
     $doctorId = isset($_GET['doctor_id']) ? (int)$_GET['doctor_id'] : 0;
+    $yearLevel = isset($_GET['year_level']) && $_GET['year_level'] !== '' ? (int)$_GET['year_level'] : null;
 
     $hasCdh = false;
     try {
@@ -39,6 +40,13 @@ try {
         : 'LEFT JOIN (SELECT NULL AS course_id, 0 AS alloc_cnt) ha ON 1=0';
 
     if ($doctorId <= 0) {
+        $yearFilter = '';
+        $params = [];
+        if ($yearLevel !== null) {
+            $yearFilter = 'WHERE c.year_level = :year_level';
+            $params[':year_level'] = $yearLevel;
+        }
+        
         $allSql = 'SELECT c.course_id, c.course_name, c.program, c.year_level, c.semester,
                     c.course_type, c.subject_code, c.total_hours,
                     c.coefficient,
@@ -61,11 +69,17 @@ try {
              ) agg ON agg.course_id = c.course_id
              ' . dmportal_schedule_hours_join_xall_assigned('c', 'xall_assigned', $activeTermId) . '
              ' . dmportal_schedule_hours_join_xall('c', 'xall', $activeTermId) . '
+             ' . $yearFilter . '
              ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC';
         $stmt = $pdo->prepare($allSql);
-        $stmt->execute([]);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll();
     } else {
+        $yearFilter = '';
+        if ($yearLevel !== null) {
+            $yearFilter = 'AND c.year_level = :year_level';
+        }
+        
         $remSub = '
             SELECT c0.course_id,
                    CASE
@@ -124,6 +138,7 @@ try {
              LEFT JOIN (
                ' . $remSub . '
              ) rem ON rem.course_id = c.course_id
+             WHERE 1=1 ' . $yearFilter . '
              ORDER BY c.program ASC, c.year_level ASC, c.course_name ASC'
         );
         $bind = [
@@ -132,6 +147,9 @@ try {
         ];
         if ($hasCdh) {
             $bind[':doctor_id_h'] = $doctorId;
+        }
+        if ($yearLevel !== null) {
+            $bind[':year_level'] = $yearLevel;
         }
         $stmt->execute($bind);
         $rows = $stmt->fetchAll();
