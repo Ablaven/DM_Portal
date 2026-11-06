@@ -261,7 +261,7 @@ function dmportal_get_activity_logs(PDO $pdo, array $filters = []): array
     $where = [];
     $params = [];
     
-    // EXCLUDE admin actions (except failed logins - those don't have a role yet)
+    // Exclude admin role logs (only show management, teacher, student)
     $where[] = "(role != 'admin' OR role IS NULL)";
     
     if (!empty($filters['dateFrom'])) {
@@ -337,7 +337,7 @@ function dmportal_get_activity_logs_count(PDO $pdo, array $filters = []): int
     $where = [];
     $params = [];
     
-    // EXCLUDE admin actions (except failed logins - those don't have a role yet)
+    // Exclude admin role logs (only show management, teacher, student)
     $where[] = "(role != 'admin' OR role IS NULL)";
     
     if (!empty($filters['dateFrom'])) {

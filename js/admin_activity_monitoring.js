@@ -2,6 +2,8 @@
   "use strict";
 
   function initActivityMonitoring() {
+    console.log('[Activity Monitoring] initActivityMonitoring called');
+    
     const { fetchJson, escapeHtml, setStatusById, showError, showSuccess, renderEmptyState } = window.dmportal || {};
 
     const loadBtn = document.getElementById('loadActivityLogs');
@@ -13,6 +15,14 @@
     const tbody = document.querySelector('#activityLogsTable tbody');
     const paginationDiv = document.getElementById('activityLogsPagination');
     
+    console.log('[Activity Monitoring] Elements found:', { loadBtn, exportBtn, statusDiv });
+    
+    // Check if we're on the right page
+    if (!loadBtn || !exportBtn || !statusDiv) {
+      console.log('[Activity Monitoring] Not on activity monitoring page, skipping initialization');
+      return;
+    }
+    
     // Filter inputs
     const dateFromInput = document.getElementById('activityDateFrom');
     const dateToInput = document.getElementById('activityDateTo');
@@ -23,10 +33,20 @@
     const resultSelect = document.getElementById('activityResult');
     const searchInput = document.getElementById('activitySearch');
     
+    console.log('[Activity Monitoring] Filter inputs:', { dateFromInput, dateToInput, categorySelect, actionTypeSelect });
+    
+    if (!dateFromInput || !dateToInput || !categorySelect || !actionTypeSelect) {
+      console.error('[Activity Monitoring] Missing required filter elements');
+      return;
+    }
+    
+    console.log('[Activity Monitoring] Initialization successful');
+    
     let currentLogs = [];
     let filterOptions = {};
     let currentOffset = 0;
     const limit = 100;
+    let isLoading = false; // Prevent multiple simultaneous loads
 
     // Initialize date range (last 7 days)
     function initDateRange() {
@@ -68,11 +88,20 @@
 
     // Load activity logs
     async function loadLogs(resetOffset = true) {
+      console.log('[Activity Monitoring] loadLogs() called, isLoading:', isLoading);
+      console.trace('[Activity Monitoring] Call stack:');
+      
+      if (isLoading) {
+        console.log('[Activity Monitoring] Already loading, skipping');
+        return;
+      }
+      
       if (resetOffset) {
         currentOffset = 0;
       }
 
       try {
+        isLoading = true;
         loadBtn.disabled = true;
         setStatusById('activityLogsStatus', 'Loading activity logs...', 'info');
 
@@ -116,44 +145,68 @@
         setStatusById('activityLogsStatus', err.message || 'Failed to load activity logs.', 'error');
       } finally {
         loadBtn.disabled = false;
+        isLoading = false;
       }
     }
 
     // Update filter dropdowns with available options
     function updateFilterDropdowns() {
+      console.log('[Activity Monitoring] updateFilterDropdowns called');
+      console.log('[Activity Monitoring] filterOptions:', filterOptions);
+      
       // Categories
-      if (categorySelect && filterOptions.actionCategories && filterOptions.actionCategories.length > 0) {
-        const currentCategory = categorySelect.value;
-        categorySelect.innerHTML = '<option value="all">All Categories</option>';
+      const categorySelectEl = document.getElementById('activityCategory');
+      console.log('[Activity Monitoring] categorySelectEl:', categorySelectEl);
+      
+      if (!categorySelectEl) {
+        console.warn('[Activity Monitoring] categorySelectEl is null, skipping update');
+        return;
+      }
+      
+      if (filterOptions.actionCategories && filterOptions.actionCategories.length > 0) {
+        console.log('[Activity Monitoring] Updating categories dropdown');
+        const currentCategory = categorySelectEl.value;
+        categorySelectEl.innerHTML = '<option value="all">All Categories</option>';
         
         filterOptions.actionCategories.forEach(cat => {
           const option = document.createElement('option');
           option.value = cat;
           option.textContent = formatCategory(cat);
-          categorySelect.appendChild(option);
+          categorySelectEl.appendChild(option);
         });
         
         if (currentCategory && filterOptions.actionCategories.includes(currentCategory)) {
-          categorySelect.value = currentCategory;
+          categorySelectEl.value = currentCategory;
         }
       }
 
       // Action Types
-      if (actionTypeSelect && filterOptions.actionTypes && filterOptions.actionTypes.length > 0) {
-        const currentActionType = actionTypeSelect.value;
-        actionTypeSelect.innerHTML = '<option value="all">All Actions</option>';
+      const actionTypeSelectEl = document.getElementById('activityActionType');
+      console.log('[Activity Monitoring] actionTypeSelectEl:', actionTypeSelectEl);
+      
+      if (!actionTypeSelectEl) {
+        console.warn('[Activity Monitoring] actionTypeSelectEl is null, skipping update');
+        return;
+      }
+      
+      if (filterOptions.actionTypes && filterOptions.actionTypes.length > 0) {
+        console.log('[Activity Monitoring] Updating action types dropdown');
+        const currentActionType = actionTypeSelectEl.value;
+        actionTypeSelectEl.innerHTML = '<option value="all">All Actions</option>';
         
         filterOptions.actionTypes.forEach(type => {
           const option = document.createElement('option');
           option.value = type;
           option.textContent = formatActionType(type);
-          actionTypeSelect.appendChild(option);
+          actionTypeSelectEl.appendChild(option);
         });
         
         if (currentActionType && filterOptions.actionTypes.includes(currentActionType)) {
-          actionTypeSelect.value = currentActionType;
+          actionTypeSelectEl.value = currentActionType;
         }
       }
+      
+      console.log('[Activity Monitoring] updateFilterDropdowns complete');
     }
 
     // Format category for display
@@ -180,11 +233,18 @@
       tbody.innerHTML = '';
 
       if (currentLogs.length === 0) {
-        renderEmptyState(tbody.closest('.table-wrap'), {
-          icon: '📭',
-          title: 'No activity logs found',
-          subtitle: 'Try adjusting your filters or date range'
-        });
+        // Don't use renderEmptyState on .table-wrap - it destroys filter elements!
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 8;
+        td.style.cssText = 'text-align: center; padding: 3rem 1rem; color: var(--text-secondary);';
+        td.innerHTML = `
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+          <div style="font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem;">No activity logs found</div>
+          <div style="font-size: 0.95rem;">Try adjusting your filters or date range</div>
+        `;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
         return;
       }
 

@@ -927,7 +927,7 @@ $importStatus = $_GET['import_status'] ?? '';
   </main>
 
   <script src="js/core.js?v=20260912a"></script>
-  <script src="js/admin_activity_monitoring.js?v=20261201a"></script>
+  <script src="js/admin_activity_monitoring.js?v=20261105h"></script>
   <script>
     // ── Admin Panel Tabs ────────────────────────────────────────────────────
     (function () {
