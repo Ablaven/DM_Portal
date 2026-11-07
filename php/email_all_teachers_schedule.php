@@ -62,25 +62,48 @@ try {
     $doctorsWithSchedules = array_column($scheduleCheckStmt->fetchAll(), 'doctor_id');
     $doctorsWithSchedulesSet = array_flip($doctorsWithSchedules);
 
+    // Get week info for "no schedule" email
+    $wkStmt = $pdo->prepare('SELECT week_id, label, start_date, end_date, term_id FROM weeks WHERE week_id = :id');
+    $wkStmt->execute([':id' => $weekId]);
+    $weekInfo = $wkStmt->fetch();
+    $weekLabel = $weekInfo ? dmportal_week_label_with_range($weekInfo, $weekId) : "Week {$weekId}";
+    
+    // Get semester for subject line
+    $termId = (int)($weekInfo['term_id'] ?? 0);
+    $termSemStmt = $pdo->prepare('SELECT semester FROM terms WHERE term_id = :id LIMIT 1');
+    $termSemStmt->execute([':id' => $termId]);
+    $termSemester = (int)($termSemStmt->fetchColumn() ?: 0);
+    $termLabel = $termSemester > 0 ? " (Sem {$termSemester})" : '';
+
     $sent = 0;
-    $skipped = 0;
+    $sentNoSchedule = 0;
     $errors = [];
     $sentList = [];
-    $skippedList = [];
+    $sentNoScheduleList = [];
 
     foreach ($doctors as $doctor) {
         $doctorId = (int)$doctor['doctor_id'];
         $doctorName = (string)$doctor['full_name'];
+        $doctorEmail = trim((string)$doctor['email']);
         
-        // Skip if no schedule for this week
+        // Check if doctor has schedule for this week
         if (!isset($doctorsWithSchedulesSet[$doctorId])) {
-            $skipped++;
-            $skippedList[] = $doctorName;
+            // Send "no schedule" notification email
+            try {
+                $emailResult = sendNoScheduleEmail($doctorName, $doctorEmail, $weekLabel, $termLabel, $isRamadan);
+                if ($emailResult['success']) {
+                    $sentNoSchedule++;
+                    $sentNoScheduleList[] = $doctorName;
+                } else {
+                    $errors[] = "{$doctorName} (no schedule): {$emailResult['error']}";
+                }
+            } catch (Throwable $e) {
+                $errors[] = "{$doctorName} (no schedule): {$e->getMessage()}";
+            }
             continue;
         }
 
-        // Call the existing email_doctor_schedule logic via internal function call
-        // We'll simulate the request by calling it directly
+        // Send regular schedule email with Excel attachment
         try {
             $emailResult = sendDoctorScheduleEmail($pdo, $doctorId, $weekId);
             if ($emailResult['success']) {
@@ -95,7 +118,7 @@ try {
     }
 
     $weekType = $isRamadan ? 'Ramadan' : 'Normal';
-    $message = "Sent {$sent} email(s), skipped {$skipped} teacher(s) without schedules for the active {$weekType} week.";
+    $message = "Sent {$sent} schedule email(s) and {$sentNoSchedule} no-schedule notification(s) for the active {$weekType} week.";
     
     if (!empty($errors)) {
         $message .= " Errors: " . implode('; ', $errors);
@@ -104,9 +127,9 @@ try {
     echo json_encode([
         'success' => true,
         'sent' => $sent,
-        'skipped' => $skipped,
+        'sent_no_schedule' => $sentNoSchedule,
         'sent_list' => $sentList,
-        'skipped_list' => $skippedList,
+        'sent_no_schedule_list' => $sentNoScheduleList,
         'errors' => $errors,
         'message' => $message
     ]);
@@ -395,4 +418,40 @@ function sendDoctorScheduleEmail($pdo, int $doctorId, int $weekId): array
     );
 
     return ['success' => true];
+}
+
+/**
+ * Send "no schedule" notification email to teachers without schedules
+ */
+function sendNoScheduleEmail(string $doctorName, string $doctorEmail, string $weekLabel, string $termLabel, bool $isRamadan): array
+{
+    require_once __DIR__ . '/_smtp_mailer.php';
+    
+    if (empty($doctorEmail)) {
+        return ['success' => false, 'error' => 'Email address missing'];
+    }
+    
+    $weekType = $isRamadan ? 'Ramadan Schedule ' : 'Schedule ';
+    $subject = "Weekly {$weekType}Notification{$termLabel}";
+    
+    $body = "Dear Dr. {$doctorName},\n\n";
+    $body .= "We hope this message finds you well.\n\n";
+    $body .= "This is to inform you that you currently have no scheduled classes assigned for {$weekLabel}";
+    if ($isRamadan) {
+        $body .= " (Ramadan academic schedule)";
+    }
+    $body .= ".\n\n";
+    $body .= "If you have any questions or believe there may be a scheduling discrepancy, please do not hesitate to contact the Academic Administration Office at your earliest convenience.\n\n";
+    $body .= "Thank you for your continued dedication to our academic program.\n\n";
+    $body .= "Best regards,\n";
+    $body .= "Academic Administration\n";
+    $body .= "Digital Marketing Department";
+    
+    try {
+        $mailer = new DmportalSmtpMailer();
+        $mailer->send($doctorEmail, $subject, $body);
+        return ['success' => true];
+    } catch (Throwable $e) {
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
 }

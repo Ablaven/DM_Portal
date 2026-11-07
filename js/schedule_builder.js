@@ -1748,7 +1748,7 @@
             });
 
             if (payload?.success) {
-              const msg = payload.message || `Sent ${payload.sent || 0} email(s), skipped ${payload.skipped || 0} teacher(s).`;
+              const msg = payload.message || `Sent ${payload.sent || 0} schedule email(s) and ${payload.sent_no_schedule || 0} no-schedule notification(s).`;
               showEmailAllTeachersResultModal("Success", msg, "success", payload);
             } else {
               showEmailAllTeachersResultModal("Error", payload?.error || "Failed to send emails.", "error");
@@ -1993,9 +1993,9 @@
           <div>
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
               <svg viewBox="0 0 24 24" width="20" height="20" style="opacity:0.6;">
-                <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                <path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/>
               </svg>
-              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted);">Will be skipped (${willSkip.length})</strong>
+              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted);">Will receive no-schedule notification (${willSkip.length})</strong>
             </div>
             ${willSkipList}
           </div>
