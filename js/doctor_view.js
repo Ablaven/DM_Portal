@@ -271,14 +271,20 @@
           </div>
           <div style="text-align:right;">
             <div style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Remaining</div>
-            <div style="font-size:1.25rem; font-weight:700; color:var(--accent);">${formatHours(c.remaining_hours)}h</div>
+            <div style="font-size:1.25rem; font-weight:700; color:var(--accent);">
+              ${formatHours(c.remaining_hours)}h
+              <span style="font-size:0.85rem; font-weight:500; color:var(--text-secondary);">(${Math.round(parseFloat(c.remaining_hours) / 1.5)} lectures)</span>
+            </div>
           </div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <span style="padding:6px 12px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:8px; font-size:0.875rem; font-weight:600;">
             ${escapeHtml(makeCourseLabel(c.course_type, c.subject_code))}
           </span>
-          <span class="muted" style="font-size:0.875rem; padding:6px 0;">Total: ${formatHours(c.allocated_hours || c.total_hours)}h</span>
+          <span class="muted" style="font-size:0.875rem; padding:6px 0;">
+            Total: ${formatHours(c.allocated_hours || c.total_hours)}h
+            <span style="font-size:0.85rem;">(${Math.round(parseFloat(c.allocated_hours || c.total_hours) / 1.5)} lectures)</span>
+          </span>
         </div>
       `;
 
