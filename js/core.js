@@ -791,3 +791,216 @@
   window.dmportal.clearEmptyState = clearEmptyState;
   window.dmportal.createProfessorImage = createProfessorImage;
 })();
+
+  // -----------------------------
+  // STYLED CONFIRM DIALOGS
+  // -----------------------------
+  function showConfirm(message, options = {}) {
+    return new Promise((resolve) => {
+      const title = options.title || "Confirm";
+      const confirmText = options.confirmText || "Confirm";
+      const cancelText = options.cancelText || "Cancel";
+      const type = options.type || "warning"; // warning, danger, info
+
+      const modal = document.createElement("div");
+      modal.className = "modal open";
+      modal.setAttribute("aria-hidden", "false");
+      modal.style.zIndex = "10000";
+
+      const typeIcons = {
+        warning: '<svg viewBox="0 0 24 24" width="48" height="48" style="color:#f59e0b;"><path fill="currentColor" d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
+        danger: '<svg viewBox="0 0 24 24" width="48" height="48" style="color:#ef4444;"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+        info: '<svg viewBox="0 0 24 24" width="48" height="48" style="color:#3b82f6;"><path fill="currentColor" d="M13 9h-2V7h2m0 10h-2v-6h2m-1-9A10 10 0 0 0 2 12a10 10 0 0 0 10 10 10 10 0 0 0 10-10A10 10 0 0 0 12 2z"/></svg>'
+      };
+
+      modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width:480px;">
+          <div style="text-align:center; margin-bottom:20px;">
+            ${typeIcons[type] || typeIcons.warning}
+          </div>
+          <h2 style="font-size:1.5rem; font-weight:700; margin:0 0 12px 0; text-align:center;">${escapeHtml(title)}</h2>
+          <p style="font-size:1rem; color:var(--text-secondary); margin:0 0 24px 0; text-align:center; line-height:1.6;">${escapeHtml(message)}</p>
+          <div class="modal-actions" style="gap:12px;">
+            <button class="btn btn-secondary" data-confirm-cancel style="flex:1;">${escapeHtml(cancelText)}</button>
+            <button class="btn ${type === 'danger' ? 'btn-danger' : 'btn-primary'}" data-confirm-ok style="flex:1;">${escapeHtml(confirmText)}</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      const closeModal = (result) => {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+        setTimeout(() => modal.remove(), 200);
+        resolve(result);
+      };
+
+      modal.querySelector("[data-confirm-ok]").addEventListener("click", () => closeModal(true));
+      modal.querySelector("[data-confirm-cancel]").addEventListener("click", () => closeModal(false));
+      modal.querySelector(".modal-overlay").addEventListener("click", () => closeModal(false));
+
+      // ESC key to cancel
+      const escHandler = (e) => {
+        if (e.key === "Escape") {
+          closeModal(false);
+          document.removeEventListener("keydown", escHandler);
+        }
+      };
+      document.addEventListener("keydown", escHandler);
+    });
+  }
+
+  window.dmportal.showConfirm = showConfirm;
+
+  // -----------------------------
+  // RELATIVE TIMESTAMPS
+  // -----------------------------
+  function formatRelativeTime(date) {
+    const now = new Date();
+    const target = new Date(date);
+    const diffMs = now - target;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWeek = Math.floor(diffDay / 7);
+    const diffMonth = Math.floor(diffDay / 30);
+    const diffYear = Math.floor(diffDay / 365);
+
+    if (diffSec < 60) return "just now";
+    if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+    if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+    if (diffDay < 7) return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+    if (diffWeek < 4) return `${diffWeek} week${diffWeek !== 1 ? 's' : ''} ago`;
+    if (diffMonth < 12) return `${diffMonth} month${diffMonth !== 1 ? 's' : ''} ago`;
+    return `${diffYear} year${diffYear !== 1 ? 's' : ''} ago`;
+  }
+
+  function formatFullDateTime(date) {
+    const d = new Date(date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[d.getMonth()];
+    const day = d.getDate();
+    const year = d.getFullYear();
+    const hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+    return `${month} ${day}, ${year} ${hour12}:${minutes} ${ampm}`;
+  }
+
+  function createRelativeTimestamp(date) {
+    const span = document.createElement("span");
+    span.className = "relative-timestamp";
+    span.textContent = formatRelativeTime(date);
+    span.title = formatFullDateTime(date);
+    span.style.cursor = "help";
+    return span;
+  }
+
+  window.dmportal.formatRelativeTime = formatRelativeTime;
+  window.dmportal.formatFullDateTime = formatFullDateTime;
+  window.dmportal.createRelativeTimestamp = createRelativeTimestamp;
+
+  // -----------------------------
+  // KEYBOARD SHORTCUTS
+  // -----------------------------
+  let globalKeyboardShortcuts = {};
+
+  function registerShortcut(key, callback, options = {}) {
+    const modifiers = {
+      ctrl: options.ctrl || false,
+      alt: options.alt || false,
+      shift: options.shift || false
+    };
+    const shortcutKey = `${modifiers.ctrl ? 'ctrl+' : ''}${modifiers.alt ? 'alt+' : ''}${modifiers.shift ? 'shift+' : ''}${key.toLowerCase()}`;
+    globalKeyboardShortcuts[shortcutKey] = callback;
+  }
+
+  function unregisterShortcut(key, options = {}) {
+    const modifiers = {
+      ctrl: options.ctrl || false,
+      alt: options.alt || false,
+      shift: options.shift || false
+    };
+    const shortcutKey = `${modifiers.ctrl ? 'ctrl+' : ''}${modifiers.alt ? 'alt+' : ''}${modifiers.shift ? 'shift+' : ''}${key.toLowerCase()}`;
+    delete globalKeyboardShortcuts[shortcutKey];
+  }
+
+  document.addEventListener("keydown", (e) => {
+    // Don't trigger shortcuts when typing in inputs/textareas
+    if (e.target.matches("input, textarea, select, [contenteditable]")) {
+      // Except for ESC key
+      if (e.key !== "Escape") return;
+    }
+
+    const key = e.key.toLowerCase();
+    const shortcutKey = `${e.ctrlKey || e.metaKey ? 'ctrl+' : ''}${e.altKey ? 'alt+' : ''}${e.shiftKey ? 'shift+' : ''}${key}`;
+
+    if (globalKeyboardShortcuts[shortcutKey]) {
+      e.preventDefault();
+      globalKeyboardShortcuts[shortcutKey](e);
+    }
+  });
+
+  // Global shortcuts
+  registerShortcut("escape", () => {
+    // Close topmost modal
+    const modals = document.querySelectorAll(".modal.open");
+    if (modals.length > 0) {
+      const topModal = modals[modals.length - 1];
+      const closeBtn = topModal.querySelector("[data-close], [data-modal-close], .modal-overlay");
+      if (closeBtn) closeBtn.click();
+    }
+  });
+
+  window.dmportal.registerShortcut = registerShortcut;
+  window.dmportal.unregisterShortcut = unregisterShortcut;
+
+
+  // -----------------------------
+  // SWIPEABLE SCHEDULE GRID (MOBILE)
+  // -----------------------------
+  function initSwipeableSchedules() {
+    const scheduleWraps = document.querySelectorAll('.schedule-wrap');
+    
+    scheduleWraps.forEach(wrap => {
+      let scrollTimeout;
+      
+      // Track scroll for fade edge effects only
+      // NOTE: Removed custom touch handlers to preserve native sticky positioning
+      wrap.addEventListener('scroll', () => {
+        // Check if scrolled to end (hide right fade)
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          const isScrolledToEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 10;
+          if (isScrolledToEnd) {
+            wrap.classList.add('scrolled-to-end');
+          } else {
+            wrap.classList.remove('scrolled-to-end');
+          }
+        }, 100);
+      }, { passive: true });
+
+      // Initial check for scroll position
+      const isScrolledToEnd = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 10;
+      if (isScrolledToEnd) {
+        wrap.classList.add('scrolled-to-end');
+      }
+    });
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSwipeableSchedules);
+  } else {
+    initSwipeableSchedules();
+  }
+
+  // Re-initialize when new content is loaded (e.g., after AJAX)
+  window.addEventListener('dmportal:contentLoaded', initSwipeableSchedules);
+
+  window.dmportal.initSwipeableSchedules = initSwipeableSchedules;
+

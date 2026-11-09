@@ -31,5 +31,28 @@ function get_pdo(): PDO
 
     $pdo = new PDO($dsn, $user, $pass, $options);
     dmportal_ensure_schema_version($pdo);
+    
+    // Auto-create unavailability table if it doesn't exist
+    try {
+        $stmt = $pdo->query("SHOW TABLES LIKE 'unavailability'");
+        if ($stmt->rowCount() === 0) {
+            $pdo->exec("
+                CREATE TABLE `unavailability` (
+                  `unavailability_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                  `doctor_id` INT UNSIGNED NOT NULL,
+                  `start_datetime` DATETIME NOT NULL,
+                  `end_datetime` DATETIME NOT NULL,
+                  `reason` VARCHAR(255) DEFAULT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`unavailability_id`),
+                  KEY `idx_doctor_dates` (`doctor_id`, `start_datetime`, `end_datetime`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        }
+    } catch (Exception $e) {
+        // Silently fail - table might already exist or user lacks permissions
+        error_log("Auto-create unavailability table failed: " . $e->getMessage());
+    }
+    
     return $pdo;
 }

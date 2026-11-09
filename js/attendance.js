@@ -465,15 +465,18 @@
       setStatusById("attendanceModalStatus", `Marked ${targets.length}. Remember to save.`, "warn");
     }
 
-    document.getElementById("attendanceMarkAllPresent")?.addEventListener("click", () => bulkSet("PRESENT"));
-    document.getElementById("attendanceMarkAllAbsent")?.addEventListener("click", () => bulkSet("ABSENT"));
+    document.getElementById("attendanceMarkAllPresent")?.addEventListener("click", () => {
+      bulkSet("PRESENT");
+      window.dmportal?.showSuccess?.("✅ All students marked as Present");
+    });
+    document.getElementById("attendanceMarkAllAbsent")?.addEventListener("click", () => {
+      bulkSet("ABSENT");
+      window.dmportal?.showInfo?.("All students marked as Absent");
+    });
 
+    // Hide "Copy to Next Lecture" for teachers (admin-only feature)
     if (!isAdmin) {
-      const bulkPresent = document.getElementById("attendanceMarkAllPresent");
-      const bulkAbsent = document.getElementById("attendanceMarkAllAbsent");
       const copyNextBtn = document.getElementById("attendanceCopyNextLecture");
-      if (bulkPresent) bulkPresent.style.display = "none";
-      if (bulkAbsent) bulkAbsent.style.display = "none";
       if (copyNextBtn) copyNextBtn.style.display = "none";
     }
 

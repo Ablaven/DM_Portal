@@ -621,18 +621,23 @@
       return;
     }
 
-    const startInput = document.getElementById("unavailStartDatetime");
-    const endInput = document.getElementById("unavailEndDatetime");
+    if (!availabilityState.activeWeekId) {
+      showError("Please select a week first.");
+      return;
+    }
+
+    const dayInput = document.getElementById("unavailDay");
+    const slotInput = document.getElementById("unavailSlot");
     const reasonInput = document.getElementById("unavailReason");
     const statusEl = document.getElementById("unavailStatus");
 
-    const startVal = startInput?.value || "";
-    const endVal = endInput?.value || "";
+    const dayVal = dayInput?.value || "";
+    const slotVal = slotInput?.value || "";
     const reasonVal = reasonInput?.value || "";
 
-    if (!startVal || !endVal) {
+    if (!dayVal || !slotVal) {
       if (statusEl) {
-        statusEl.textContent = "Please fill in start and end date/time.";
+        statusEl.textContent = "Please select a day and time slot.";
         statusEl.className = "status status-error";
       }
       return;
@@ -646,17 +651,18 @@
 
       const fd = new FormData();
       fd.append("doctor_id", String(availabilityState.activeDoctorId));
-      fd.append("start_datetime", startVal);
-      fd.append("end_datetime", endVal);
+      fd.append("week_id", String(availabilityState.activeWeekId));
+      fd.append("day", dayVal);
+      fd.append("slot", slotVal);
       fd.append("reason", reasonVal);
 
-      const payload = await fetchJson("php/add_unavailability.php", { method: "POST", body: fd });
+      const payload = await fetchJson("php/add_unavailability_slot.php", { method: "POST", body: fd });
       if (!payload.success) throw new Error(payload.error || "Failed to add unavailability");
 
       closeModal("unavailabilityModal");
       await loadUnavailability();
       renderGrid(); // Re-render grid to show blocked slots
-      showSuccess("Unavailability period added");
+      showSuccess("Unavailability added for " + dayVal + " Slot " + slotVal);
     } catch (err) {
       if (statusEl) {
         statusEl.textContent = err.message || "Failed to add unavailability";

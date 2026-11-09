@@ -553,93 +553,35 @@
   }
 
   function renderScheduleGrid() {
-  const body = document.getElementById("scheduleBody");
-  if (!body) return;
+    const body = document.getElementById("scheduleBody");
+    if (!body) return;
 
-  body.innerHTML = "";
+    body.innerHTML = "";
 
-  for (const slot of SLOTS) {
-    const tr = document.createElement("tr");
+    for (const slot of SLOTS) {
+      const tr = document.createElement("tr");
 
-    const th = document.createElement("th");
-    th.innerHTML = `<div class="slot-hdr"><div class="slot-hdr-num">Slot ${slot}</div><div class="slot-hdr-time">${escapeHtml(SLOT_TIMES[slot] || "")}</div></div>`;
-    tr.appendChild(th);
+      // Time column (always visible, never scrolls)
+      const th = document.createElement("th");
+      th.className = "time-cell";
+      th.innerHTML = `<div class="slot-hdr"><div class="slot-hdr-num">Slot ${slot}</div><div class="slot-hdr-time">${escapeHtml(SLOT_TIMES[slot] || "")}</div></div>`;
+      tr.appendChild(th);
 
-    for (const day of DAYS) {
-      const td = document.createElement("td");
-      const cell = document.createElement("div");
-      cell.className = "slot";
+      // Day columns
+      for (const day of DAYS) {
+        const td = document.createElement("td");
+        const cell = document.createElement("div");
+        cell.className = "slot";
 
-      // Cancelled day: block all slots
-      if (state.cancellations?.[day] !== undefined) {
-        const reason = state.cancellations[day];
-        cell.classList.add("filled");
-        cell.style.background = "#99999922";
-        cell.style.borderColor = "#99999988";
-        cell.innerHTML = `
-          <div class="slot-title">Canceled</div>
-          <div class="slot-sub">${reason ? reason : "Doctor not coming"}</div>
-        `;
-        cell.style.cursor = "not-allowed";
-        td.appendChild(cell);
-        tr.appendChild(td);
-        continue;
-      }
-
-      // Cancelled slot: show as cancelled BUT allow opening the modal to UN-cancel.
-      if (state.slotCancellations?.[day]?.[String(slot)] !== undefined) {
-        const reason = state.slotCancellations[day][String(slot)];
-        cell.classList.add("filled");
-        cell.style.background = "#99999922";
-        cell.style.borderColor = "#99999988";
-        cell.innerHTML = `
-          <div class="slot-title">Canceled</div>
-          <div class="slot-sub">${reason ? reason : "Slot canceled"}</div>
-          <div class="slot-sub slot-sub-muted">Click to undo</div>
-        `;
-        cell.style.cursor = "pointer";
-        cell.addEventListener("click", () => openSlotModal(day, slot, null));
-        td.appendChild(cell);
-        tr.appendChild(td);
-        continue;
-      }
-
-      // Unavailable slot: block and render
-      if (isSlotUnavailable(day, slot)) {
-        cell.classList.add("filled");
-        cell.classList.add("type-unavail");
-        cell.innerHTML = `
-          <div class="slot-title">Unavailable</div>
-          <div class="slot-sub">Blocked</div>
-        `;
-        cell.style.cursor = "not-allowed";
-        td.appendChild(cell);
-        tr.appendChild(td);
-        continue;
-      }
-
-      const hasAvail = hasAvailability(day, slot);
-      if (hasAvail) {
-        cell.classList.add("available-slot");
-        cell.addEventListener("mouseenter", () => renderAvailabilityPopup(cell, day, slot));
-        cell.addEventListener("mouseleave", () => removeBuilderPopup());
-      }
-
-      const assigned = state.scheduleGrid?.[day]?.[String(slot)];
-      const assignedMatchesFilters = assigned ? doesItemMatchGlobalFilters(assigned) : true;
-
-      if (assigned) {
-        cell.classList.add("filled");
-
-        // If the assigned course is for a different Year/Sem, show it as occupied/locked.
-        if (!assignedMatchesFilters) {
+        // Cancelled day: block all slots
+        if (state.cancellations?.[day] !== undefined) {
+          const reason = state.cancellations[day];
+          cell.classList.add("filled");
           cell.style.background = "#99999922";
           cell.style.borderColor = "#99999988";
-          const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
           cell.innerHTML = `
-            <div class="slot-title">Occupied</div>
-            <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.course_name || "")}</div>
-            <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} • Sem ${escapeHtml(assigned.semester)}</div>
+            <div class="slot-title">Canceled</div>
+            <div class="slot-sub">${reason ? reason : "Doctor not coming"}</div>
           `;
           cell.style.cursor = "not-allowed";
           td.appendChild(cell);
@@ -647,36 +589,97 @@
           continue;
         }
 
-        // Color is per doctor (background/border set below); do not style by course type.
-        if (assigned.doctor_color) {
-          cell.style.background = assigned.doctor_color + "22";
-          cell.style.borderColor = assigned.doctor_color + "88";
+        // Cancelled slot: show as cancelled BUT allow opening the modal to UN-cancel.
+        if (state.slotCancellations?.[day]?.[String(slot)] !== undefined) {
+          const reason = state.slotCancellations[day][String(slot)];
+          cell.classList.add("filled");
+          cell.style.background = "#99999922";
+          cell.style.borderColor = "#99999988";
+          cell.innerHTML = `
+            <div class="slot-title">Canceled</div>
+            <div class="slot-sub">${reason ? reason : "Slot canceled"}</div>
+            <div class="slot-sub slot-sub-muted">Click to undo</div>
+          `;
+          cell.style.cursor = "pointer";
+          cell.addEventListener("click", () => openSlotModal(day, slot, null));
+          td.appendChild(cell);
+          tr.appendChild(td);
+          continue;
         }
-        const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
-        cell.innerHTML = `
-          <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
-          <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
-        `;
-      } else {
-        cell.innerHTML = `
-          <div class="slot-title">Empty</div>
-          <div class="slot-sub">Click to assign</div>
-        `;
+
+        // Unavailable slot: block and render
+        if (isSlotUnavailable(day, slot)) {
+          cell.classList.add("filled");
+          cell.classList.add("type-unavail");
+          cell.innerHTML = `
+            <div class="slot-title">Unavailable</div>
+            <div class="slot-sub">Blocked</div>
+          `;
+          cell.style.cursor = "not-allowed";
+          td.appendChild(cell);
+          tr.appendChild(td);
+          continue;
+        }
+
+        const hasAvail = hasAvailability(day, slot);
+        if (hasAvail) {
+          cell.classList.add("available-slot");
+          cell.addEventListener("mouseenter", () => renderAvailabilityPopup(cell, day, slot));
+          cell.addEventListener("mouseleave", () => removeBuilderPopup());
+        }
+
+        const assigned = state.scheduleGrid?.[day]?.[String(slot)];
+        const assignedMatchesFilters = assigned ? doesItemMatchGlobalFilters(assigned) : true;
+
+        if (assigned) {
+          cell.classList.add("filled");
+
+          // If the assigned course is for a different Year/Sem, show it as occupied/locked.
+          if (!assignedMatchesFilters) {
+            cell.style.background = "#99999922";
+            cell.style.borderColor = "#99999988";
+            const label = makeCourseLabel(assigned.course_type, assigned.subject_code);
+            cell.innerHTML = `
+              <div class="slot-title">Occupied</div>
+              <div class="slot-sub">${escapeHtml(label)} • ${escapeHtml(assigned.course_name || "")}</div>
+              <div class="slot-sub slot-sub-muted">Year ${escapeHtml(assigned.year_level)} • Sem ${escapeHtml(assigned.semester)}</div>
+            `;
+            cell.style.cursor = "not-allowed";
+            td.appendChild(cell);
+            tr.appendChild(td);
+            continue;
+          }
+
+          // Color is per doctor (background/border set below); do not style by course type.
+          if (assigned.doctor_color) {
+            cell.style.background = assigned.doctor_color + "22";
+            cell.style.borderColor = assigned.doctor_color + "88";
+          }
+          const room = assigned.room_code ? `Room ${escapeHtml(assigned.room_code)}` : "";
+          cell.innerHTML = `
+            <div class="slot-title">${escapeHtml(assigned.course_name)}</div>
+            <div class="slot-sub">${escapeHtml(makeCourseLabel(assigned.course_type, assigned.subject_code))}${room ? " • " + room : ""}</div>
+          `;
+        } else {
+          cell.innerHTML = `
+            <div class="slot-title">Empty</div>
+            <div class="slot-sub">Click to assign</div>
+          `;
+        }
+
+        cell.addEventListener("click", () => openSlotModal(day, slot, assigned));
+        td.appendChild(cell);
+        tr.appendChild(td);
+
+        // reset styles when reused
+        if (!assigned) {
+          cell.style.background = "";
+          cell.style.borderColor = "";
+        }
       }
 
-      cell.addEventListener("click", () => openSlotModal(day, slot, assigned));
-      td.appendChild(cell);
-      tr.appendChild(td);
-
-      // reset styles when reused
-      if (!assigned) {
-        cell.style.background = "";
-        cell.style.borderColor = "";
-      }
+      body.appendChild(tr);
     }
-
-    body.appendChild(tr);
-  }
   }
 
   function renderStudentMiniGrid(grid = {}) {

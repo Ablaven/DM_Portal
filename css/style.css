@@ -2323,19 +2323,23 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   .schedule-grid thead th {
     position: sticky;
     top: 0;
-    z-index: 2;
+    z-index: 8;
     background: var(--surface-2);
     padding-top: 8px;
     padding-bottom: 8px;
   }
 
+  /* Time column scrolls naturally with the table - NO sticky */
   .schedule-grid th.corner,
-  .schedule-grid td.corner,
+  .schedule-grid tbody th.time-cell,
   .schedule-grid tbody th {
-    position: sticky;
-    left: 0;
-    z-index: 3;
-    background: var(--surface-2);
+    position: static !important; /* Remove sticky - let it scroll naturally */
+    background: var(--surface-2) !important;
+  }
+
+  /* Corner cell in header */
+  .schedule-grid thead th.corner {
+    position: static !important;
   }
   
   /* Override corner width for tbody th */
@@ -2404,11 +2408,11 @@ html[data-theme="light"] .floating-schedule .schedule-grid.mini .slot-sub {
   .slot-hdr-num { font-size: 0.72rem; }
   .slot-hdr-time { font-size: 0.6rem; }
 
-  /* Fix: Sticky headers for extra-small screens too */
+  /* REMOVED: Let time column scroll naturally, not stick */
   .schedule-grid tbody th {
-    position: sticky !important;
-    left: 0 !important;
-    z-index: 3 !important;
+    position: static !important;
+    left: auto !important;
+    z-index: auto !important;
     background: var(--surface-2) !important;
   }
 
@@ -3504,6 +3508,12 @@ html[data-theme="light"] .slot.available-slot {
   will-change: transform, opacity;
 }
 
+/* Remove will-change after animation completes to avoid breaking sticky positioning */
+.panel {
+  animation: portalFlipIn 720ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: auto !important; /* Override to preserve sticky positioning in child tables */
+}
+
 /* Staggered for dashboard grid items */
 .dashboard-card:nth-child(1) { animation-delay: 60ms; }
 .dashboard-card:nth-child(2) { animation-delay: 120ms; }
@@ -3528,9 +3538,22 @@ html[data-theme="light"] .slot.available-slot {
   }
   100% {
     opacity: 1;
-    transform: translateY(0) rotateX(0deg) scale(1);
+    transform: none; /* Explicitly remove transform to restore sticky positioning */
     box-shadow: var(--shadow);
   }
+}
+
+/* CRITICAL: Remove will-change after animation to restore sticky positioning */
+.panel,
+.card,
+.info-card {
+  animation-fill-mode: forwards;
+}
+
+/* Once animated, remove transform entirely for panels with schedules */
+.panel:not(.animating) {
+  transform: none !important;
+  will-change: auto !important;
 }
 
 .dashboard-card::after {
@@ -10247,4 +10270,320 @@ html[data-theme="light"] .course-card:hover {
 .monitoring-section-wide .table-container {
   max-width: 100% !important;
   overflow-x: auto;
+}
+
+
+/* ===========================================
+   STYLED CONFIRM DIALOGS
+   =========================================== */
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #fff;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===========================================
+   LOADING SKELETONS
+   =========================================== */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.skeleton-text:last-child {
+  margin-bottom: 0;
+  width: 80%;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+}
+
+.skeleton-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-col {
+  flex: 1;
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.skeleton-button {
+  height: 2.5rem;
+  width: 120px;
+  border-radius: 8px;
+}
+
+/* Loading state container */
+.loading-skeleton-container {
+  padding: 2rem 0;
+}
+
+/* ===========================================
+   RELATIVE TIMESTAMPS
+   =========================================== */
+.relative-timestamp {
+  position: relative;
+  border-bottom: 1px dotted var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.relative-timestamp:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ===========================================
+   MOBILE: LARGE TOUCH TARGETS (min 44px)
+   =========================================== */
+@media (max-width: 768px) {
+  .btn,
+  button,
+  .icon-btn,
+  a.btn,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 20px;
+  }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+  }
+
+  /* Increase touch target for small buttons */
+  .btn-small {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+
+  /* Table action buttons */
+  .courses-list .actions button,
+  .courses-list .actions a {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  /* Navbar items */
+  .navbar a,
+  .navbar button {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+
+  /* Form inputs */
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Modal close buttons */
+  .modal-content [data-close],
+  .modal-content [data-modal-close] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Checkbox/Radio larger hit area */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* ===========================================
+   KEYBOARD SHORTCUT HINTS
+   =========================================== */
+.kbd-hint {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-family: monospace;
+  background: var(--surface-1);
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+/* ===========================================
+   EMPTY STATE ILLUSTRATIONS
+   =========================================== */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+}
+
+.empty-state-subtitle {
+  font-size: 0.95rem;
+  margin: 0 0 1.5rem 0;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.empty-state-cta {
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+
+/* ===========================================
+   MOBILE: SWIPEABLE SCHEDULE GRID
+   =========================================== */
+@media (max-width: 768px) {
+  /* Native smooth scrolling - no JS manipulation */
+  .schedule-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+    scroll-behavior: smooth;
+    position: relative;
+    
+    /* Custom scrollbar for better touch feedback */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--surface-1);
+  }
+
+  /* Fade edge to indicate more content */
+  .schedule-wrap::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to left, var(--card), transparent);
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Hide right fade when scrolled to end */
+  .schedule-wrap.scrolled-to-end::after {
+    opacity: 0;
+  }
+
+  /* Improved touch targets for schedule slots */
+  .schedule-grid .slot {
+    min-height: 60px;
+    padding: 10px;
+    touch-action: manipulation; /* Faster tap response */
+  }
+
+  /* Better visual feedback on touch */
+  .schedule-grid .slot:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* MOBILE: Time column scrolls naturally with the table */
+  .schedule-grid th.corner,
+  .schedule-grid tbody th.time-cell,
+  .schedule-grid tbody th {
+    position: static !important; /* Remove sticky */
+    background: var(--card) !important;
+  }
+
+  /* Header row can stay sticky (top) */
+  .schedule-grid thead th {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    background: var(--card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Corner cell scrolls with time column */
+  .schedule-grid thead th.corner {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+  }
+}
+
+/* Light theme adjustments */
+html[data-theme="light"] .schedule-wrap::after {
+  background: linear-gradient(to left, #c8d8f0, transparent);
+}
+
+html[data-theme="light"] .schedule-grid th.corner,
+html[data-theme="light"] .schedule-grid tbody th {
+  box-shadow: 2px 0 8px rgba(18, 72, 200, 0.08) !important;
+}
+
+html[data-theme="light"] .schedule-grid thead th {
+  box-shadow: 0 2px 8px rgba(18, 72, 200, 0.08);
 }

@@ -99,11 +99,9 @@ if ($role === 'teacher') {
           <button id="clearAvailabilityBtn" class="btn btn-danger" type="button" title="Clear all availability for this week">
             <span class="btn-label">Clear Week</span>
           </button>
-          <?php if ($role === 'admin' || $role === 'management'): ?>
           <button id="addUnavailabilityBtn" class="btn btn-secondary" type="button" title="Add unavailability period">
             <span class="btn-label">Add Unavailability</span>
           </button>
-          <?php endif; ?>
         </div>
       </div>
 
@@ -179,8 +177,7 @@ if ($role === 'teacher') {
     </div>
   </div>
 
-  <!-- Unavailability Modal (Admin/Management) -->
-  <?php if ($role === 'admin' || $role === 'management'): ?>
+  <!-- Unavailability Modal (All Users) -->
   <div id="unavailabilityModal" class="modal-overlay" role="dialog" aria-labelledby="unavailabilityModalTitle" aria-hidden="true">
     <div class="modal-box">
       <div class="modal-header">
@@ -190,13 +187,27 @@ if ($role === 'teacher') {
       <div class="modal-body">
         <form id="unavailabilityForm" class="form">
           <div class="field">
-            <label for="unavailStartDatetime" class="form-label">Start Date & Time</label>
-            <input type="datetime-local" id="unavailStartDatetime" class="form-control" required />
+            <label for="unavailDay" class="form-label">Day</label>
+            <select id="unavailDay" class="form-control" required>
+              <option value="">Select Day</option>
+              <option value="Sun">Sunday</option>
+              <option value="Mon">Monday</option>
+              <option value="Tue">Tuesday</option>
+              <option value="Wed">Wednesday</option>
+              <option value="Thu">Thursday</option>
+            </select>
           </div>
 
           <div class="field">
-            <label for="unavailEndDatetime" class="form-label">End Date & Time</label>
-            <input type="datetime-local" id="unavailEndDatetime" class="form-control" required />
+            <label for="unavailSlot" class="form-label">Time Slot</label>
+            <select id="unavailSlot" class="form-control" required>
+              <option value="">Select Time Slot</option>
+              <option value="1">Slot 1 • 8:30 AM - 10:00 AM</option>
+              <option value="2">Slot 2 • 10:10 AM - 11:30 AM</option>
+              <option value="3">Slot 3 • 11:40 AM - 1:00 PM</option>
+              <option value="4">Slot 4 • 1:10 PM - 2:40 PM</option>
+              <option value="5">Slot 5 • 2:50 PM - 4:20 PM</option>
+            </select>
           </div>
 
           <div class="field">
@@ -208,13 +219,12 @@ if ($role === 'teacher') {
 
           <div class="modal-actions">
             <button type="button" class="btn btn-secondary" data-close="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Period</button>
+            <button type="submit" class="btn btn-primary">Add Unavailability</button>
           </div>
         </form>
       </div>
     </div>
   </div>
-  <?php endif; ?>
 
   <script>
     window.AVAILABILITY_DOCTOR_ID = <?php echo json_encode($doctorId); ?>;

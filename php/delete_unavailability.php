@@ -21,7 +21,7 @@ if ($id <= 0) bad_request('unavailability_id is required.');
 
 try {
     $pdo = get_pdo();
-    $del = $pdo->prepare('DELETE FROM doctor_unavailability WHERE unavailability_id = :id');
+    $del = $pdo->prepare('DELETE FROM unavailability WHERE unavailability_id = :id');
     $del->execute([':id' => $id]);
     echo json_encode(['success'=>true,'data'=>['deleted'=>true]]);
 } catch (Throwable $e) {

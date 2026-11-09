@@ -18,7 +18,26 @@ auth_require_roles(['admin','management']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Doctor Schedule Builder</title>
-  <link rel="stylesheet" href="css/style.css?v=20260222d" />
+  <link rel="stylesheet" href="css/style.css?v=20261109d" />
+  <style>
+    /* OVERRIDE: Remove sticky positioning from time column */
+    .schedule-grid th.corner,
+    .schedule-grid tbody th.time-cell,
+    .schedule-grid tbody th {
+      position: static !important;
+      left: auto !important;
+      z-index: auto !important;
+    }
+    @media (max-width: 768px) {
+      .schedule-grid th.corner,
+      .schedule-grid tbody th.time-cell,
+      .schedule-grid tbody th {
+        position: static !important;
+        left: auto !important;
+        z-index: auto !important;
+      }
+    }
+  </style>
 </head>
 <body class="dashboard">
   <?php render_portal_navbar('schedule_builder.php'); ?>
@@ -407,9 +426,31 @@ auth_require_roles(['admin','management']);
     </div>
   </div>
 
-  <script src="js/core.js?v=20260914e"></script>
+  <script src="js/core.js?v=20261109a"></script>
   <script src="js/navbar.js?v=20260914e"></script>
-  <script src="js/schedule_builder.js?v=20260919z"></script>
+  <script src="js/schedule_builder.js?v=20261109a"></script>
+  <script>
+    // FORCE remove sticky positioning immediately
+    (function() {
+      function removeSticky() {
+        document.querySelectorAll('.schedule-grid tbody th, .schedule-grid th.corner').forEach(th => {
+          th.style.position = 'static';
+          th.style.left = 'auto';
+          th.style.zIndex = 'auto';
+        });
+      }
+      // Run immediately
+      removeSticky();
+      // Run after DOM loads
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', removeSticky);
+      }
+      // Run after schedule renders
+      setTimeout(removeSticky, 100);
+      setTimeout(removeSticky, 500);
+      setTimeout(removeSticky, 1000);
+    })();
+  </script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initScheduleBuilder?.();
