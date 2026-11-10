@@ -9,11 +9,16 @@ require_once __DIR__ . '/php/_auth_schema.php';
 require_once __DIR__ . '/php/_auth.php';
 require_once __DIR__ . '/php/_navbar.php';
 
-// If already logged in, go to best landing.
+// If already logged in, check if there's a ?next= parameter
 $u = auth_current_user();
 if ($u) {
-    // If Allowed Pages is explicitly set for this user, redirect to the first allowed page.
-    // Otherwise fall back to role defaults.
+    $next = auth_sanitize_next((string)($_GET['next'] ?? ''), '');
+    if ($next !== '') {
+        // Redirect to the requested page
+        header('Location: ' . $next, true, 302);
+        exit;
+    }
+    // Otherwise go to role default landing page
     header('Location: ' . auth_nav_home_href(), true, 302);
     exit;
 }

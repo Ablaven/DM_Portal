@@ -48,6 +48,293 @@
   setStatusById("attendanceModalStatus", "");
   }
 
+  // ============================================
+  // QR ATTENDANCE MODAL
+  // ============================================
+  
+  let qrSession = null;
+  let qrTokenPollInterval = null;
+  let qrStatusPollInterval = null;
+
+  function openQRAttendanceModal(scheduleId) {
+    console.log('[QR Modal] Opening for schedule:', scheduleId);
+    
+    // Create QR modal dynamically
+    const existingModal = document.getElementById("qrAttendanceModal");
+    if (existingModal) {
+      console.log('[QR Modal] Removing existing modal');
+      existingModal.remove();
+    }
+
+    console.log('[QR Modal] Creating new modal HTML');
+    
+    const modalHTML = `
+      <div class="modal open" id="qrAttendanceModal" aria-hidden="false" style="z-index:10000;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+          <div class="modal-header">
+            <h3 style="margin:0;">QR Code Attendance</h3>
+          </div>
+          <div class="modal-body">
+            <div style="text-align:center; margin-bottom:20px;">
+              <p style="margin:0 0 15px 0; color: var(--muted);">Students scan this QR code to mark their attendance</p>
+              <div id="qrCodeContainer" style="display:inline-block; padding:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
+              <p style="margin:15px 0 0 0; font-size:13px; color:var(--muted);">Code refreshes every 10 seconds</p>
+            </div>
+            
+            <div style="margin-top:30px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                <h4 style="margin:0;">Students Present (<span id="qrStudentCount">0</span>)</h4>
+                <button type="button" id="qrRefreshList" class="btn btn-sm btn-secondary" style="padding:6px 12px; font-size:13px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                  </svg>
+                  Refresh
+                </button>
+              </div>
+              <div id="qrStudentList" style="max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary);">
+                <div style="padding:30px; text-align:center; color:var(--muted);">No students have scanned yet...</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="qrCloseBtn">Close QR & Continue Manually</button>
+          </div>
+          <div id="qrModalStatus" style="margin-top:15px; padding:10px; border-radius:6px; display:none;"></div>
+        </div>
+      </div>
+    `;
+
+    console.log('[QR Modal] Inserting modal into DOM');
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+    
+    console.log('[QR Modal] Modal inserted, checking if visible');
+    const modal = document.getElementById("qrAttendanceModal");
+    console.log('[QR Modal] Modal element:', modal);
+
+    // Bind close handler
+    document.getElementById("qrCloseBtn")?.addEventListener("click", () => closeQRAttendanceModal(scheduleId));
+    document.getElementById("qrRefreshList")?.addEventListener("click", () => refreshQRStudentList(scheduleId));
+
+    // Start QR session
+    startQRSession(scheduleId);
+  }
+
+  function closeQRAttendanceModal(scheduleId) {
+    if (qrTokenPollInterval) {
+      clearInterval(qrTokenPollInterval);
+      qrTokenPollInterval = null;
+    }
+    if (qrStatusPollInterval) {
+      clearInterval(qrStatusPollInterval);
+      qrStatusPollInterval = null;
+    }
+
+    // Close QR session on server
+    if (qrSession?.session_id) {
+      const fd = new FormData();
+      fd.append("session_id", String(qrSession.session_id));
+      fetchJson("php/close_qr_session.php", { method: "POST", body: fd }).catch(() => {});
+    }
+
+    const modal = document.getElementById("qrAttendanceModal");
+    if (modal) modal.remove();
+
+    qrSession = null;
+    
+    console.log('[QR Modal] Closed.');
+  }
+
+  async function startQRSession(scheduleId) {
+    try {
+      setQRModalStatus("Starting QR session...", "loading");
+
+      const fd = new FormData();
+      fd.append("schedule_id", String(scheduleId));
+
+      let payload;
+      try {
+        payload = await fetchJson("php/start_qr_attendance.php", { method: "POST", body: fd });
+      } catch (err) {
+        // Check if it's a closed session error - if so, just close modal silently
+        const res = await fetch("php/start_qr_attendance.php", { method: "POST", body: fd });
+        const errorData = await res.json().catch(() => ({}));
+        
+        if (errorData.already_closed) {
+          console.log('[QR] Session already closed, user must use normal attendance');
+          closeQRAttendanceModal();
+          setStatusById("attendanceStatus", "QR session was already used. Please click the slot again to open manual attendance.", "info");
+          return;
+        }
+        
+        // Otherwise re-throw the original error
+        throw err;
+      }
+      
+      if (!payload.success) throw new Error(payload.error || "Failed to start QR session");
+
+      qrSession = payload.data;
+      
+      console.log('[QR] Session started:', qrSession);
+
+      setQRModalStatus("", "");
+
+      // Generate initial QR code
+      if (qrSession.token) {
+        generateQRCode(qrSession.token);
+      } else {
+        console.error('[QR] No token in response:', qrSession);
+        setQRModalStatus("Error: No token received", "error");
+      }
+
+      // Start polling for token rotation (every 10 seconds)
+      qrTokenPollInterval = setInterval(() => refreshQRToken(), 10000);
+
+      // Start polling for student submissions (every 3 seconds)
+      qrStatusPollInterval = setInterval(() => refreshQRStudentList(scheduleId), 3000);
+
+      // Initial load of student list
+      refreshQRStudentList(scheduleId);
+
+    } catch (err) {
+      console.error('[QR] Session start error:', err);
+      setQRModalStatus(err.message || "Failed to start QR session", "error");
+    }
+  }
+
+  async function refreshQRToken() {
+    if (!qrSession?.session_id) return;
+
+    try {
+      const payload = await fetchJson(`php/get_qr_token.php?session_id=${qrSession.session_id}`);
+      if (!payload.success) {
+        console.error("[QR Token] Refresh failed:", payload.error);
+        return;
+      }
+
+      if (payload.data.token !== qrSession.token) {
+        console.log('[QR Token] Rotating to new token');
+        qrSession.token = payload.data.token;
+        generateQRCode(payload.data.token);
+      }
+    } catch (err) {
+      console.error("[QR Token] Refresh error:", err);
+    }
+  }
+
+  function generateQRCode(token) {
+    const container = document.getElementById("qrCodeContainer");
+    if (!container) return;
+
+    // Build the URL for students
+    const targetUrl = `${window.location.origin}/student_qr_attendance.php?token=${encodeURIComponent(token)}`;
+    
+    console.log('[QR] Target URL:', targetUrl);
+
+    // Use our own PHP proxy to avoid CORS issues
+    const qrApiUrl = `php/generate_qr_code.php?data=${encodeURIComponent(targetUrl)}`;
+    
+    console.log('[QR] API URL:', qrApiUrl);
+    
+    // Create image element
+    const img = document.createElement('img');
+    img.src = qrApiUrl;
+    img.alt = 'QR Code for Attendance';
+    img.style.width = '300px';
+    img.style.height = '300px';
+    img.style.display = 'block';
+    img.style.margin = '0 auto';
+    
+    img.onerror = function() {
+      console.error('[QR] Image failed to load');
+      container.innerHTML = `<div style="padding:20px; text-align:center;">
+        <p style="color:var(--danger); margin-bottom:10px;">Failed to load QR code</p>
+        <p style="font-size:12px;"><a href="${targetUrl}" target="_blank" style="color:var(--primary); word-break:break-all;">${targetUrl}</a></p>
+      </div>`;
+    };
+    
+    img.onload = function() {
+      console.log('[QR] Image loaded successfully');
+    };
+    
+    container.innerHTML = '';
+    container.appendChild(img);
+  }
+
+  async function refreshQRStudentList(scheduleId) {
+    try {
+      const payload = await fetchJson(`php/get_qr_attendance_status.php?schedule_id=${scheduleId}`);
+      if (!payload.success) {
+        console.error("Status refresh failed:", payload.error);
+        return;
+      }
+
+      const students = payload.data.students || [];
+      const countEl = document.getElementById("qrStudentCount");
+      const listEl = document.getElementById("qrStudentList");
+
+      if (countEl) countEl.textContent = String(students.length);
+
+      if (listEl) {
+        if (students.length === 0) {
+          listEl.innerHTML = '<div style="padding:30px; text-align:center; color:var(--muted);">No students have scanned yet...</div>';
+        } else {
+          listEl.innerHTML = students.map(s => `
+            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+              <div>
+                <div style="font-weight:600; color:var(--text);">${escapeHtml(s.full_name || '')}</div>
+                <div style="font-size:13px; color:var(--muted); font-family: 'Courier New', monospace;">${escapeHtml(s.student_code || '')}</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="padding:4px 10px; background:var(--success); color:white; border-radius:6px; font-size:12px; font-weight:600;">
+                  ${escapeHtml(s.status || 'PRESENT')}
+                </span>
+                <span style="font-size:12px; color:var(--muted);">
+                  ${new Date(s.marked_at).toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (err) {
+      console.error("Status refresh error:", err);
+    }
+  }
+
+  function setQRModalStatus(message, type) {
+    const statusEl = document.getElementById("qrModalStatus");
+    if (!statusEl) return;
+
+    if (!message) {
+      statusEl.style.display = "none";
+      return;
+    }
+
+    statusEl.style.display = "block";
+    statusEl.textContent = message;
+    statusEl.className = "";
+
+    if (type === "error") {
+      statusEl.style.background = "var(--danger-bg)";
+      statusEl.style.color = "var(--danger)";
+      statusEl.style.border = "1px solid var(--danger)";
+    } else if (type === "loading") {
+      statusEl.style.background = "var(--info-bg)";
+      statusEl.style.color = "var(--info)";
+      statusEl.style.border = "1px solid var(--info)";
+    } else {
+      statusEl.style.background = "var(--success-bg)";
+      statusEl.style.color = "var(--success)";
+      statusEl.style.border = "1px solid var(--success)";
+    }
+  }
+
+  // ============================================
+  // END QR ATTENDANCE MODAL
+  // ============================================
+
   function lectureWindowLabel(state) {
     if (state === "active") return "Lecture in progress";
     if (state === "ended") return "Lecture ended";
@@ -232,6 +519,7 @@
   async function initAttendancePage() {
   let currentCtx = null; // {schedule_id:number, items:[], schedule:object}
   let latestGrid = {};
+  const dirtyStudents = new Set();
   const me = meCache || (await authFetchMe());
   const role = String(me?.role || "").toLowerCase();
   const isAdmin = role === "admin" || role === "management";
@@ -333,6 +621,36 @@
             return;
           }
 
+          // Check if QR session should be shown (teachers only, first time, active lecture)
+          if (!isAdmin) {
+            const hasAttendance = chosen.attendance_taken || chosen.hours_counted;
+            
+            if (!hasAttendance && chosen.lecture_window_state === "active") {
+              // Check if there's a closed QR session for this slot
+              try {
+                const qrCheckFd = new FormData();
+                qrCheckFd.append("schedule_id", String(chosen.schedule_id));
+                const qrCheckRes = await fetch("php/start_qr_attendance.php", { method: "POST", body: qrCheckFd });
+                const qrCheckData = await qrCheckRes.json().catch(() => ({}));
+                
+                // If already closed, skip QR and go to normal modal
+                if (qrCheckData.already_closed) {
+                  console.log('[Slot Click] QR session was closed, opening normal modal');
+                  // Fall through to normal modal below
+                } else {
+                  // First time opening this slot - offer QR option
+                  openQRAttendanceModal(chosen.schedule_id);
+                  return;
+                }
+              } catch (err) {
+                // If check fails, try QR anyway
+                openQRAttendanceModal(chosen.schedule_id);
+                return;
+              }
+            }
+          }
+
+          // Open normal attendance modal (original code)
           currentCtx = { schedule_id: Number(chosen.schedule_id), items: [], schedule: null };
           setStatusById("attendanceModalStatus", "");
 
@@ -368,6 +686,7 @@
             searchEl.value = "";
             searchEl.oninput = () => renderAttendanceModalRows(currentCtx.items, searchEl.value || "", { isAdmin, schedule: scheduleMeta });
           }
+
         } catch (err) {
           setStatusById("attendanceModalStatus", err.message || "Failed to load attendance", "error");
         }
@@ -394,8 +713,6 @@
         await refreshAttendanceCoursesDropdown(activeYear);
       });
     });
-
-    const dirtyStudents = new Set();
 
     async function saveSingle(studentId, status) {
       const fd = new FormData();

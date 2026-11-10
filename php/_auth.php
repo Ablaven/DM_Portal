@@ -235,9 +235,9 @@ function auth_allowed_pages_for_user(array $user): ?array
     }
     if (($user['role'] ?? '') === 'student') {
         $studentId = (int)($user['student_id'] ?? 0);
-        $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php'];
+        $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php', 'student_qr_attendance.php'];
         if ($studentId <= 0) {
-            $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php'];
+            $pages = ['students.php', 'student_dashboard.php', 'profile.php', 'lectures.php', 'assignments.php', 'student_qr_attendance.php'];
         }
         return $pages;
     }

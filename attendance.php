@@ -15,7 +15,7 @@ require_once __DIR__ . '/php/_navbar.php';
 auth_require_page_access('attendance.php');
 auth_require_login();
 
-?><!doctype html>
+?><!doctype html> 
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -161,7 +161,7 @@ auth_require_login();
 
   <script src="js/core.js?v=20260425a"></script>
   <script src="js/navbar.js?v=20260425a"></script>
-  <script src="js/attendance.js?v=20260919z"></script>
+  <script src="js/attendance.js?v=20261110f"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initAttendancePage?.();

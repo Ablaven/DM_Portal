@@ -54,5 +54,27 @@ function get_pdo(): PDO
         error_log("Auto-create unavailability table failed: " . $e->getMessage());
     }
     
+    // Auto-create attendance_qr_sessions table if it doesn't exist
+    try {
+        $stmt = $pdo->query("SHOW TABLES LIKE 'attendance_qr_sessions'");
+        if ($stmt->rowCount() === 0) {
+            $pdo->exec("
+                CREATE TABLE `attendance_qr_sessions` (
+                  `session_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                  `schedule_id` INT UNSIGNED NOT NULL,
+                  `token` VARCHAR(64) NOT NULL,
+                  `expires_at` DATETIME NOT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `is_closed` TINYINT(1) NOT NULL DEFAULT 0,
+                  PRIMARY KEY (`session_id`),
+                  UNIQUE KEY `idx_schedule` (`schedule_id`),
+                  KEY `idx_token_expires` (`token`, `expires_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        }
+    } catch (Exception $e) {
+        error_log("Auto-create attendance_qr_sessions table failed: " . $e->getMessage());
+    }
+    
     return $pdo;
 }

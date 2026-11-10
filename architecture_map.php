@@ -16,8 +16,8 @@ auth_require_roles(['admin']);
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>System Architecture</title>
-  <link rel="stylesheet" href="css/style.css?v=20260926a" />
-  <link rel="stylesheet" href="css/architecture_map.css?v=20260926a" />
+  <link rel="stylesheet" href="css/style.css?v=20261110a" />
+  <link rel="stylesheet" href="css/architecture_map.css?v=20261110a" />
 </head>
 <body class="architecture-view">
   <?php render_portal_navbar('architecture_map.php'); ?>
@@ -158,9 +158,9 @@ auth_require_roles(['admin']);
     </section>
   </main>
 
-  <script src="js/core.js?v=20260926a"></script>
-  <script src="js/navbar.js?v=20260926a"></script>
-  <script src="js/architecture_map.js?v=20260926a"></script>
+  <script src="js/core.js?v=20261110a"></script>
+  <script src="js/navbar.js?v=20261110a"></script>
+  <script src="js/architecture_map.js?v=20261110a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
     window.dmportal?.initArchitectureMap?.();
