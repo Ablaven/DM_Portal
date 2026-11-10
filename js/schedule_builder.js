@@ -389,15 +389,15 @@
 
   function isSlotUnavailable(day, slot) {
   const r = slotDateRange(day, slot);
-  if (!r) return false;
+  if (!r) return null;
   for (const u of state.unavailability || []) {
     const us = parseLocalDateTime(u.start_datetime);
     const ue = parseLocalDateTime(u.end_datetime);
     if (!us || !ue) continue;
     // overlap
-    if (us < r.end && ue > r.start) return true;
+    if (us < r.end && ue > r.start) return u; // Return the unavailability object
   }
-  return false;
+  return null;
   }
 
   function hasAvailability(day, slot) {
@@ -607,13 +607,15 @@
           continue;
         }
 
-        // Unavailable slot: block and render
-        if (isSlotUnavailable(day, slot)) {
+        // Unavailable slot: block and render with reason
+        const unavailInfo = isSlotUnavailable(day, slot);
+        if (unavailInfo) {
           cell.classList.add("filled");
           cell.classList.add("type-unavail");
+          const reason = unavailInfo.reason ? escapeHtml(unavailInfo.reason) : "Blocked";
           cell.innerHTML = `
             <div class="slot-title">Unavailable</div>
-            <div class="slot-sub">Blocked</div>
+            <div class="slot-sub">${reason}</div>
           `;
           cell.style.cursor = "not-allowed";
           td.appendChild(cell);
@@ -1000,8 +1002,10 @@
   if (!doctorId || !day || !slot || !courseId || !state.activeWeekId) return;
 
   // If the UI already marks it unavailable, block early
-  if (isSlotUnavailable(String(day), Number(slot))) {
-    setStatusById("modalConflict", "Doctor is unavailable during this slot.", "error");
+  const unavailInfo = isSlotUnavailable(String(day), Number(slot));
+  if (unavailInfo) {
+    const reason = unavailInfo.reason ? ` (${unavailInfo.reason})` : "";
+    setStatusById("modalConflict", `Doctor is unavailable during this slot${reason}.`, "error");
     return;
   }
 

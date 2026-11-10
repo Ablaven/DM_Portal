@@ -803,7 +803,7 @@
       const type = options.type || "warning"; // warning, danger, info
 
       const modal = document.createElement("div");
-      modal.className = "modal open";
+      modal.className = "modal-overlay open";
       modal.setAttribute("aria-hidden", "false");
       modal.style.zIndex = "10000";
 
@@ -814,16 +814,17 @@
       };
 
       modal.innerHTML = `
-        <div class="modal-overlay"></div>
-        <div class="modal-content" style="max-width:480px;">
-          <div style="text-align:center; margin-bottom:20px;">
-            ${typeIcons[type] || typeIcons.warning}
-          </div>
-          <h2 style="font-size:1.5rem; font-weight:700; margin:0 0 12px 0; text-align:center;">${escapeHtml(title)}</h2>
-          <p style="font-size:1rem; color:var(--text-secondary); margin:0 0 24px 0; text-align:center; line-height:1.6;">${escapeHtml(message)}</p>
-          <div class="modal-actions" style="gap:12px;">
-            <button class="btn btn-secondary" data-confirm-cancel style="flex:1;">${escapeHtml(cancelText)}</button>
-            <button class="btn ${type === 'danger' ? 'btn-danger' : 'btn-primary'}" data-confirm-ok style="flex:1;">${escapeHtml(confirmText)}</button>
+        <div class="modal-box" style="max-width:480px;">
+          <div class="modal-body" style="padding:32px 24px;">
+            <div style="text-align:center; margin-bottom:20px;">
+              ${typeIcons[type] || typeIcons.warning}
+            </div>
+            <h2 style="font-size:1.5rem; font-weight:700; margin:0 0 12px 0; text-align:center;">${window.dmportal.escapeHtml(title)}</h2>
+            <p style="font-size:1rem; color:var(--muted); margin:0 0 24px 0; text-align:center; line-height:1.6;">${window.dmportal.escapeHtml(message)}</p>
+            <div class="modal-actions" style="gap:12px;">
+              <button class="btn btn-secondary" data-confirm-cancel style="flex:1;">${window.dmportal.escapeHtml(cancelText)}</button>
+              <button class="btn ${type === 'danger' ? 'btn-danger' : 'btn-primary'}" data-confirm-ok style="flex:1;">${window.dmportal.escapeHtml(confirmText)}</button>
+            </div>
           </div>
         </div>
       `;
@@ -839,7 +840,10 @@
 
       modal.querySelector("[data-confirm-ok]").addEventListener("click", () => closeModal(true));
       modal.querySelector("[data-confirm-cancel]").addEventListener("click", () => closeModal(false));
-      modal.querySelector(".modal-overlay").addEventListener("click", () => closeModal(false));
+      modal.addEventListener("click", (e) => {
+        // Close if clicking on the overlay (not the modal box)
+        if (e.target === modal) closeModal(false);
+      });
 
       // ESC key to cancel
       const escHandler = (e) => {

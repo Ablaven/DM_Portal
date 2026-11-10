@@ -175,14 +175,14 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        setStatus('Logging inâ€¦');
+        setStatus('Logging in...', true); // Green while logging in
         const fd = new FormData(form);
 
         try {
           const resp = await fetch('php/auth_login.php', { method: 'POST', body: fd, credentials: 'same-origin' });
           const payload = await resp.json().catch(() => null);
           if (!resp.ok || !payload || !payload.success) {
-            setStatus((payload && payload.error) ? payload.error : 'Login failed.');
+            setStatus((payload && payload.error) ? payload.error : 'Login failed.', false); // Red on error
             return;
           }
 
@@ -217,7 +217,7 @@ $next = auth_sanitize_next((string)($_GET['next'] ?? ''), 'index.php');
           }
           window.location.href = 'index.php';
         } catch (err) {
-          setStatus('Login failed.');
+          setStatus('Login failed.', false); // Red on error
         }
       });
     })();

@@ -158,13 +158,17 @@
 
         // Determine slot state
         if (isUnavailable && !showAllDoctors) {
-          // Blocked by unavailability period
+          // Blocked by unavailability period - NO CLICK
           cell.classList.add("blocked");
           cell.innerHTML = `
             <div class="slot-status-label">Unavailable</div>
             <div class="slot-status-sub">Blocked by period</div>
           `;
           cell.style.cursor = "not-allowed";
+          // DO NOT add click listener for blocked slots
+          td.appendChild(cell);
+          tr.appendChild(td);
+          continue; // Skip to next slot
         } else if (availItems.length > 0) {
           // Available
           cell.classList.add("available");
@@ -298,8 +302,54 @@
   // ============================================
   // BULK OPERATIONS
   // ============================================
+  
+  // Reusable styled confirm modal
+  function showStyledConfirm(message, title = "Confirm") {
+    return new Promise((resolve) => {
+      try {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal';
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.style.cssText = 'display:flex;z-index:9999;';
+        overlay.innerHTML = `
+          <div class="modal-backdrop"></div>
+          <div class="modal-card" role="dialog" aria-modal="true" style="max-width:520px;">
+            <div class="modal-header">
+              <h3 style="margin:0;">${title}</h3>
+            </div>
+            <div class="modal-body">
+              ${message}
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" type="button" data-action="cancel">Cancel</button>
+              <button class="btn btn-primary" type="button" data-action="confirm">Confirm</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        const close = (result) => {
+          overlay.setAttribute('aria-hidden', 'true');
+          overlay.style.display = 'none';
+          setTimeout(() => overlay.remove(), 200);
+          resolve(result);
+        };
+        
+        const cancelBtns = overlay.querySelectorAll('[data-action="cancel"]');
+        cancelBtns.forEach(btn => btn.addEventListener('click', () => close(false)));
+        overlay.querySelector('[data-action="confirm"]').addEventListener('click', () => close(true));
+        overlay.querySelector('.modal-backdrop').addEventListener('click', () => close(false));
+      } catch (err) {
+        console.error('Modal error:', err);
+        resolve(false);
+      }
+    });
+  }
 
   async function copyFromPreviousWeek() {
+    console.log('[Copy] Function called');
+    
     if (!availabilityState.activeDoctorId) {
       showError("Please select a doctor first.");
       return;
@@ -310,23 +360,92 @@
       return;
     }
 
-    if (!confirm("Copy availability from the previous week? This will overwrite existing availability for this week.")) {
+    console.log('[Copy] Doctor and week validated');
+
+    // Find previous week (by week_id, not array position)
+    const currentWeekId = Number(availabilityState.activeWeekId);
+    const sortedWeeks = [...availabilityState.weeks].sort((a, b) => Number(a.week_id) - Number(b.week_id));
+    const currentIdx = sortedWeeks.findIndex(w => Number(w.week_id) === currentWeekId);
+    
+    console.log('[Copy] Current week:', currentWeekId, 'Index:', currentIdx);
+    
+    if (currentIdx <= 0) {
+      showError("No previous week found.");
       return;
     }
 
+    const prevWeek = sortedWeeks[currentIdx - 1];
+    if (!prevWeek) {
+      showError("No previous week found.");
+      return;
+    }
+
+    console.log('[Copy] Previous week found:', prevWeek);
+
+    // Show styled confirm dialog using existing modal system
+    const weekLabel = formatWeekDisplayLabel ? formatWeekDisplayLabel(prevWeek) : `Week ${prevWeek.week_id}`;
+    const message = `
+      <p style="margin:0 0 12px 0;font-size:1rem;">This will copy all availability slots and unavailability periods from <strong>${weekLabel}</strong> to the current week.</p>
+      <p style="margin:0;color:var(--muted);font-size:0.9rem;">⚠️ Any existing data for this week will be overwritten.</p>
+    `;
+    
+    console.log('[Copy] Message:', message);
+    console.log('[Copy] Creating modal...');
+    
+    const confirmed = await new Promise((resolve) => {
+      try {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal';
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.style.cssText = 'display:flex;z-index:9999;';
+        overlay.innerHTML = `
+          <div class="modal-backdrop"></div>
+          <div class="modal-card" role="dialog" aria-modal="true" style="max-width:520px;">
+            <div class="modal-header">
+              <h3 style="margin:0;">Copy from Previous Week</h3>
+            </div>
+            <div class="modal-body">
+              ${message}
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" type="button" data-action="cancel">Cancel</button>
+              <button class="btn btn-primary" type="button" data-action="confirm">Copy</button>
+            </div>
+          </div>
+        `;
+        
+        console.log('[Copy] Appending modal to body...');
+        document.body.appendChild(overlay);
+        
+        console.log('[Copy] Adding open class...');
+        // Add open class after a tick for animation
+        setTimeout(() => {
+          overlay.classList.add('open');
+          console.log('[Copy] Modal should be visible now');
+        }, 10);
+        
+        const close = (result) => {
+          console.log('[Copy] Closing modal with result:', result);
+          overlay.setAttribute('aria-hidden', 'true');
+          overlay.style.display = 'none';
+          setTimeout(() => overlay.remove(), 200);
+          resolve(result);
+        };
+        
+        const cancelBtns = overlay.querySelectorAll('[data-action="cancel"]');
+        cancelBtns.forEach(btn => btn.addEventListener('click', () => close(false)));
+        overlay.querySelector('[data-action="confirm"]').addEventListener('click', () => close(true));
+        overlay.querySelector('.modal-backdrop').addEventListener('click', () => close(false));
+      } catch (err) {
+        console.error('[Copy] Modal error:', err);
+        resolve(false);
+      }
+    });
+    
+    if (!confirmed) return;
+
     try {
       setStatusById("availabilityStatus", "Copying from previous week...");
-
-      // Find previous week
-      const currentIdx = availabilityState.weeks.findIndex(w => Number(w.week_id) === Number(availabilityState.activeWeekId));
-      if (currentIdx <= 0) {
-        throw new Error("No previous week found.");
-      }
-
-      const prevWeek = availabilityState.weeks[currentIdx - 1];
-      if (!prevWeek) {
-        throw new Error("No previous week found.");
-      }
 
       // Fetch previous week's availability
       const qs = new URLSearchParams({
@@ -337,13 +456,9 @@
       if (!prevPayload.success) throw new Error("Failed to load previous week availability");
 
       const prevItems = prevPayload.data?.items || [];
-      if (prevItems.length === 0) {
-        showError("No availability found in the previous week.");
-        return;
-      }
 
-      // Copy each slot
-      let copied = 0;
+      // Copy availability slots
+      let copiedAvail = 0;
       for (const item of prevItems) {
         const fd = new FormData();
         fd.append("week_id", String(availabilityState.activeWeekId));
@@ -353,12 +468,60 @@
         fd.append("action", "add");
 
         const payload = await fetchJson("php/set_doctor_availability.php", { method: "POST", body: fd });
-        if (payload.success) copied++;
+        if (payload.success) copiedAvail++;
+      }
+
+      // Fetch and copy previous week's unavailability
+      let copiedUnavail = 0;
+      try {
+        const unavailQs = new URLSearchParams({
+          week_id: String(prevWeek.week_id),
+          doctor_id: String(availabilityState.activeDoctorId)
+        });
+        const unavailPayload = await fetchJson(`php/get_unavailability.php?${unavailQs.toString()}`);
+        
+        if (unavailPayload.success) {
+          const unavailItems = unavailPayload.data?.items || [];
+          
+          for (const item of unavailItems) {
+            // Parse the previous week's datetime to extract day and slot
+            const startDate = new Date(item.start_datetime);
+            const dayOfWeek = startDate.getDay(); // 0=Sun, 1=Mon, etc.
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const day = dayNames[dayOfWeek];
+            
+            // Determine slot from time
+            const hours = startDate.getHours();
+            const minutes = startDate.getMinutes();
+            let slot = 1;
+            if (hours === 8 && minutes === 30) slot = 1;
+            else if (hours === 10 && minutes === 10) slot = 2;
+            else if (hours === 11 && minutes === 40) slot = 3;
+            else if (hours === 13 && minutes === 10) slot = 4;
+            else if (hours === 14 && minutes === 50) slot = 5;
+            
+            // Add unavailability for current week
+            const fd = new FormData();
+            fd.append("doctor_id", String(availabilityState.activeDoctorId));
+            fd.append("week_id", String(availabilityState.activeWeekId));
+            fd.append("day", day);
+            fd.append("slot", String(slot));
+            fd.append("reason", String(item.reason || ""));
+
+            const payload = await fetchJson("php/add_unavailability_slot.php", { method: "POST", body: fd });
+            if (payload.success) copiedUnavail++;
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to copy unavailability:", err);
       }
 
       await refreshAvailability();
+      await loadUnavailability();
       renderGrid();
-      showSuccess(`Copied ${copied} slots from ${formatWeekDisplayLabel(prevWeek)}`);
+      
+      const msg = `Copied ${copiedAvail} available slots` + (copiedUnavail > 0 ? ` and ${copiedUnavail} unavailability periods` : '') + ` from ${formatWeekDisplayLabel(prevWeek)}`;
+      showSuccess(msg);
       setStatusById("availabilityStatus", "");
     } catch (err) {
       setStatusById("availabilityStatus", err.message, "error");
@@ -376,7 +539,12 @@
       return;
     }
 
-    if (!confirm("Clear all availability for this week? This cannot be undone.")) {
+    const confirmed = await showStyledConfirm(
+      '<p style="margin:0 0 12px 0;">This will clear all availability slots and unavailability periods for this week.</p><p style="margin:0;color:var(--muted);font-size:0.9rem;">⚠️ This action cannot be undone.</p>',
+      'Clear Week'
+    );
+    
+    if (!confirmed) {
       return;
     }
 
@@ -402,9 +570,23 @@
         }
       }
 
+      // Remove all unavailability periods for this week
+      let clearedUnavail = 0;
+      const unavailItems = availabilityState.unavailability || [];
+      for (const item of unavailItems) {
+        const fd = new FormData();
+        fd.append("unavailability_id", String(item.unavailability_id));
+        
+        const payload = await fetchJson("php/delete_unavailability.php", { method: "POST", body: fd });
+        if (payload.success) clearedUnavail++;
+      }
+
       await refreshAvailability();
+      await loadUnavailability();
       renderGrid();
-      showSuccess(`Cleared ${cleared} slots`);
+      
+      const msg = `Cleared ${cleared} available slots` + (clearedUnavail > 0 ? ` and ${clearedUnavail} unavailability periods` : '');
+      showSuccess(msg);
       setStatusById("availabilityStatus", "");
     } catch (err) {
       setStatusById("availabilityStatus", err.message, "error");
@@ -672,7 +854,12 @@
   }
 
   async function deleteUnavailability(id) {
-    if (!confirm("Delete this unavailability period?")) return;
+    const confirmed = await showStyledConfirm(
+      '<p style="margin:0;">Are you sure you want to delete this unavailability period?</p>',
+      'Delete Unavailability'
+    );
+    
+    if (!confirmed) return;
 
     try {
       const fd = new FormData();
