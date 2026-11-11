@@ -83,7 +83,7 @@ try {
     
     // Token expired - generate new one
     $newToken = bin2hex(random_bytes(16));
-    $newExpiresAt = date('Y-m-d H:i:s', $now + 10); // 10 seconds from now
+    $newExpiresAt = date('Y-m-d H:i:s', $now + 15); // 15 seconds from now
     
     $updateStmt = $pdo->prepare('
         UPDATE attendance_qr_sessions

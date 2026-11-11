@@ -111,6 +111,14 @@ if ($doctorId > 0) {
             <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Hours</div>
             <div style="font-size:1.5rem; font-weight:700;" id="statsDoctorHours">-</div>
           </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Done Hours</div>
+            <div style="font-size:1.5rem; font-weight:700; color:#48bb78;" id="statsDoctorDoneHours">-</div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Remaining Hours</div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--accent);" id="statsDoctorRemainingHours">-</div>
+          </div>
         </div>
       </div>
       

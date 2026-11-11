@@ -102,7 +102,7 @@ try {
     
     // Create new QR session
     $initialToken = bin2hex(random_bytes(16));
-    $expiresAt = date('Y-m-d H:i:s', time() + 10); // 10 seconds from now
+    $expiresAt = date('Y-m-d H:i:s', time() + 15); // 15 seconds from now
     
     $insertStmt = $pdo->prepare('
         INSERT INTO attendance_qr_sessions (schedule_id, token, expires_at)

@@ -79,7 +79,7 @@
             <div style="text-align:center; margin-bottom:20px;">
               <p style="margin:0 0 15px 0; color: var(--muted);">Students scan this QR code to mark their attendance</p>
               <div id="qrCodeContainer" style="display:inline-block; padding:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
-              <p style="margin:15px 0 0 0; font-size:13px; color:var(--muted);">Code refreshes every 10 seconds</p>
+              <p style="margin:15px 0 0 0; font-size:13px; color:var(--muted);">Code refreshes every 15 seconds</p>
             </div>
             
             <div style="margin-top:30px;">
@@ -188,8 +188,8 @@
         setQRModalStatus("Error: No token received", "error");
       }
 
-      // Start polling for token rotation (every 10 seconds)
-      qrTokenPollInterval = setInterval(() => refreshQRToken(), 10000);
+      // Start polling for token rotation (every 15 seconds)
+      qrTokenPollInterval = setInterval(() => refreshQRToken(), 15000);
 
       // Start polling for student submissions (every 3 seconds)
       qrStatusPollInterval = setInterval(() => refreshQRStudentList(scheduleId), 3000);

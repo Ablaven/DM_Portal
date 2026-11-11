@@ -227,7 +227,13 @@
       year1: filtered.filter(c => c.year_level === 1).length,
       year2: filtered.filter(c => c.year_level === 2).length,
       year3: filtered.filter(c => c.year_level === 3).length,
-      totalHours: filtered.reduce((sum, c) => sum + parseFloat(c.allocated_hours || c.total_hours || 0), 0).toFixed(2)
+      totalHours: filtered.reduce((sum, c) => sum + parseFloat(c.allocated_hours || c.total_hours || 0), 0).toFixed(2),
+      remainingHours: filtered.reduce((sum, c) => sum + parseFloat(c.remaining_hours || 0), 0).toFixed(2),
+      doneHours: filtered.reduce((sum, c) => {
+        const total = parseFloat(c.allocated_hours || c.total_hours || 0);
+        const remaining = parseFloat(c.remaining_hours || 0);
+        return sum + (total - remaining);
+      }, 0).toFixed(2)
     };
     
     // Update summary stats
@@ -236,6 +242,8 @@
     document.getElementById('statsDoctorYear2').textContent = stats.year2;
     document.getElementById('statsDoctorYear3').textContent = stats.year3;
     document.getElementById('statsDoctorHours').textContent = stats.totalHours + 'h';
+    document.getElementById('statsDoctorDoneHours').textContent = stats.doneHours + 'h';
+    document.getElementById('statsDoctorRemainingHours').textContent = stats.remainingHours + 'h';
 
     if (!filtered.length) {
       const hasAny = (courses || []).length > 0;
