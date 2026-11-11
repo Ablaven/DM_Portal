@@ -222,7 +222,7 @@
         <p class="drop-zone-text">Drag and drop files here</p>
         <p class="drop-zone-or">or</p>
         <label for="lmFileInput" class="drop-zone-btn">Browse Files</label>
-        <p class="drop-zone-hint">PDF, PPTX, ZIP, or RAR (max 50 MB)</p>
+        <p class="drop-zone-hint">PDF, PPTX, ZIP, RAR, DOC, DOCX, PNG, JPG (max 50 MB)</p>
       </div>
       <div class="drop-zone-hover-overlay">
         <svg viewBox="0 0 24 24" width="64" height="64">
@@ -236,7 +236,7 @@
     fileInput.type = "file";
     fileInput.id = "lmFileInput";
     fileInput.name = "file";
-    fileInput.accept = ".pdf,.pptx,.zip,.rar";
+    fileInput.accept = ".pdf,.pptx,.zip,.rar,.doc,.docx,.png,.jpg,.jpeg";
     fileInput.className = "file-input";
     fileInput.required = true;
     fileInput.style.display = "none"; // Hide the default input

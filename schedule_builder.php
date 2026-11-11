@@ -205,11 +205,18 @@ auth_require_roles(['admin','management']);
                 
                 <div style="height:1px; background:var(--card-border); margin:8px 0;"></div>
                 
-                <button id="emailAllTeachers" class="btn btn-primary btn-small" type="button" title="Send schedule emails to all teachers with schedules for the active week">
+                <button id="emailScheduleTeachers" class="btn btn-primary btn-small" type="button" title="Send schedule emails to teachers WITH schedules for the active week" style="margin-bottom:8px;">
                   <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:4px;">
                     <path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/>
                   </svg>
-                  Send Schedule to All Teachers
+                  Send Schedules
+                </button>
+                
+                <button id="emailNoScheduleTeachers" class="btn btn-secondary btn-small" type="button" title="Send no-schedule notifications to teachers WITHOUT schedules for the active week">
+                  <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:4px;">
+                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  </svg>
+                  Send No-Schedule Notifications
                 </button>
               </div>
             </div>

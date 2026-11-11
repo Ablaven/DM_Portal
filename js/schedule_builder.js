@@ -1721,8 +1721,8 @@
       window.location.href = `php/export_prep_weeks_xls.php?${qs.toString()}`;
     });
 
-    // Send schedule to all teachers
-    document.getElementById("emailAllTeachers")?.addEventListener("click", async () => {
+    // Send schedules to teachers WITH schedules
+    document.getElementById("emailScheduleTeachers")?.addEventListener("click", async () => {
       if (!state.activeWeekId) {
         showEmailAllTeachersResultModal("Error", "Please select a week first.", "error");
         return;
@@ -1730,7 +1730,7 @@
 
       const weekLabel = getWeekLabel(state.activeWeekId) || `Week ${state.activeWeekId}`;
       
-      // Get preview of who will be sent/skipped
+      // Get preview of who will be sent
       try {
         const previewPayload = await fetchJson(`php/email_all_teachers_preview.php?week_id=${state.activeWeekId}`);
         if (!previewPayload?.success) {
@@ -1738,15 +1738,15 @@
           return;
         }
         
-        showEmailAllTeachersConfirmModal(weekLabel, previewPayload.data, async () => {
-          const btn = document.getElementById("emailAllTeachers");
+        showEmailScheduleConfirmModal(weekLabel, previewPayload.data, async () => {
+          const btn = document.getElementById("emailScheduleTeachers");
           try {
             if (btn) {
               btn.classList.add("is-loading");
               btn.disabled = true;
             }
 
-            const payload = await fetchJson("php/email_all_teachers_schedule.php", {
+            const payload = await fetchJson("php/email_schedule_teachers.php", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -1755,7 +1755,60 @@
             });
 
             if (payload?.success) {
-              const msg = payload.message || `Sent ${payload.sent || 0} schedule email(s) and ${payload.sent_no_schedule || 0} no-schedule notification(s).`;
+              const msg = payload.message || `Sent ${payload.sent || 0} schedule email(s).`;
+              showEmailAllTeachersResultModal("Success", msg, "success", payload);
+            } else {
+              showEmailAllTeachersResultModal("Error", payload?.error || "Failed to send emails.", "error");
+            }
+          } catch (err) {
+            showEmailAllTeachersResultModal("Error", err?.message || "Failed to send emails.", "error");
+          } finally {
+            if (btn) {
+              btn.classList.remove("is-loading");
+              btn.disabled = false;
+            }
+          }
+        });
+      } catch (err) {
+        showEmailAllTeachersResultModal("Error", err?.message || "Failed to load preview.", "error");
+      }
+    });
+
+    // Send no-schedule notifications to teachers WITHOUT schedules
+    document.getElementById("emailNoScheduleTeachers")?.addEventListener("click", async () => {
+      if (!state.activeWeekId) {
+        showEmailAllTeachersResultModal("Error", "Please select a week first.", "error");
+        return;
+      }
+
+      const weekLabel = getWeekLabel(state.activeWeekId) || `Week ${state.activeWeekId}`;
+      
+      // Get preview of who will be notified
+      try {
+        const previewPayload = await fetchJson(`php/email_all_teachers_preview.php?week_id=${state.activeWeekId}`);
+        if (!previewPayload?.success) {
+          showEmailAllTeachersResultModal("Error", previewPayload?.error || "Failed to load preview.", "error");
+          return;
+        }
+        
+        showEmailNoScheduleConfirmModal(weekLabel, previewPayload.data, async () => {
+          const btn = document.getElementById("emailNoScheduleTeachers");
+          try {
+            if (btn) {
+              btn.classList.add("is-loading");
+              btn.disabled = true;
+            }
+
+            const payload = await fetchJson("php/email_no_schedule_teachers.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                week_id: state.activeWeekId || 0,
+              }),
+            });
+
+            if (payload?.success) {
+              const msg = payload.message || `Sent ${payload.sent_no_schedule || 0} no-schedule notification(s).`;
               showEmailAllTeachersResultModal("Success", msg, "success", payload);
             } else {
               showEmailAllTeachersResultModal("Error", payload?.error || "Failed to send emails.", "error");
@@ -1938,6 +1991,146 @@
   // Email All Teachers Modals
   // ==========================================
   
+  function showEmailScheduleConfirmModal(weekLabel, previewData, onConfirm) {
+    const escapeHtml = window.dmportal?.escapeHtml || ((s) => String(s));
+    let modal = document.getElementById("emailScheduleConfirmModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "emailScheduleConfirmModal";
+      modal.className = "modal";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.appendChild(modal);
+    }
+
+    const willSend = previewData?.will_send || [];
+
+    const willSendList = willSend.length > 0
+      ? `<div style="display:grid; gap:8px; max-height:300px; overflow-y:auto; padding:4px;">
+           ${willSend.map(name => `
+             <div style="padding:10px 14px; background:rgba(34, 197, 94, 0.1); border:1px solid rgba(34, 197, 94, 0.25); border-radius:8px; font-size:0.9rem;">
+               <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; color:#22c55e;">
+                 <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+               </svg>
+               ${escapeHtml(name)}
+             </div>
+           `).join('')}
+         </div>`
+      : `<p class="muted" style="margin:8px 0 0; font-size:0.9rem;">No teachers with schedules for this week.</p>`;
+
+    modal.innerHTML = `
+      <div class="modal-backdrop" data-email-confirm-close="1"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="emailScheduleConfirmTitle" style="max-width:600px;">
+        <div class="modal-header">
+          <h3 id="emailScheduleConfirmTitle">Send Schedules</h3>
+        </div>
+        <div class="modal-body">
+          <p style="margin:0 0 20px; font-size:0.95rem;">Send schedule emails for <strong>${escapeHtml(weekLabel)}</strong> to teachers with schedules?</p>
+          
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" style="color:#22c55e;">
+                <path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+              </svg>
+              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--success);">Teachers with schedules (${willSend.length})</strong>
+            </div>
+            ${willSendList}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-email-confirm-close="1">Cancel</button>
+          <button id="emailScheduleConfirmBtn" class="btn btn-primary" type="button">Send Schedules</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+
+    const closeModal = () => {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    };
+
+    modal.querySelectorAll("[data-email-confirm-close]").forEach((el) => {
+      el.addEventListener("click", closeModal, { once: true });
+    });
+
+    document.getElementById("emailScheduleConfirmBtn")?.addEventListener("click", () => {
+      closeModal();
+      onConfirm();
+    }, { once: true });
+  }
+
+  function showEmailNoScheduleConfirmModal(weekLabel, previewData, onConfirm) {
+    const escapeHtml = window.dmportal?.escapeHtml || ((s) => String(s));
+    let modal = document.getElementById("emailNoScheduleConfirmModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "emailNoScheduleConfirmModal";
+      modal.className = "modal";
+      modal.setAttribute("aria-hidden", "true");
+      document.body.appendChild(modal);
+    }
+
+    const willSkip = previewData?.will_skip || [];
+
+    const willSkipList = willSkip.length > 0
+      ? `<div style="display:grid; gap:8px; max-height:300px; overflow-y:auto; padding:4px;">
+           ${willSkip.map(name => `
+             <div style="padding:10px 14px; background:rgba(251, 146, 60, 0.1); border:1px solid rgba(251, 146, 60, 0.25); border-radius:8px; font-size:0.9rem;">
+               <svg viewBox="0 0 24 24" width="16" height="16" style="display:inline-block; margin-right:6px; vertical-align:middle; color:#fb923c;">
+                 <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+               </svg>
+               ${escapeHtml(name)}
+             </div>
+           `).join('')}
+         </div>`
+      : `<p class="muted" style="margin:8px 0 0; font-size:0.9rem;">All teachers have schedules.</p>`;
+
+    modal.innerHTML = `
+      <div class="modal-backdrop" data-email-confirm-close="1"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="emailNoScheduleConfirmTitle" style="max-width:600px;">
+        <div class="modal-header">
+          <h3 id="emailNoScheduleConfirmTitle">Send No-Schedule Notifications</h3>
+        </div>
+        <div class="modal-body">
+          <p style="margin:0 0 20px; font-size:0.95rem;">Send no-schedule notifications for <strong>${escapeHtml(weekLabel)}</strong> to teachers without schedules?</p>
+          
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+              <svg viewBox="0 0 24 24" width="20" height="20" style="color:#fb923c;">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <strong style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.03em; color:#fb923c;">Teachers without schedules (${willSkip.length})</strong>
+            </div>
+            ${willSkipList}
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" data-email-confirm-close="1">Cancel</button>
+          <button id="emailNoScheduleConfirmBtn" class="btn btn-primary" type="button">Send Notifications</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+
+    const closeModal = () => {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    };
+
+    modal.querySelectorAll("[data-email-confirm-close]").forEach((el) => {
+      el.addEventListener("click", closeModal, { once: true });
+    });
+
+    document.getElementById("emailNoScheduleConfirmBtn")?.addEventListener("click", () => {
+      closeModal();
+      onConfirm();
+    }, { once: true });
+  }
+
   function showEmailAllTeachersConfirmModal(weekLabel, previewData, onConfirm) {
     const escapeHtml = window.dmportal?.escapeHtml || ((s) => String(s));
     let modal = document.getElementById("emailAllTeachersConfirmModal");

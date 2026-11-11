@@ -103,8 +103,8 @@ $fileSize     = (int)($_FILES['file']['size']         ?? 0);
 
 // ─── Validation 4: extension check ────────────────────────────────────────────
 $ext = strtolower((string)pathinfo($originalName, PATHINFO_EXTENSION));
-if (!in_array($ext, ['pdf', 'pptx', 'zip', 'rar'], true)) {
-    upload_error(422, 'Only PDF, PPTX, ZIP, and RAR files are allowed.');
+if (!in_array($ext, ['pdf', 'pptx', 'zip', 'rar', 'doc', 'docx', 'png', 'jpg', 'jpeg'], true)) {
+    upload_error(422, 'Only PDF, PPTX, ZIP, RAR, DOC, DOCX, PNG, JPG, and JPEG files are allowed.');
 }
 
 // ─── Validation 5: MIME type check ────────────────────────────────────────────
@@ -117,12 +117,16 @@ $allowedMimes = [
     'application/x-rar',
     'application/vnd.rar',
     'application/octet-stream', // Generic binary for zip/rar
+    'application/msword', // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'image/png',
+    'image/jpeg',
 ];
 
 $finfo    = new finfo(FILEINFO_MIME_TYPE);
 $mimeType = $finfo->file($tmpPath);
 if ($mimeType === false || !in_array($mimeType, $allowedMimes, true)) {
-    upload_error(422, 'Only PDF, PPTX, ZIP, and RAR files are allowed.');
+    upload_error(422, 'Only PDF, PPTX, ZIP, RAR, DOC, DOCX, PNG, JPG, and JPEG files are allowed.');
 }
 
 // ─── Validation 6: size check (≤ 50 MB) ──────────────────────────────────────
