@@ -80,14 +80,16 @@
 
   function isSlotUnavailable(day, slot) {
     const r = slotDateRange(day, slot);
-    if (!r) return false;
+    if (!r) return null;
     for (const u of doctorState.unavailability || []) {
       const us = parseLocalDateTime(u.start_datetime);
       const ue = parseLocalDateTime(u.end_datetime);
       if (!us || !ue) continue;
-      if (us < r.end && ue > r.start) return true;
+      if (us < r.end && ue > r.start) {
+        return { unavailable: true, reason: u.reason || '' };
+      }
     }
-    return false;
+    return null;
   }
 
   async function loadDoctors() {
@@ -163,11 +165,13 @@
         }
 
         if (isSlotUnavailable(day, slot)) {
+          const unavailInfo = isSlotUnavailable(day, slot);
+          const reason = unavailInfo?.reason || '';
           cell.classList.add("filled");
           cell.classList.add("type-unavail");
           cell.innerHTML = `
             <div class="slot-title">Unavailable</div>
-            <div class="slot-sub">Blocked</div>
+            <div class="slot-sub">${reason ? escapeHtml(reason) : 'Blocked'}</div>
           `;
           td.appendChild(cell);
           tr.appendChild(td);

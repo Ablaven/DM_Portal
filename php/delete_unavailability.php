@@ -28,7 +28,7 @@ try {
     // Teachers can only delete their own unavailability
     if ($userRole === 'teacher') {
         $userDoctorId = (int)($u['doctor_id'] ?? 0);
-        $check = $pdo->prepare('SELECT doctor_id FROM unavailability WHERE unavailability_id = :id');
+        $check = $pdo->prepare('SELECT doctor_id FROM doctor_unavailability WHERE unavailability_id = :id');
         $check->execute([':id' => $id]);
         $row = $check->fetch();
         
@@ -39,7 +39,7 @@ try {
         }
     }
     
-    $del = $pdo->prepare('DELETE FROM unavailability WHERE unavailability_id = :id');
+    $del = $pdo->prepare('DELETE FROM doctor_unavailability WHERE unavailability_id = :id');
     $del->execute([':id' => $id]);
     echo json_encode(['success'=>true,'data'=>['deleted'=>true]]);
 } catch (Throwable $e) {

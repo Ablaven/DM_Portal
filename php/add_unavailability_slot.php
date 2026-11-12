@@ -97,7 +97,7 @@ try {
     // Check if unavailability already exists for this slot
     $checkStmt = $pdo->prepare("
         SELECT unavailability_id 
-        FROM unavailability 
+        FROM doctor_unavailability 
         WHERE doctor_id = ? 
         AND start_datetime = ? 
         AND end_datetime = ?
@@ -111,7 +111,7 @@ try {
     
     // Insert unavailability
     $insertStmt = $pdo->prepare("
-        INSERT INTO unavailability (doctor_id, start_datetime, end_datetime, reason, created_at)
+        INSERT INTO doctor_unavailability (doctor_id, start_datetime, end_datetime, reason, created_at)
         VALUES (?, ?, ?, ?, NOW())
     ");
     

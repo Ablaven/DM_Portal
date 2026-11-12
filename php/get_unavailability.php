@@ -42,7 +42,7 @@ try {
 
     $stmt = $pdo->prepare(
         'SELECT unavailability_id, start_datetime, end_datetime, reason
-         FROM unavailability
+         FROM doctor_unavailability
          WHERE doctor_id = :doctor_id
            AND start_datetime < :end_dt
            AND end_datetime > :start_dt

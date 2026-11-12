@@ -307,8 +307,11 @@
   function showStyledConfirm(message, title = "Confirm") {
     return new Promise((resolve) => {
       try {
+        // Remove any existing confirm modals first
+        document.querySelectorAll('.modal[aria-hidden="false"]').forEach(m => m.remove());
+        
         const overlay = document.createElement('div');
-        overlay.className = 'modal';
+        overlay.className = 'modal open';
         overlay.setAttribute('aria-hidden', 'false');
         overlay.style.cssText = 'display:flex;z-index:9999;';
         overlay.innerHTML = `
@@ -395,7 +398,7 @@
     const confirmed = await new Promise((resolve) => {
       try {
         const overlay = document.createElement('div');
-        overlay.className = 'modal';
+        overlay.className = 'modal open';
         overlay.setAttribute('aria-hidden', 'false');
         overlay.style.cssText = 'display:flex;z-index:9999;';
         overlay.innerHTML = `
