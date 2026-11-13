@@ -66,11 +66,48 @@ try {
     $studentsStmt->execute([':sid' => $scheduleId]);
     $students = $studentsStmt->fetchAll();
     
+    // Try to get course info, but don't fail if it doesn't work
+    $totalEnrolled = 0;
+    $allStudents = [];
+    
+    try {
+        $courseStmt = $pdo->prepare('
+            SELECT c.year_level, c.semester
+            FROM doctor_schedules ds
+            JOIN courses c ON c.course_id = ds.course_id
+            WHERE ds.schedule_id = :sid
+            LIMIT 1
+        ');
+        $courseStmt->execute([':sid' => $scheduleId]);
+        $courseInfo = $courseStmt->fetch();
+        
+        if ($courseInfo) {
+            // Get all enrolled students for this year/semester
+            $allStudentsStmt = $pdo->prepare('
+                SELECT student_id, student_code, full_name
+                FROM students
+                WHERE year_level = :year AND semester = :sem
+                ORDER BY full_name ASC
+            ');
+            $allStudentsStmt->execute([
+                ':year' => $courseInfo['year_level'],
+                ':sem' => $courseInfo['semester']
+            ]);
+            $allStudents = $allStudentsStmt->fetchAll();
+            $totalEnrolled = count($allStudents);
+        }
+    } catch (Throwable $courseErr) {
+        // Log but don't fail - progress feature is optional
+        error_log('Could not get enrolled students: ' . $courseErr->getMessage());
+    }
+    
     echo json_encode([
         'success' => true,
         'data' => [
             'students' => $students,
-            'count' => count($students)
+            'count' => count($students),
+            'total_enrolled' => $totalEnrolled,
+            'all_students' => $allStudents
         ]
     ]);
     

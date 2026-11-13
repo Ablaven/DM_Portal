@@ -71,37 +71,90 @@
     const modalHTML = `
       <div class="modal open" id="qrAttendanceModal" aria-hidden="false" style="z-index:10000;">
         <div class="modal-backdrop"></div>
-        <div class="modal-card" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-          <div class="modal-header">
-            <h3 style="margin:0;">QR Code Attendance</h3>
+        <div class="modal-card" id="qrModalCard" style="max-width: 720px; max-height: 90vh; overflow-y: auto; transition: all 0.3s ease;">
+          <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="margin:0; font-size:22px; font-weight:700; letter-spacing:-0.3px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px; margin-top:-2px;">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <rect x="7" y="7" width="4" height="4"/>
+                <rect x="7" y="13" width="4" height="4"/>
+                <rect x="13" y="7" width="4" height="4"/>
+                <rect x="13" y="13" width="4" height="4"/>
+              </svg>
+              QR Code Attendance
+            </h3>
+            <button type="button" id="qrFullscreenBtn" class="btn btn-sm" style="padding:8px 12px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;" title="Fullscreen mode">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+              <span id="qrFullscreenText">Fullscreen</span>
+            </button>
           </div>
-          <div class="modal-body">
-            <div style="text-align:center; margin-bottom:20px;">
-              <p style="margin:0 0 15px 0; color: var(--muted);">Students scan this QR code to mark their attendance</p>
-              <div id="qrCodeContainer" style="display:inline-block; padding:20px; background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
-              <p style="margin:15px 0 0 0; font-size:13px; color:var(--muted);">Code refreshes every 15 seconds</p>
+          <div class="modal-body" style="padding:0 32px 32px 32px;">
+            
+            <!-- QR Code Section -->
+            <div style="text-align:center; margin-bottom:32px; padding:32px; background:var(--surface-1); border:1px solid var(--card-border); border-radius:16px; backdrop-filter:blur(20px);">
+              <p style="margin:0 0 20px 0; color:var(--muted); font-size:15px; font-weight:500;">Students scan this QR code to mark their attendance</p>
+              
+              <div id="qrCodeContainer" style="display:inline-block; padding:24px; background:white; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.15);"></div>
+              
+              <div style="margin-top:20px; display:inline-flex; align-items:center; gap:8px; padding:8px 16px; background:rgba(var(--accent-rgb), 0.12); border:1px solid rgba(var(--accent-rgb), 0.25); border-radius:20px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                </svg>
+                <span style="font-size:13px; color:var(--accent); font-weight:600;">Auto-refreshes every 15 seconds</span>
+              </div>
             </div>
             
-            <div style="margin-top:30px;">
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
-                <h4 style="margin:0;">Students Present (<span id="qrStudentCount">0</span>)</h4>
-                <button type="button" id="qrRefreshList" class="btn btn-sm btn-secondary" style="padding:6px 12px; font-size:13px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
-                    <polyline points="23 4 23 10 17 10"/>
-                    <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-                  </svg>
-                  Refresh
-                </button>
+            <!-- Students List Section -->
+            <div style="background:var(--surface-1); border:1px solid var(--card-border); border-radius:16px; padding:24px; backdrop-filter:blur(20px);">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <h4 style="margin:0; font-size:17px; font-weight:700;">Students Present</h4>
+                  <span id="qrStudentCount" style="display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:32px; padding:0 10px; background:var(--accent); color:white; border-radius:16px; font-size:15px; font-weight:700; box-shadow:0 4px 12px rgba(var(--accent-rgb), 0.3); transition: transform 0.3s ease;">0</span>
+                  <span id="qrProgressText" style="font-size:13px; color:var(--muted); font-weight:500;"></span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" id="qrFilterAbsent" class="btn btn-sm" style="padding:8px 14px; font-size:13px; font-weight:600; display:none;">
+                    Show Missing
+                  </button>
+                  <button type="button" id="qrRefreshList" class="btn btn-sm" style="padding:8px 16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                    </svg>
+                    Refresh
+                  </button>
+                </div>
               </div>
-              <div id="qrStudentList" style="max-height:300px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary);">
-                <div style="padding:30px; text-align:center; color:var(--muted);">No students have scanned yet...</div>
+              
+              <div id="qrStudentList" class="qr-student-list" style="overflow-y:auto; border:1px solid var(--card-border); border-radius:12px; background:var(--surface-2);">
+                <div style="padding:40px 20px; text-align:center; color:var(--muted);">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3; margin-bottom:12px;">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  <div style="font-size:14px; font-weight:500;">No students have scanned yet...</div>
+                  <div style="font-size:12px; margin-top:4px; opacity:0.7;">Students will appear here as they scan the QR code</div>
+                </div>
               </div>
             </div>
           </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" id="qrCloseBtn">Close QR & Continue Manually</button>
+          
+          <div class="modal-actions" style="padding:20px 32px; border-top:1px solid var(--card-border); background:var(--surface-1); border-radius:0 0 var(--radius) var(--radius);">
+            <button type="button" class="btn btn-secondary" id="qrCloseBtn" style="width:100%; padding:16px; font-size:15px; font-weight:600;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px; margin-top:-2px;">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Close QR & Continue Manually
+            </button>
           </div>
-          <div id="qrModalStatus" style="margin-top:15px; padding:10px; border-radius:6px; display:none;"></div>
+          
+          <div id="qrModalStatus" style="margin:0 32px 20px 32px; padding:12px 16px; border-radius:10px; display:none; font-size:14px; font-weight:600;"></div>
         </div>
       </div>
     `;
@@ -116,9 +169,399 @@
     // Bind close handler
     document.getElementById("qrCloseBtn")?.addEventListener("click", () => closeQRAttendanceModal(scheduleId));
     document.getElementById("qrRefreshList")?.addEventListener("click", () => refreshQRStudentList(scheduleId));
+    
+    // Bind fullscreen toggle
+    document.getElementById("qrFullscreenBtn")?.addEventListener("click", toggleQRFullscreen);
+    
+    // Bind filter button (will be shown when students enrolled)
+    document.getElementById("qrFilterAbsent")?.addEventListener("click", toggleAbsentFilter);
+    
+    // Add CSS for slide-in animation and student list height
+    const style = document.createElement("style");
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      .qr-student-list {
+        max-height: 320px;
+      }
+    `;
+    document.head.appendChild(style);
 
     // Start QR session
     startQRSession(scheduleId);
+  }
+  
+  // Global variables for new features
+  let qrIsFullscreen = false;
+  let qrShowAbsentOnly = false;
+  let qrAllStudents = [];
+  let qrPresentStudents = [];
+  let qrPreviousCount = 0;
+  
+  // Sound notification function
+  function playQRNotificationSound() {
+    if (!qrSoundEnabled) return;
+    
+    // Create audio context for beep sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800; // Pleasant beep frequency
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  }
+  
+  // Fullscreen toggle function using proper Fullscreen API
+  async function toggleQRFullscreen() {
+    const modal = document.getElementById("qrModalCard");
+    const btn = document.getElementById("qrFullscreenBtn");
+    const btnText = document.getElementById("qrFullscreenText");
+    
+    if (!modal || !btn) return;
+    
+    // Check if already in fullscreen
+    const isCurrentlyFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+    
+    if (!isCurrentlyFullscreen) {
+      // Enter fullscreen
+      try {
+        if (modal.requestFullscreen) {
+          await modal.requestFullscreen();
+        } else if (modal.webkitRequestFullscreen) {
+          await modal.webkitRequestFullscreen();
+        } else if (modal.mozRequestFullScreen) {
+          await modal.mozRequestFullScreen();
+        } else if (modal.msRequestFullscreen) {
+          await modal.msRequestFullscreen();
+        }
+        
+        qrIsFullscreen = true;
+        applyFullscreenStyles(modal, true);
+        btnText.textContent = "Exit Fullscreen";
+      } catch (err) {
+        console.error('Fullscreen failed:', err);
+        // Fallback to CSS-only fullscreen
+        cssOnlyFullscreen(modal, true);
+      }
+    } else {
+      // Exit fullscreen
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          await document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          await document.msExitFullscreen();
+        }
+        
+        qrIsFullscreen = false;
+        applyFullscreenStyles(modal, false);
+        btnText.textContent = "Fullscreen";
+      } catch (err) {
+        console.error('Exit fullscreen failed:', err);
+        cssOnlyFullscreen(modal, false);
+      }
+    }
+  }
+  
+  // Apply fullscreen styling
+  function applyFullscreenStyles(modal, isFullscreen) {
+    const qrContainer = document.getElementById("qrCodeContainer");
+    const qrImage = qrContainer?.querySelector("img");
+    const qrSection = qrContainer?.closest('div[style*="text-align:center"]');
+    const modalBody = modal.querySelector(".modal-body");
+    // Find student section by looking for the one that contains #qrStudentList
+    const studentSectionWrapper = modal.querySelector('#qrStudentList')?.closest('div[style*="background:var(--surface-1)"]');
+    
+    if (isFullscreen) {
+      // Fullscreen mode - show both QR and student list side by side
+      modal.classList.add('qr-fullscreen-active');
+      
+      // Hide the modal backdrop in fullscreen
+      const backdrop = modal.querySelector('.modal-backdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+      }
+      
+      // Modal body: horizontal layout, fills full height
+      if (modalBody) {
+        modalBody.style.cssText = "display: flex !important; flex-direction: row !important; gap: 24px !important; padding: 32px !important; flex: 1 1 auto !important; overflow: hidden !important; align-items: stretch !important; min-height: 0 !important;";
+      }
+      
+      // QR section: takes 60% of width - keep same bright styling as normal mode
+      if (qrSection) {
+        qrSection.style.cssText = "text-align: center; padding: 32px; background: var(--surface-1); border: 1px solid var(--card-border); border-radius: 16px; backdrop-filter: blur(20px); flex: 0 0 60% !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; margin-bottom: 0 !important;";
+      }
+      
+      // Student section wrapper: takes 40% of width - keep same bright styling as normal mode
+      if (studentSectionWrapper) {
+        studentSectionWrapper.style.cssText = "background: var(--surface-1); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; backdrop-filter: blur(20px); flex: 0 0 40% !important; display: flex !important; flex-direction: column !important; min-height: 0 !important;";
+        studentSectionWrapper.setAttribute('data-fullscreen-student', 'true');
+        
+        // Find header and list
+        const studentHeader = studentSectionWrapper.querySelector('div[style*="justify-content:space-between"]');
+        const studentList = studentSectionWrapper.querySelector('#qrStudentList');
+        
+        // Header stays fixed size
+        if (studentHeader) {
+          studentHeader.style.flex = "0 0 auto";
+          studentHeader.style.marginBottom = "12px";
+        }
+        
+        // List fills remaining space - use setProperty for clarity
+        if (studentList) {
+          studentList.style.setProperty('max-height', 'none', 'important');
+          studentList.style.setProperty('flex', '1 1 auto', 'important');
+          studentList.style.setProperty('min-height', '0', 'important');
+          studentList.style.setProperty('height', 'auto', 'important');
+          studentList.style.setProperty('overflow-y', 'auto', 'important');
+        }
+      }
+      
+      // Scale QR container
+      if (qrContainer) {
+        qrContainer.style.padding = "30px";
+        qrContainer.style.margin = "auto";
+      }
+      
+      // Scale QR image responsively
+      if (qrImage) {
+        qrImage.style.width = "min(50vh, 40vw, 600px)";
+        qrImage.style.height = "min(50vh, 40vw, 600px)";
+        qrImage.style.transition = "all 0.3s ease";
+      }
+      
+    } else {
+      // Normal mode
+      modal.classList.remove('qr-fullscreen-active');
+      
+      // Show the modal backdrop again
+      const backdrop = modal.querySelector('.modal-backdrop');
+      if (backdrop) {
+        backdrop.style.display = '';
+      }
+      
+      // Reset modal body
+      if (modalBody) {
+        modalBody.style.display = "";
+        modalBody.style.flexDirection = "";
+        modalBody.style.gap = "";
+        modalBody.style.padding = "";
+        modalBody.style.flex = "";
+        modalBody.style.overflow = "";
+        modalBody.style.alignItems = "";
+      }
+      
+      // Reset QR section
+      if (qrSection) {
+        qrSection.style.flex = "";
+        qrSection.style.display = "";
+        qrSection.style.flexDirection = "";
+        qrSection.style.alignItems = "";
+        qrSection.style.justifyContent = "";
+        qrSection.style.marginBottom = "";
+      }
+      
+      // Reset student section
+      if (studentSectionWrapper) {
+        studentSectionWrapper.style.flex = "";
+        studentSectionWrapper.style.display = "";
+        studentSectionWrapper.style.flexDirection = "";
+        studentSectionWrapper.style.minHeight = "";
+        studentSectionWrapper.removeAttribute('data-fullscreen-student');
+        
+        // Reset header
+        const studentHeader = studentSectionWrapper.querySelector('div[style*="justify-content:space-between"]');
+        if (studentHeader) {
+          studentHeader.style.flex = "";
+          studentHeader.style.marginBottom = "";
+        }
+        
+        // Reset student list - clear inline styles to let CSS class apply
+        const studentList = studentSectionWrapper.querySelector('#qrStudentList');
+        if (studentList) {
+          studentList.style.maxHeight = ""; // Falls back to CSS class rule (320px)
+          studentList.style.flex = "";
+          studentList.style.minHeight = "";
+          studentList.style.height = "";
+          studentList.style.overflowY = "";
+        }
+      }
+      
+      // Reset QR container
+      if (qrContainer) {
+        qrContainer.style.padding = "24px";
+        qrContainer.style.margin = "";
+      }
+      
+      // Reset QR image
+      if (qrImage) {
+        qrImage.style.width = "300px";
+        qrImage.style.height = "300px";
+      }
+    }
+  }
+  
+  // Fallback CSS-only fullscreen (if Fullscreen API not supported)
+  function cssOnlyFullscreen(modal, isFullscreen) {
+    const btnText = document.getElementById("qrFullscreenText");
+    
+    if (isFullscreen) {
+      modal.style.position = "fixed";
+      modal.style.top = "0";
+      modal.style.left = "0";
+      modal.style.width = "100vw";
+      modal.style.height = "100vh";
+      modal.style.maxWidth = "100vw";
+      modal.style.maxHeight = "100vh";
+      modal.style.zIndex = "99999";
+      modal.style.borderRadius = "0";
+      
+      qrIsFullscreen = true;
+      applyFullscreenStyles(modal, true);
+      if (btnText) btnText.textContent = "Exit Fullscreen";
+      
+    } else {
+      modal.style.position = "";
+      modal.style.top = "";
+      modal.style.left = "";
+      modal.style.width = "";
+      modal.style.height = "";
+      modal.style.maxWidth = "720px";
+      modal.style.maxHeight = "90vh";
+      modal.style.zIndex = "";
+      modal.style.borderRadius = "";
+      
+      qrIsFullscreen = false;
+      applyFullscreenStyles(modal, false);
+      if (btnText) btnText.textContent = "Fullscreen";
+    }
+  }
+  
+  // Filter toggle function
+  function toggleAbsentFilter() {
+    qrShowAbsentOnly = !qrShowAbsentOnly;
+    const btn = document.getElementById("qrFilterAbsent");
+    
+    if (btn) {
+      btn.textContent = qrShowAbsentOnly ? "Show All" : "Show Missing";
+      btn.style.background = qrShowAbsentOnly ? "var(--accent)" : "";
+      btn.style.color = qrShowAbsentOnly ? "white" : "";
+    }
+    
+    renderQRStudentList();
+  }
+  
+  // Render student list with filter support
+  function renderQRStudentList() {
+    const listEl = document.getElementById("qrStudentList");
+    if (!listEl) return;
+    
+    let studentsToShow = [];
+    
+    if (qrShowAbsentOnly) {
+      // Show students who haven't scanned
+      const presentCodes = new Set(qrPresentStudents.map(s => s.student_code));
+      studentsToShow = qrAllStudents.filter(s => !presentCodes.has(s.student_code));
+      
+      if (studentsToShow.length === 0) {
+        listEl.innerHTML = `
+          <div style="padding:40px 20px; text-align:center; color:var(--success);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin-bottom:12px;">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <div style="font-size:14px; font-weight:600;">All students are present!</div>
+            <div style="font-size:12px; margin-top:4px; opacity:0.8;">Everyone has scanned the QR code</div>
+          </div>
+        `;
+        reapplyFullscreenStylesIfNeeded();
+        return;
+      }
+      
+      listEl.innerHTML = studentsToShow.map(s => `
+        <div style="padding:14px 18px; border-bottom:1px solid var(--card-border); display:flex; align-items:center; justify-content:space-between; background:rgba(var(--danger-rgb), 0.05);">
+          <div style="flex:1;">
+            <div style="font-weight:700; color:var(--text); font-size:15px; margin-bottom:4px; letter-spacing:-0.2px;">${escapeHtml(s.name || '')}</div>
+            <div style="font-size:13px; color:var(--muted); font-family: 'Courier New', monospace; letter-spacing:0.5px;">${escapeHtml(s.student_code || '')}</div>
+          </div>
+          <span style="padding:6px 14px; background:rgba(var(--danger-rgb), 0.12); color:var(--danger); border:1px solid rgba(var(--danger-rgb), 0.3); border-radius:8px; font-size:12px; font-weight:700;">
+            ✗ MISSING
+          </span>
+        </div>
+      `).join('');
+      
+      // Reapply fullscreen styles after render
+      reapplyFullscreenStylesIfNeeded();
+      
+    } else {
+      // Show students who scanned
+      if (qrPresentStudents.length === 0) {
+        listEl.innerHTML = `
+          <div style="padding:40px 20px; text-align:center; color:var(--muted);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3; margin-bottom:12px;">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <div style="font-size:14px; font-weight:500;">No students have scanned yet...</div>
+            <div style="font-size:12px; margin-top:4px; opacity:0.7;">Students will appear here as they scan the QR code</div>
+          </div>
+        `;
+        reapplyFullscreenStylesIfNeeded();
+        return;
+      }
+      
+      listEl.innerHTML = qrPresentStudents.map(s => `
+        <div style="padding:14px 18px; border-bottom:1px solid var(--card-border); display:flex; align-items:center; justify-content:space-between; transition:background 0.2s ease; backdrop-filter:blur(10px);" onmouseover="this.style.background='var(--surface-1)'" onmouseout="this.style.background='transparent'">
+          <div style="flex:1;">
+            <div style="font-weight:700; color:var(--text); font-size:15px; margin-bottom:4px; letter-spacing:-0.2px;">${escapeHtml(s.full_name || '')}</div>
+            <div style="font-size:13px; color:var(--muted); font-family: 'Courier New', monospace; letter-spacing:0.5px;">${escapeHtml(s.student_code || '')}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="padding:6px 14px; background:var(--badge-success-bg); color:var(--badge-success-text); border:1px solid var(--badge-success-border); border-radius:8px; font-size:12px; font-weight:700; letter-spacing:0.3px;">
+              ✓ ${escapeHtml(s.status || 'PRESENT')}
+            </span>
+            <span style="font-size:12px; color:var(--muted); font-weight:500; min-width:70px; text-align:right;">
+              ${new Date(s.marked_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        </div>
+      `).join('');
+      
+      // Reapply fullscreen styles after render
+      reapplyFullscreenStylesIfNeeded();
+    }
+  }
+  
+  // Helper to reapply fullscreen styles if currently in fullscreen mode
+  function reapplyFullscreenStylesIfNeeded() {
+    if (qrIsFullscreen) {
+      const modal = document.getElementById("qrModalCard");
+      if (modal) {
+        // Direct call without setTimeout - inline style conflict removed
+        applyFullscreenStyles(modal, true);
+      }
+    }
   }
 
   function closeQRAttendanceModal(scheduleId) {
@@ -142,6 +585,11 @@
     if (modal) modal.remove();
 
     qrSession = null;
+    qrIsFullscreen = false;
+    qrShowAbsentOnly = false;
+    qrAllStudents = [];
+    qrPresentStudents = [];
+    qrPreviousCount = 0;
     
     console.log('[QR Modal] Closed.');
   }
@@ -271,33 +719,46 @@
       }
 
       const students = payload.data.students || [];
-      const countEl = document.getElementById("qrStudentCount");
-      const listEl = document.getElementById("qrStudentList");
-
-      if (countEl) countEl.textContent = String(students.length);
-
-      if (listEl) {
-        if (students.length === 0) {
-          listEl.innerHTML = '<div style="padding:30px; text-align:center; color:var(--muted);">No students have scanned yet...</div>';
-        } else {
-          listEl.innerHTML = students.map(s => `
-            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
-              <div>
-                <div style="font-weight:600; color:var(--text);">${escapeHtml(s.full_name || '')}</div>
-                <div style="font-size:13px; color:var(--muted); font-family: 'Courier New', monospace;">${escapeHtml(s.student_code || '')}</div>
-              </div>
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="padding:4px 10px; background:var(--success); color:white; border-radius:6px; font-size:12px; font-weight:600;">
-                  ${escapeHtml(s.status || 'PRESENT')}
-                </span>
-                <span style="font-size:12px; color:var(--muted);">
-                  ${new Date(s.marked_at).toLocaleTimeString()}
-                </span>
-              </div>
-            </div>
-          `).join('');
+      const totalEnrolled = payload.data.total_enrolled || 0;
+      const allStudents = payload.data.all_students || [];
+      
+      // Update global state
+      qrPresentStudents = students;
+      qrAllStudents = allStudents;
+      
+      // Detect new student (for animation)
+      if (students.length > qrPreviousCount && qrPreviousCount > 0) {
+        // Pulse animation on count badge
+        const countEl = document.getElementById("qrStudentCount");
+        if (countEl) {
+          countEl.style.transform = "scale(1.3)";
+          setTimeout(() => { countEl.style.transform = "scale(1)"; }, 300);
         }
       }
+      qrPreviousCount = students.length;
+      
+      // Update count badge
+      const countEl = document.getElementById("qrStudentCount");
+      if (countEl) countEl.textContent = String(students.length);
+      
+      // Update progress text
+      const progressEl = document.getElementById("qrProgressText");
+      if (progressEl && totalEnrolled > 0) {
+        const percentage = Math.round((students.length / totalEnrolled) * 100);
+        progressEl.textContent = `(${students.length}/${totalEnrolled} • ${percentage}%)`;
+        
+        // Show filter button if we have enrolled students
+        const filterBtn = document.getElementById("qrFilterAbsent");
+        if (filterBtn && students.length > 0) {
+          filterBtn.style.display = "flex";
+        }
+      }
+      
+      // Render the list
+      renderQRStudentList();
+      
+      // Note: renderQRStudentList already calls reapplyFullscreenStylesIfNeeded internally
+      
     } catch (err) {
       console.error("Status refresh error:", err);
     }

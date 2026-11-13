@@ -59,36 +59,6 @@ try {
     document.documentElement.setAttribute('data-theme', theme);
   </script>
   <style>
-    :root {
-      --qr-primary: rgba(18, 72, 200, 1);
-      --qr-primary-rgb: 18, 72, 200;
-      --qr-secondary: rgba(112, 80, 255, 1);
-      --qr-success: #48bb78;
-      --qr-error: #ff6b6b;
-    }
-    
-    html[data-theme="dark"] {
-      --qr-bg: #0a0e1a;
-      --qr-text: #e6eeff;
-      --qr-card-bg: #151b2e;
-      --qr-surface: #1a2139;
-      --qr-border: rgba(255, 255, 255, 0.08);
-      --qr-muted: rgba(230, 238, 255, 0.55);
-      --qr-input-bg: #0f1623;
-      --qr-input-border: rgba(255, 255, 255, 0.15);
-    }
-    
-    html[data-theme="light"] {
-      --qr-bg: #f5f8ff;
-      --qr-text: #0a0e1a;
-      --qr-card-bg: #ffffff;
-      --qr-surface: #f0f4ff;
-      --qr-border: rgba(18, 72, 200, 0.12);
-      --qr-muted: rgba(10, 14, 26, 0.6);
-      --qr-input-bg: #ffffff;
-      --qr-input-border: rgba(18, 72, 200, 0.25);
-    }
-    
     * {
       margin: 0;
       padding: 0;
@@ -96,101 +66,93 @@ try {
     }
     
     body { 
-      background: var(--qr-bg);
-      color: var(--qr-text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       position: relative;
       overflow-x: hidden;
     }
     
+    /* Glassmorphism background gradients matching main site */
     body::before {
       content: '';
       position: fixed;
-      top: -50%;
-      right: -20%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(var(--qr-primary-rgb), 0.08) 0%, transparent 70%);
+      top: -15%;
+      right: -10%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--bg-grad-1) 0%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
       z-index: 0;
+      animation: float1 20s ease-in-out infinite;
     }
     
     body::after {
       content: '';
       position: fixed;
-      bottom: -40%;
+      bottom: -20%;
       left: -15%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(112, 80, 255, 0.06) 0%, transparent 70%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--bg-grad-2) 0%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
       z-index: 0;
+      animation: float2 25s ease-in-out infinite;
+    }
+    
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-30px, 50px) scale(1.1); }
+      66% { transform: translate(40px, -40px) scale(0.95); }
+    }
+    
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(50px, -30px) scale(1.05); }
+      66% { transform: translate(-40px, 40px) scale(0.9); }
     }
     
     .qr-container {
       width: 100%;
-      max-width: 440px;
+      max-width: 460px;
       position: relative;
       z-index: 1;
     }
     
+    /* Card matching portal style */
     .qr-card {
-      background: var(--qr-card-bg);
-      border: 1px solid var(--qr-border);
-      border-radius: 24px;
-      padding: 48px 36px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
-                  0 0 0 1px rgba(var(--qr-primary-rgb), 0.05);
+      background: var(--card);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 44px 38px;
+      box-shadow: var(--shadow);
       position: relative;
-      backdrop-filter: blur(10px);
-    }
-    
-    html[data-theme="light"] .qr-card {
-      box-shadow: 0 20px 60px rgba(18, 72, 200, 0.08),
-                  0 0 0 1px rgba(var(--qr-primary-rgb), 0.08);
-    }
-    
-    .qr-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 4px;
-      background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(var(--qr-primary-rgb), 0.8) 30%,
-        rgba(112, 80, 255, 0.8) 70%,
-        transparent 100%);
-      border-radius: 0 0 4px 4px;
     }
     
     .qr-header {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
     
     .qr-icon-wrap {
-      width: 80px;
-      height: 80px;
+      width: 88px;
+      height: 88px;
       margin: 0 auto 20px;
-      background: linear-gradient(135deg, 
-        rgba(var(--qr-primary-rgb), 1) 0%, 
-        rgba(112, 80, 255, 0.9) 100%);
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(var(--accent-rgb), 0.7) 100%);
       border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 8px 24px rgba(var(--qr-primary-rgb), 0.35),
-                  0 0 0 4px rgba(var(--qr-primary-rgb), 0.1);
+      box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.35);
       animation: iconFloat 3s ease-in-out infinite;
     }
     
@@ -200,102 +162,99 @@ try {
     }
     
     .qr-icon {
-      font-size: 40px;
-      color: white;
-      line-height: 1;
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
     }
     
     .qr-title {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
-      color: var(--qr-text);
+      color: var(--text);
       margin: 0 0 8px 0;
       letter-spacing: -0.5px;
     }
     
     .qr-subtitle {
       font-size: 15px;
-      color: var(--qr-muted);
+      color: var(--muted);
       font-weight: 500;
     }
     
+    /* Student badge matching portal card style */
     .qr-student-badge {
-      background: var(--qr-surface);
-      border: 1px solid var(--qr-border);
-      border-radius: 16px;
-      padding: 20px 24px;
-      margin-bottom: 32px;
+      background: var(--surface-1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px 26px;
+      margin-bottom: 28px;
       text-align: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
+      transition: all 0.3s ease;
     }
     
-    .qr-student-badge::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, 
-        transparent, 
-        rgba(var(--qr-primary-rgb), 0.05), 
-        transparent);
-      transition: left 0.6s;
-    }
-    
-    .qr-student-badge:hover::before {
-      left: 100%;
+    .qr-student-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(var(--accent-rgb), 0.15);
     }
     
     .qr-student-name {
       font-size: 19px;
       font-weight: 700;
-      color: var(--qr-text);
-      margin-bottom: 6px;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
     }
     
     .qr-student-code {
       font-size: 15px;
       font-weight: 600;
-      color: var(--qr-primary);
-      letter-spacing: 1px;
+      color: var(--accent);
+      letter-spacing: 1.2px;
       font-family: 'Courier New', monospace;
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(var(--accent-rgb), 0.12);
+      border-radius: 10px;
+      border: 1px solid rgba(var(--accent-rgb), 0.25);
     }
     
     .qr-form-field {
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
     
     .qr-label {
       display: block;
       font-size: 14px;
       font-weight: 600;
-      color: var(--qr-text);
+      color: var(--text);
       margin-bottom: 10px;
       letter-spacing: 0.3px;
     }
     
+    /* Input matching portal style */
     .qr-input {
       width: 100%;
       padding: 16px 20px;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
-      background: var(--qr-input-bg);
-      border: 2px solid var(--qr-input-border);
+      background: var(--input-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--input-border);
       border-radius: 14px;
-      color: var(--qr-text);
+      color: var(--text);
       outline: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s ease;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       font-family: 'Courier New', monospace;
     }
     
     .qr-input:focus {
-      border-color: var(--qr-primary);
-      box-shadow: 0 0 0 4px rgba(var(--qr-primary-rgb), 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
       transform: translateY(-2px);
     }
     
@@ -303,62 +262,36 @@ try {
       text-transform: none;
       letter-spacing: normal;
       font-weight: 400;
+      color: var(--muted);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
     .qr-helper {
       font-size: 13px;
-      color: var(--qr-muted);
+      color: var(--muted);
       margin-top: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
     
-    .qr-helper::before {
-      content: 'ℹ️';
-      font-size: 12px;
-    }
-    
+    /* Button matching portal .btn style */
     .qr-submit {
       width: 100%;
       padding: 18px 24px;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       color: white;
-      background: linear-gradient(135deg, 
-        rgba(var(--qr-primary-rgb), 1) 0%, 
-        rgba(112, 80, 255, 0.9) 100%);
+      background: var(--accent);
       border: none;
       border-radius: 14px;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 6px 20px rgba(var(--qr-primary-rgb), 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .qr-submit::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.3);
+      letter-spacing: 0.5px;
     }
     
     .qr-submit:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(var(--qr-primary-rgb), 0.4);
-    }
-    
-    .qr-submit:hover::before {
-      width: 300px;
-      height: 300px;
+      box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.4);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
     }
     
     .qr-submit:active {
@@ -371,15 +304,18 @@ try {
       transform: none;
     }
     
+    /* Status messages */
     .qr-status {
-      margin-top: 20px;
-      padding: 16px 20px;
+      margin-top: 18px;
+      padding: 14px 18px;
       border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       text-align: center;
       display: none;
-      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: slideUp 0.4s ease;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
     
     @keyframes slideUp {
@@ -394,26 +330,27 @@ try {
     }
     
     .qr-status.success {
-      background: rgba(72, 187, 120, 0.12);
-      color: var(--qr-success);
-      border: 1px solid rgba(72, 187, 120, 0.3);
+      background: var(--badge-success-bg);
+      color: var(--badge-success-text);
+      border: 1px solid var(--badge-success-border);
       display: block;
     }
     
     .qr-status.error {
-      background: rgba(255, 107, 107, 0.12);
-      color: var(--qr-error);
-      border: 1px solid rgba(255, 107, 107, 0.3);
+      background: rgba(var(--danger-rgb), 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(var(--danger-rgb), 0.3);
       display: block;
     }
     
     .qr-status.loading {
-      background: rgba(var(--qr-primary-rgb), 0.12);
-      color: var(--qr-primary);
-      border: 1px solid rgba(var(--qr-primary-rgb), 0.3);
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
       display: block;
     }
     
+    /* Success view */
     .qr-success-view {
       text-align: center;
       animation: successZoom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -431,42 +368,54 @@ try {
     }
     
     .qr-success-icon-big {
-      font-size: 72px;
+      font-size: 80px;
       margin-bottom: 24px;
-      animation: successBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      animation: successBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
     
     @keyframes successBounce {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
+      0% { 
+        transform: scale(0); 
+        opacity: 0;
+      }
+      50% { 
+        transform: scale(1.2); 
+      }
+      100% { 
+        transform: scale(1);
+        opacity: 1;
+      }
     }
     
     .qr-success-title {
       font-size: 26px;
-      font-weight: 700;
-      color: var(--qr-success);
+      font-weight: 800;
+      color: var(--success);
       margin-bottom: 20px;
+      letter-spacing: -0.5px;
     }
     
     .qr-success-info {
-      background: var(--qr-surface);
-      border: 1px solid var(--qr-border);
-      border-radius: 14px;
-      padding: 20px;
+      background: var(--surface-1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
       margin: 24px 0;
     }
     
     .qr-success-name {
       font-size: 20px;
       font-weight: 700;
-      color: var(--qr-text);
+      color: var(--text);
       margin-bottom: 8px;
     }
     
     .qr-success-code {
       font-size: 16px;
       font-weight: 600;
-      color: var(--qr-primary);
+      color: var(--accent);
       font-family: 'Courier New', monospace;
       letter-spacing: 1px;
       margin-bottom: 16px;
@@ -475,31 +424,31 @@ try {
     .qr-success-status {
       display: inline-block;
       padding: 10px 24px;
-      background: rgba(72, 187, 120, 0.15);
-      color: var(--qr-success);
+      background: var(--badge-success-bg);
+      color: var(--badge-success-text);
       border-radius: 20px;
       font-size: 15px;
       font-weight: 700;
-      border: 1px solid rgba(72, 187, 120, 0.3);
+      border: 1px solid var(--badge-success-border);
     }
     
     .qr-return-btn {
       display: inline-block;
-      margin-top: 28px;
+      margin-top: 24px;
       padding: 14px 32px;
-      background: var(--qr-primary);
+      background: var(--accent);
       color: white;
       text-decoration: none;
       border-radius: 12px;
       font-weight: 600;
       font-size: 15px;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(var(--qr-primary-rgb), 0.25);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.25);
     }
     
     .qr-return-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(var(--qr-primary-rgb), 0.35);
+      box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.35);
     }
     
     @media (max-width: 500px) {
@@ -508,12 +457,13 @@ try {
       }
       
       .qr-title {
-        font-size: 24px;
+        font-size: 22px;
       }
       
       body::before,
       body::after {
-        display: none;
+        width: 400px;
+        height: 400px;
       }
     }
   </style>
@@ -523,7 +473,9 @@ try {
     <div class="qr-card">
       <div class="qr-header">
         <div class="qr-icon-wrap">
-          <span class="qr-icon">✓</span>
+          <svg class="qr-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+          </svg>
         </div>
         <h1 class="qr-title">Mark Attendance</h1>
         <p class="qr-subtitle">Confirm your presence for this lecture</p>
