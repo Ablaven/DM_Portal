@@ -605,6 +605,13 @@ $importStatus = $_GET['import_status'] ?? '';
           </div>
 
           <div class="field" style="margin:0;">
+            <label for="teacherSelectFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">👤 Select Teacher</label>
+            <select id="teacherSelectFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="All">All Teachers (from selected nationality)</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
             <label for="teacherScheduleTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Term/Semester</label>
             <select id="teacherScheduleTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
               <option value="">All Terms</option>

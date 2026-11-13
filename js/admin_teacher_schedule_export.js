@@ -66,6 +66,9 @@
       // Store weeks globally
       window._teacherScheduleWeeks = allWeeks;
       
+      // Load all teachers
+      await loadTeachers();
+      
       // Populate and filter week dropdowns
       filterWeeksByTerm(allWeeks, termSelect?.value || "");
       
@@ -80,6 +83,70 @@
     } catch (err) {
       console.error("[Teacher Schedule Export] ❌ Error:", err);
     }
+  }
+
+  async function loadTeachers() {
+    try {
+      const payload = await fetchJson("php/get_doctors.php");
+      if (!payload?.success) {
+        console.error("Failed to load teachers:", payload?.error);
+        return;
+      }
+
+      const teachers = payload.data || [];
+      console.log("[Teacher Schedule Export] Loaded", teachers.length, "teachers");
+      
+      // Store teachers globally
+      window._allTeachers = teachers;
+      
+      // Initial population
+      populateTeacherDropdown(teachers, "All");
+      
+      // Setup nationality filter listener
+      const nationalitySelect = document.getElementById("teacherNationalityFilter");
+      
+      if (nationalitySelect) {
+        nationalitySelect.addEventListener("change", () => {
+          const nationality = nationalitySelect.value;
+          populateTeacherDropdown(teachers, nationality);
+        });
+      }
+    } catch (err) {
+      console.error("[Teacher Schedule Export] Error loading teachers:", err);
+    }
+  }
+
+  function populateTeacherDropdown(teachers, nationality) {
+    const teacherSelect = document.getElementById("teacherSelectFilter");
+    if (!teacherSelect) return;
+
+    // Filter teachers by nationality
+    let filteredTeachers = teachers;
+    if (nationality === "French") {
+      filteredTeachers = teachers.filter(t => t.doctor_type === "French");
+    } else if (nationality === "Egyptian") {
+      filteredTeachers = teachers.filter(t => t.doctor_type === "Egyptian");
+    }
+
+    // Clear and repopulate
+    teacherSelect.innerHTML = '<option value="All">All Teachers (from selected nationality)</option>';
+    
+    // Sort by name
+    filteredTeachers.sort((a, b) => {
+      const nameA = (a.full_name || "").toLowerCase();
+      const nameB = (b.full_name || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+    
+    // Add teachers
+    for (const teacher of filteredTeachers) {
+      const opt = document.createElement("option");
+      opt.value = String(teacher.doctor_id);
+      opt.textContent = teacher.full_name + (teacher.doctor_type ? ` (${teacher.doctor_type})` : '');
+      teacherSelect.appendChild(opt);
+    }
+    
+    console.log("[Teacher Schedule Export] Populated", filteredTeachers.length, "teachers for nationality:", nationality);
   }
 
   function filterWeeksByTerm(weeks, selectedTermId) {
@@ -117,6 +184,7 @@
     const fromWeekId = parseInt(document.getElementById("teacherScheduleFromWeek")?.value || "0", 10);
     const toWeekId = parseInt(document.getElementById("teacherScheduleToWeek")?.value || "0", 10);
     const nationalityFilter = document.getElementById("teacherNationalityFilter")?.value || "All";
+    const teacherId = document.getElementById("teacherSelectFilter")?.value || "All";
 
     if (!fromWeekId || !toWeekId) {
       setStatusById("teacherScheduleStatus", "Please select both 'From Week' and 'To Week'.", "error");
@@ -132,7 +200,12 @@
 
     try {
       // Build download URL
-      const url = `php/export_teacher_schedules_excel.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}&nationality=${encodeURIComponent(nationalityFilter)}`;
+      let url = `php/export_teacher_schedules_excel.php?week_id_from=${fromWeekId}&week_id_to=${toWeekId}&nationality=${encodeURIComponent(nationalityFilter)}`;
+      
+      // Add teacher_id if specific teacher selected
+      if (teacherId !== "All") {
+        url += `&teacher_id=${encodeURIComponent(teacherId)}`;
+      }
       
       // Trigger download
       const link = document.createElement("a");

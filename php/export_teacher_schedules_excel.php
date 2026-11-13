@@ -12,6 +12,7 @@ auth_require_roles(['admin']);
 $weekIdFrom = isset($_GET['week_id_from']) ? (int)$_GET['week_id_from'] : 0;
 $weekIdTo = isset($_GET['week_id_to']) ? (int)$_GET['week_id_to'] : 0;
 $nationalityFilter = isset($_GET['nationality']) ? trim($_GET['nationality']) : 'All';
+$teacherId = isset($_GET['teacher_id']) ? trim($_GET['teacher_id']) : 'All';
 
 if ($weekIdFrom <= 0 || $weekIdTo <= 0) {
     http_response_code(400);
@@ -31,16 +32,23 @@ if (!in_array($nationalityFilter, ['French', 'Egyptian', 'All'], true)) {
 try {
     $pdo = get_pdo();
 
-    // Get teachers based on nationality filter
+    // Get teachers based on nationality filter and specific teacher selection
     $doctorQuery = "SELECT doctor_id, full_name, doctor_type FROM doctors WHERE 1=1";
     $doctorParams = [];
     
-    if ($nationalityFilter === 'French') {
-        $doctorQuery .= " AND doctor_type = :doctor_type";
-        $doctorParams[':doctor_type'] = 'French';
-    } elseif ($nationalityFilter === 'Egyptian') {
-        $doctorQuery .= " AND doctor_type = :doctor_type";
-        $doctorParams[':doctor_type'] = 'Egyptian';
+    // Filter by specific teacher if selected
+    if ($teacherId !== 'All' && is_numeric($teacherId)) {
+        $doctorQuery .= " AND doctor_id = :teacher_id";
+        $doctorParams[':teacher_id'] = (int)$teacherId;
+    } else {
+        // Filter by nationality if no specific teacher selected
+        if ($nationalityFilter === 'French') {
+            $doctorQuery .= " AND doctor_type = :doctor_type";
+            $doctorParams[':doctor_type'] = 'French';
+        } elseif ($nationalityFilter === 'Egyptian') {
+            $doctorQuery .= " AND doctor_type = :doctor_type";
+            $doctorParams[':doctor_type'] = 'Egyptian';
+        }
     }
     
     $doctorQuery .= " ORDER BY full_name";
