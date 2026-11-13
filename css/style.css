@@ -10741,3 +10741,27 @@ html[data-theme="light"] #qrModalCard.qr-fullscreen-active .modal-body > div {
   box-shadow: 0 8px 32px rgba(18, 72, 200, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
+
+
+/* QR Modal fullscreen - DARK theme */
+html[data-theme="dark"] #qrModalCard.qr-fullscreen-active {
+  background: linear-gradient(135deg, 
+    rgba(20, 25, 35, 0.92) 0%, 
+    rgba(25, 30, 40, 0.95) 100%) !important;
+  backdrop-filter: blur(60px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(60px) saturate(180%) !important;
+  box-shadow: 
+    0 24px 56px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 80px rgba(18, 72, 200, 0.15) !important;
+}
+
+html[data-theme="dark"] #qrModalCard.qr-fullscreen-active .modal-body > div {
+  background: rgba(30, 35, 45, 0.85) !important;
+  backdrop-filter: blur(40px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
