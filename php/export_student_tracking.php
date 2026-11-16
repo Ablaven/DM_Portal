@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+// Increase limits for large exports
+ini_set('memory_limit', '512M');
+ini_set('max_execution_time', '300'); // 5 minutes
+set_time_limit(300);
+
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/_xlsx_writer.php';
@@ -24,6 +29,14 @@ try {
     $termId = isset($_GET['term_id']) && $_GET['term_id'] !== '' ? (int)$_GET['term_id'] : null;
     $weekIdFrom = isset($_GET['week_id_from']) && $_GET['week_id_from'] !== '' ? (int)$_GET['week_id_from'] : null;
     $weekIdTo = isset($_GET['week_id_to']) && $_GET['week_id_to'] !== '' ? (int)$_GET['week_id_to'] : null;
+
+    // Calculate week range to prevent timeouts
+    if ($weekIdFrom !== null && $weekIdTo !== null) {
+        $weekRange = abs($weekIdTo - $weekIdFrom) + 1;
+        if ($weekRange > 4) {
+            bad_request('Week range too large (' . $weekRange . ' weeks). Please select a maximum of 4 weeks at a time to avoid timeout. Try splitting into smaller ranges (e.g., weeks 1-4, then 5-8).');
+        }
+    }
 
     if ($yearLevel === null) {
         bad_request('year_level is required');
@@ -48,6 +61,15 @@ try {
 
     if (empty($students)) {
         bad_request('No students found');
+    }
+    
+    // Warn if too many students (this will be a huge file)
+    if (count($students) > 50) {
+        error_log("[Student Tracking Export] WARNING: Exporting " . count($students) . " students - this may take a while and create a large file");
+    }
+    
+    if (count($students) > 100) {
+        bad_request('Too many students selected (' . count($students) . '). Please select a specific student or smaller group to avoid timeout.');
     }
 
     // Build WHERE clauses for filtering

@@ -711,6 +711,78 @@ $importStatus = $_GET['import_status'] ?? '';
       <div id="studentTrackingStatus" class="status" role="status" style="margin-bottom:12px;"></div>
     </section>
 
+    <!-- ── Student Attendance Summary ──────────────────────────────────────── -->
+    <section class="card" style="margin-top:20px;" data-section="reports">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+        <div style="width:56px; height:56px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(var(--info-rgb),0.2), rgba(var(--info-rgb),0.1)); border-radius:14px; font-size:1.8rem; flex-shrink:0;">
+          📊
+        </div>
+        <div>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Student Attendance Summary</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Export attendance percentage summary organized by student and subject.</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:20px; background:var(--surface-2); border:1px solid var(--card-border); border-radius:12px; margin-bottom:20px;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          
+          <div class="field" style="margin:0;">
+            <label for="summaryYearFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">🎓 Year Level</label>
+            <select id="summaryYearFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select Year...</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="summaryStudentFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">👤 Student</label>
+            <select id="summaryStudentFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="all">All Students in Year</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="summarySubjectFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📚 Subject</label>
+            <select id="summarySubjectFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="all">All Subjects</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-bottom:16px;">
+          <div class="field" style="margin:0;">
+            <label for="summaryTermFilter" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 Term/Semester</label>
+            <select id="summaryTermFilter" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">All Terms</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="summaryFromWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 From Week</label>
+            <select id="summaryFromWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label for="summaryToWeek" style="font-size:0.88rem; margin-bottom:6px; font-weight:600;">📅 To Week</label>
+            <select id="summaryToWeek" class="navlink" style="padding:10px 12px; width:100%;">
+              <option value="">Select week…</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="exportAttendanceSummary" class="btn" type="button" style="flex:1; min-width:140px; background:linear-gradient(135deg, rgba(var(--success-rgb),0.9), rgba(var(--success-rgb),0.7));">📥 Export Excel</button>
+        </div>
+      </div>
+
+      <div id="attendanceSummaryStatus" class="status" role="status" style="margin-bottom:12px;"></div>
+    </section>
+
     <!-- ═══════════════════════════════════════════════════════════════════════
          ACTIVITY MONITORING
          ═══════════════════════════════════════════════════════════════════════ -->
@@ -1353,6 +1425,7 @@ $importStatus = $_GET['import_status'] ?? '';
   <script src="js/admin_attendance_tracking.js?v=20260922e"></script>
   <script src="js/admin_professor_tracking.js?v=20261006a"></script>
   <script src="js/admin_student_tracking.js?v=20261105c"></script>
+  <script src="js/admin_attendance_summary.js?v=20261116a"></script>
   <script src="js/admin_teacher_schedule_export.js?v=20261010a"></script>
   <script>
     window.dmportal?.initNavbar?.({});
