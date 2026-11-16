@@ -345,25 +345,45 @@
 
         // Details - collapsible and cleaner
         const tdDetails = document.createElement('td');
-        tdDetails.style.cssText = 'font-size: 0.85rem; max-width: 300px;';
+        tdDetails.style.cssText = 'font-size: 0.85rem; max-width: 400px;';
         if (log.details) {
           try {
             const detailsObj = JSON.parse(log.details);
-            // Show only important keys
-            const importantKeys = ['role', 'reason', 'course_name', 'subject_code', 'week', 'day', 'slot'];
-            const summary = {};
-            importantKeys.forEach(key => {
-              if (detailsObj[key]) summary[key] = detailsObj[key];
+            
+            // Create a more readable summary
+            const lines = [];
+            
+            // Priority keys to show
+            const priorityKeys = ['course_name', 'subject_code', 'week', 'day', 'slot', 'reason', 'master_key_used', 'marked_by_role'];
+            priorityKeys.forEach(key => {
+              if (detailsObj[key] !== undefined) {
+                lines.push(`${key}: ${detailsObj[key]}`);
+              }
             });
             
-            if (Object.keys(summary).length > 0) {
-              const summaryText = Object.entries(summary).map(([k, v]) => `${k}: ${v}`).join(', ');
-              tdDetails.innerHTML = `<div style="color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(JSON.stringify(detailsObj, null, 2))}">${escapeHtml(summaryText)}</div>`;
+            // Show other keys (exclude noisy ones)
+            const excludeKeys = ['request_method', 'request_time', 'session_id', 'referer', 'post_data', ...priorityKeys];
+            Object.keys(detailsObj).forEach(key => {
+              if (!excludeKeys.includes(key) && detailsObj[key] !== undefined && detailsObj[key] !== null) {
+                lines.push(`${key}: ${detailsObj[key]}`);
+              }
+            });
+            
+            const summaryText = lines.slice(0, 3).join(' • '); // Show first 3 items
+            const fullText = JSON.stringify(detailsObj, null, 2);
+            
+            if (summaryText) {
+              tdDetails.innerHTML = `
+                <div style="cursor: help; line-height: 1.5;" title="${escapeHtml(fullText)}">
+                  <div style="color: var(--text);">${escapeHtml(summaryText)}</div>
+                  ${lines.length > 3 ? `<div class="muted" style="font-size: 0.75rem; margin-top: 4px;">+${lines.length - 3} more (hover for full details)</div>` : ''}
+                </div>
+              `;
             } else {
-              tdDetails.innerHTML = '<span class="muted">See full details →</span>';
+              tdDetails.innerHTML = `<span class="muted" style="cursor: help;" title="${escapeHtml(fullText)}">Hover for details</span>`;
             }
           } catch (e) {
-            tdDetails.textContent = log.details.substring(0, 50) + '...';
+            tdDetails.textContent = log.details.substring(0, 100) + '...';
           }
         } else {
           tdDetails.innerHTML = '<span class="muted">—</span>';
