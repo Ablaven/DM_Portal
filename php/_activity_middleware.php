@@ -6,12 +6,31 @@ declare(strict_types=1);
  * Activity Logging Middleware
  * 
  * Include this file at the top of pages/endpoints to automatically log page views
+ * and track request performance.
  */
 
 require_once __DIR__ . '/_activity_log_helpers.php';
 
+// Track request start time globally
+if (!defined('DMPORTAL_REQUEST_START')) {
+    define('DMPORTAL_REQUEST_START', microtime(true));
+}
+
 /**
- * Log page view automatically
+ * Calculate request duration in milliseconds
+ */
+function dmportal_get_request_duration_ms(): int
+{
+    if (!defined('DMPORTAL_REQUEST_START')) {
+        return 0;
+    }
+    
+    $durationSeconds = microtime(true) - DMPORTAL_REQUEST_START;
+    return (int)round($durationSeconds * 1000); // Convert to milliseconds
+}
+
+/**
+ * Log page view automatically with response time tracking
  * Call this after auth in page files
  */
 function dmportal_log_page_view(string $pageName): void
@@ -32,6 +51,7 @@ function dmportal_log_page_view(string $pageName): void
         dmportal_log_activity($pdo, 'page_view', $category, [
             'targetType' => 'page',
             'targetName' => $pageName,
+            'responseTimeMs' => dmportal_get_request_duration_ms(),
             'details' => [
                 'page' => $pageName,
                 'user_role' => $user['role'] ?? 'guest',

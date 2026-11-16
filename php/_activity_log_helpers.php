@@ -33,6 +33,7 @@ function dmportal_ensure_activity_logs_table(PDO $pdo): void
         . '  page_url VARCHAR(500) DEFAULT NULL,'
         . '  result ENUM(\'success\',\'failure\',\'error\') NOT NULL DEFAULT \'success\','
         . '  error_message TEXT DEFAULT NULL,'
+        . '  response_time_ms INT UNSIGNED DEFAULT NULL COMMENT \'Request duration in milliseconds\','
         . '  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,'
         . '  PRIMARY KEY (log_id),'
         . '  KEY idx_user_id (user_id),'
@@ -40,9 +41,30 @@ function dmportal_ensure_activity_logs_table(PDO $pdo): void
         . '  KEY idx_action_type (action_type),'
         . '  KEY idx_action_category (action_category),'
         . '  KEY idx_created_at (created_at),'
-        . '  KEY idx_result (result)'
+        . '  KEY idx_result (result),'
+        . '  KEY idx_response_time (response_time_ms)'
         . ') ENGINE=InnoDB'
     );
+    
+    // Add response_time_ms column if it doesn't exist (migration for existing tables)
+    try {
+        $pdo->exec('ALTER TABLE activity_logs ADD COLUMN response_time_ms INT UNSIGNED DEFAULT NULL COMMENT \'Request duration in milliseconds\' AFTER error_message');
+    } catch (PDOException $e) {
+        // Column already exists, ignore
+        if ($e->getCode() !== '42S21') { // 42S21 = Duplicate column name
+            error_log('Activity logs migration warning: ' . $e->getMessage());
+        }
+    }
+    
+    // Add index for response_time_ms if it doesn't exist
+    try {
+        $pdo->exec('ALTER TABLE activity_logs ADD KEY idx_response_time (response_time_ms)');
+    } catch (PDOException $e) {
+        // Index already exists, ignore
+        if ($e->getCode() !== '42000') { // 42000 = Duplicate key name
+            error_log('Activity logs index migration warning: ' . $e->getMessage());
+        }
+    }
 }
 
 /**
@@ -188,6 +210,7 @@ function dmportal_log_activity(PDO $pdo, string $actionType, string $actionCateg
         
         $result = $options['result'] ?? 'success';
         $errorMessage = $options['errorMessage'] ?? null;
+        $responseTimeMs = $options['responseTimeMs'] ?? null; // Response time in milliseconds
         
         $targetType = $options['targetType'] ?? null;
         $targetId = $options['targetId'] ?? null;
@@ -200,14 +223,14 @@ function dmportal_log_activity(PDO $pdo, string $actionType, string $actionCateg
             target_type, target_id, target_name,
             details, old_value, new_value,
             ip_address, user_agent, page_url,
-            result, error_message
+            result, error_message, response_time_ms
         ) VALUES (
             :user_id, :username, :role,
             :action_type, :action_category,
             :target_type, :target_id, :target_name,
             :details, :old_value, :new_value,
             :ip_address, :user_agent, :page_url,
-            :result, :error_message
+            :result, :error_message, :response_time_ms
         )';
         
         $stmt = $pdo->prepare($sql);
@@ -228,6 +251,7 @@ function dmportal_log_activity(PDO $pdo, string $actionType, string $actionCateg
             ':page_url' => $pageUrl,
             ':result' => $result,
             ':error_message' => $errorMessage,
+            ':response_time_ms' => $responseTimeMs,
         ]);
         
     } catch (Throwable $e) {

@@ -822,6 +822,7 @@ $importStatus = $_GET['import_status'] ?? '';
                 <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Category</th>
                 <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Action</th>
                 <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Target</th>
+                <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Time (ms)</th>
                 <th style="font-size:0.95rem; padding:14px 16px; min-width:300px;">Details</th>
                 <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">IP</th>
                 <th style="font-size:0.95rem; padding:14px 16px; white-space:nowrap;">Result</th>

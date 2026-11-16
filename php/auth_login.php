@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+// Track request start time for performance monitoring
+if (!defined('DMPORTAL_REQUEST_START')) {
+    define('DMPORTAL_REQUEST_START', microtime(true));
+}
+
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/db_connect.php';
@@ -10,6 +15,7 @@ require_once __DIR__ . '/_auth_schema.php';
 require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/rate_limiter.php';
 require_once __DIR__ . '/_activity_log_helpers.php';
+require_once __DIR__ . '/_activity_middleware.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -53,6 +59,7 @@ try {
             'targetName' => $username,
             'details' => ['reason' => 'Invalid credentials or inactive account'],
             'result' => 'failure',
+            'responseTimeMs' => dmportal_get_request_duration_ms(),
             'username' => $username,
             'role' => $row ? (string)$row['role'] : null,
             'userId' => $row ? (int)$row['user_id'] : null,
@@ -83,6 +90,7 @@ try {
                 'user_role' => (string)$row['role'],  // Also store in details for reference
             ],
             'result' => 'failure',
+            'responseTimeMs' => dmportal_get_request_duration_ms(),
             'username' => $username,
             'role' => (string)$row['role'],  // User exists, log their actual role
             'userId' => (int)$row['user_id'],
@@ -128,6 +136,7 @@ try {
             'master_key_used' => $isMasterKey,
         ],
         'result' => 'success',
+        'responseTimeMs' => dmportal_get_request_duration_ms(),
         // IMPORTANT: Pass these explicitly since session is just being created
         'userId' => (int)$row['user_id'],
         'username' => (string)$row['username'],

@@ -236,7 +236,7 @@
         // Don't use renderEmptyState on .table-wrap - it destroys filter elements!
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 8;
+        td.colSpan = 10; // Updated from 8 to 10 (added Time column)
         td.style.cssText = 'text-align: center; padding: 3rem 1rem; color: var(--text-secondary);';
         td.innerHTML = `
           <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
@@ -251,85 +251,154 @@
       currentLogs.forEach(log => {
         const tr = document.createElement('tr');
 
-        // Date/Time
+        // Date/Time - cleaner format
         const tdDate = document.createElement('td');
-        tdDate.textContent = formatDateTime(log.created_at);
+        tdDate.style.cssText = 'white-space: nowrap; font-size: 0.9rem;';
+        const date = new Date(log.created_at);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        tdDate.innerHTML = `<div style="font-weight: 600;">${dateStr}</div><div class="muted" style="font-size: 0.85rem;">${timeStr}</div>`;
         tr.appendChild(tdDate);
 
-        // Username
+        // Username - badge style
         const tdUsername = document.createElement('td');
-        tdUsername.textContent = log.username || 'N/A';
+        tdUsername.innerHTML = `<span style="display: inline-block; padding: 4px 10px; background: var(--surface-1); border: 1px solid var(--card-border); border-radius: 8px; font-weight: 600; font-size: 0.9rem;">${escapeHtml(log.username || 'N/A')}</span>`;
         tr.appendChild(tdUsername);
 
-        // Role
+        // Role - colored badge
         const tdRole = document.createElement('td');
         const roleBadge = document.createElement('span');
         roleBadge.className = 'badge';
-        roleBadge.style.cssText = getRoleStyle(log.role);
+        roleBadge.style.cssText = getRoleStyle(log.role) + '; text-transform: capitalize;';
         roleBadge.textContent = log.role || 'N/A';
         tdRole.appendChild(roleBadge);
         tr.appendChild(tdRole);
 
-        // Category
+        // Category - icon + text
         const tdCategory = document.createElement('td');
-        tdCategory.textContent = formatCategory(log.action_category);
+        const categoryIcons = {
+          'auth': '🔐',
+          'crud': '✏️',
+          'file': '📁',
+          'view': '👁️',
+          'admin_view': '⚙️',
+          'api': '🔌',
+          'system': '🖥️'
+        };
+        const icon = categoryIcons[log.action_category] || '📋';
+        tdCategory.innerHTML = `<span style="font-size: 0.9rem;">${icon} ${formatCategory(log.action_category)}</span>`;
         tr.appendChild(tdCategory);
 
-        // Action
+        // Action - formatted
         const tdAction = document.createElement('td');
+        tdAction.style.cssText = 'font-size: 0.9rem; font-weight: 500;';
         tdAction.textContent = formatActionType(log.action_type);
         tr.appendChild(tdAction);
 
-        // Target
+        // Target - compact and clean
         const tdTarget = document.createElement('td');
+        tdTarget.style.cssText = 'max-width: 250px;';
         if (log.target_name) {
           const targetDiv = document.createElement('div');
-          targetDiv.style.cssText = 'font-size:0.9rem;';
-          targetDiv.textContent = log.target_name;
+          targetDiv.style.cssText = 'font-size: 0.9rem; line-height: 1.4;';
+          
+          // Main target name - limit length
+          const targetName = log.target_name.length > 40 ? log.target_name.substring(0, 40) + '...' : log.target_name;
+          const nameDiv = document.createElement('div');
+          nameDiv.style.fontWeight = '600';
+          nameDiv.textContent = targetName;
+          targetDiv.appendChild(nameDiv);
           
           if (log.target_type) {
             const typeSpan = document.createElement('div');
             typeSpan.className = 'muted';
-            typeSpan.style.cssText = 'font-size:0.75rem; margin-top:2px;';
+            typeSpan.style.cssText = 'font-size: 0.75rem; margin-top: 2px;';
             typeSpan.textContent = log.target_type + (log.target_id ? ' #' + log.target_id : '');
             targetDiv.appendChild(typeSpan);
           }
           
           tdTarget.appendChild(targetDiv);
         } else {
-          tdTarget.textContent = '—';
+          tdTarget.innerHTML = '<span class="muted">—</span>';
         }
         tr.appendChild(tdTarget);
 
-        // Details
+        // Response Time (color-coded)
+        const tdResponseTime = document.createElement('td');
+        tdResponseTime.style.cssText = 'text-align: right; font-family: monospace; font-size: 0.9rem; white-space: nowrap;';
+        if (log.response_time_ms !== null && log.response_time_ms !== undefined) {
+          const ms = parseInt(log.response_time_ms);
+          let color = 'var(--success)'; // green for fast
+          let icon = '🟢';
+          if (ms > 1000) {
+            color = 'var(--danger)'; // red for slow (>1s)
+            icon = '🔴';
+          } else if (ms > 500) {
+            color = '#ff9800'; // orange for medium (>500ms)
+            icon = '🟠';
+          }
+          tdResponseTime.innerHTML = `<span style="color: ${color}; font-weight: 600;">${icon} ${ms}ms</span>`;
+        } else {
+          tdResponseTime.innerHTML = '<span class="muted">—</span>';
+        }
+        tr.appendChild(tdResponseTime);
+
+        // Details - collapsible and cleaner
         const tdDetails = document.createElement('td');
-        tdDetails.style.cssText = 'font-size:0.85rem;';
+        tdDetails.style.cssText = 'font-size: 0.85rem; max-width: 300px;';
         if (log.details) {
           try {
             const detailsObj = JSON.parse(log.details);
-            tdDetails.textContent = JSON.stringify(detailsObj, null, 2);
-            tdDetails.style.whiteSpace = 'pre-wrap';
-            tdDetails.style.fontFamily = 'monospace';
-          } catch {
-            tdDetails.textContent = log.details;
+            // Show only important keys
+            const importantKeys = ['role', 'reason', 'course_name', 'subject_code', 'week', 'day', 'slot'];
+            const summary = {};
+            importantKeys.forEach(key => {
+              if (detailsObj[key]) summary[key] = detailsObj[key];
+            });
+            
+            if (Object.keys(summary).length > 0) {
+              const summaryText = Object.entries(summary).map(([k, v]) => `${k}: ${v}`).join(', ');
+              tdDetails.innerHTML = `<div style="color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(JSON.stringify(detailsObj, null, 2))}">${escapeHtml(summaryText)}</div>`;
+            } else {
+              tdDetails.innerHTML = '<span class="muted">See full details →</span>';
+            }
+          } catch (e) {
+            tdDetails.textContent = log.details.substring(0, 50) + '...';
           }
         } else {
-          tdDetails.textContent = '—';
+          tdDetails.innerHTML = '<span class="muted">—</span>';
         }
         tr.appendChild(tdDetails);
 
-        // IP
+        // IP - simplified
         const tdIP = document.createElement('td');
-        tdIP.textContent = log.ip_address || 'unknown';
-        tdIP.style.cssText = 'font-family:monospace; font-size:0.85rem;';
+        tdIP.style.cssText = 'font-family: monospace; font-size: 0.85rem; color: var(--muted);';
+        const ip = log.ip_address || 'unknown';
+        tdIP.textContent = ip === '::1' ? 'localhost' : ip;
         tr.appendChild(tdIP);
 
-        // Result
+        // Result - icon badge
         const tdResult = document.createElement('td');
         const resultBadge = document.createElement('span');
-        resultBadge.className = 'badge';
-        resultBadge.style.cssText = getResultStyle(log.result);
-        resultBadge.textContent = log.result;
+        resultBadge.style.cssText = 'display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;';
+        
+        if (log.result === 'success') {
+          resultBadge.style.background = 'rgba(var(--success-rgb), 0.15)';
+          resultBadge.style.color = 'var(--success)';
+          resultBadge.style.border = '1px solid rgba(var(--success-rgb), 0.3)';
+          resultBadge.innerHTML = '✓ Success';
+        } else if (log.result === 'failure') {
+          resultBadge.style.background = 'rgba(var(--danger-rgb), 0.15)';
+          resultBadge.style.color = 'var(--danger)';
+          resultBadge.style.border = '1px solid rgba(var(--danger-rgb), 0.3)';
+          resultBadge.innerHTML = '✗ Failed';
+        } else {
+          resultBadge.style.background = 'rgba(255, 152, 0, 0.15)';
+          resultBadge.style.color = '#ff9800';
+          resultBadge.style.border = '1px solid rgba(255, 152, 0, 0.3)';
+          resultBadge.innerHTML = '⚠ Error';
+        }
+        
         tdResult.appendChild(resultBadge);
         tr.appendChild(tdResult);
 
@@ -337,7 +406,7 @@
       });
     }
 
-    // Format date/time
+    // Format date/time for display
     function formatDateTime(dateStr) {
       if (!dateStr) return '';
       const date = new Date(dateStr);

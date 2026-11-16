@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
+// Track request start time for performance monitoring
+if (!defined('DMPORTAL_REQUEST_START')) {
+    define('DMPORTAL_REQUEST_START', microtime(true));
+}
+
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/db_connect.php';
 require_once __DIR__ . '/_activity_log_helpers.php';
+require_once __DIR__ . '/_activity_middleware.php';
 
 auth_session_start();
 
@@ -22,6 +28,7 @@ try {
             'targetId' => (string)$user['user_id'],
             'details' => ['role' => $user['role']],
             'result' => 'success',
+            'responseTimeMs' => dmportal_get_request_duration_ms(),
             // IMPORTANT: Pass these explicitly from session before it's destroyed
             'userId' => $user['user_id'],
             'username' => $user['username'],
