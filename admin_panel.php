@@ -718,8 +718,8 @@ $importStatus = $_GET['import_status'] ?? '';
           📊
         </div>
         <div>
-          <h2 style="margin:0 0 6px; font-size:1.3rem;">Student Attendance Summary</h2>
-          <p class="muted" style="margin:0; font-size:0.92rem;">Export attendance percentage summary organized by student and subject.</p>
+          <h2 style="margin:0 0 6px; font-size:1.3rem;">Student Absence Report</h2>
+          <p class="muted" style="margin:0; font-size:0.92rem;">Export absence rates for students with ≥50% absence (failing attendance).</p>
         </div>
       </div>
 

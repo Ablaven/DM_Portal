@@ -161,7 +161,7 @@ try {
 
     // Group students by year level (in case filtering spans multiple years - but shouldn't)
     // For now we just create one sheet per year level
-    $sheetName = "Year $yearLevel";
+    $sheetName = "Year $yearLevel - Absence Report";
 
     // Build the summary table
     // Rows: Students
@@ -233,38 +233,42 @@ try {
             $totalSessions += $sessions;
             $totalPresent += $present;
 
-            // Calculate percentage
+            // Calculate absence percentage
             if ($sessions > 0) {
-                $percentage = round(($present / $sessions) * 100, 1);
-                $row[] = $percentage . '%';
+                $absent = $sessions - $present; // Calculate absent count
+                $absenceRate = round(($absent / $sessions) * 100, 1);
                 
-                // Color code: green if >50%, red if <=50%
-                if ($percentage > 50) {
-                    $rowStyles[$colIdx] = $xlsx->styleFill('D4EDDA'); // Light green
+                // Only show if absence rate is 50% or higher (failing)
+                if ($absenceRate >= 50) {
+                    $row[] = $absenceRate . '%';
+                    $rowStyles[$colIdx] = $xlsx->styleFill('F8D7DA'); // Red for high absence
                 } else {
-                    $rowStyles[$colIdx] = $xlsx->styleFill('F8D7DA'); // Light red
+                    $row[] = ''; // Empty cell if absence rate is below 50%
+                    $rowStyles[$colIdx] = $xlsx->styleCell();
                 }
             } else {
-                $row[] = 'N/A';
-                $rowStyles[$colIdx] = $xlsx->styleCell(); // No color for N/A
+                $row[] = ''; // Empty if no sessions
+                $rowStyles[$colIdx] = $xlsx->styleCell();
             }
             
             $colIdx++;
         }
 
-        // Calculate total percentage
+        // Calculate total absence percentage
         if ($totalSessions > 0) {
-            $totalPercentage = round(($totalPresent / $totalSessions) * 100, 1);
-            $row[] = $totalPercentage . '%';
+            $totalAbsent = $totalSessions - $totalPresent;
+            $totalAbsenceRate = round(($totalAbsent / $totalSessions) * 100, 1);
             
-            // Color code total column
-            if ($totalPercentage > 50) {
-                $rowStyles[$colIdx] = $xlsx->styleFillBold('C3E6CB'); // Darker green + bold
+            // Only show if absence rate is 50% or higher
+            if ($totalAbsenceRate >= 50) {
+                $row[] = $totalAbsenceRate . '%';
+                $rowStyles[$colIdx] = $xlsx->styleFillBold('F5C6CB'); // Darker red + bold for high absence
             } else {
-                $rowStyles[$colIdx] = $xlsx->styleFillBold('F5C6CB'); // Darker red + bold
+                $row[] = ''; // Empty cell if absence rate is below 50%
+                $rowStyles[$colIdx] = $xlsx->styleCell();
             }
         } else {
-            $row[] = 'N/A';
+            $row[] = '';
             $rowStyles[$colIdx] = $xlsx->styleCell();
         }
 
@@ -295,7 +299,7 @@ try {
     );
 
     // Build filename
-    $filename = 'Attendance_Summary_Year' . $yearLevel;
+    $filename = 'Absence_Report_Year' . $yearLevel;
     if ($termId) {
         $filename .= '_Term' . $termId;
     }
